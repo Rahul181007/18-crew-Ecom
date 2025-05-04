@@ -1,0 +1,224 @@
+<%  include("../layouts/header.ejs") %>
+<link rel="stylesheet" href="/css/user/register.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+<!-- Sign Up Form -->
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+  <div class="card p-4 shadow" style="width: 100%; max-width: 400px;">
+    <h1 class="text-center mb-4">Sign Up —</h1>
+    <% if(locals.message && message.length > 0){ %>
+      <span id="message" class="text-danger text-center">
+          <%= message %>
+      </span>
+  
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script>
+          $(document).ready(function() {
+              setTimeout(function() {
+                  $('#message').fadeOut();
+              }, 3000); // 3000 milliseconds = 3 seconds
+          });
+      </script>
+  <% } %>
+    <form action="" method="post" id="signform" >
+      
+      <div class="mb-3">
+        <input type="text" class="form-control" id="name" name="name" placeholder="Name" required>
+        <div id="error1" class="error-message"></div>
+      </div>
+
+      <div class="mb-3">
+        <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+        <div id="error2" class="error-message"></div>
+      </div>
+
+      <div class="mb-3">
+        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+        <div id="error3" class="error-message"></div>
+      </div>
+
+      <!-- <div class="mb-3">
+        <input type="file" class="form-control" id="image" name="image" required>
+        <div id="error4" class="error-message"></div>
+      </div> -->
+
+      <div class="mb-3">
+        <input type="text" class="form-control" id="mobile" name="mobile" placeholder="Phone No">
+        <div id="error5" class="error-message"></div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Gender</label><br>
+        <div class="d-flex gap-3">
+          <div>
+            <input type="radio" id="male" name="gender" value="male">
+            <label for="male">Male</label>
+          </div>
+          <div>
+            <input type="radio" id="female" name="gender" value="female">
+            <label for="female">Female</label>
+          </div>
+        </div>
+      </div>
+     
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-dark mb-3">Create</button>
+      </div>
+
+      <!-- Google Sign In Button -->
+      <div class="social-btns text-center mb-3">
+        <a href="/auth/google" class="btn btn-outline-dark btn-lg rounded-pill d-flex align-items-center justify-content-center gap-2 w-100">
+          <img src="/images/googlesignup.png" alt="Google Logo" style="width: 24px; height: 24px;">
+          <span>Sign up with Google</span>
+        </a>
+      </div>
+
+      <div class="text-center">
+        Already have an account? <a href="/signin" class="text-dark fw-bold">Sign In</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+<script>
+  const nameId = document.getElementById("name");
+  const emailId = document.getElementById("email");
+  const passwordId = document.getElementById("password"); 
+  // const imageId = document.getElementById("image");
+  const mobileId = document.getElementById("mobile");
+  const error1 = document.getElementById("error1");
+  const error2 = document.getElementById("error2");
+  const error3 = document.getElementById("error3");
+  const error4 = document.getElementById("error4");
+  const error5 = document.getElementById("error5");
+  const signform = document.getElementById("signform");
+  
+  const genderInputs = document.getElementsByName("gender"); // Gender radio buttons
+  
+  function nameValidateChecking() {
+    const nameval = nameId.value.trim();
+    const namePattern = /^[A-Za-z\s]+$/;
+  
+    if (nameval === "") {
+      error1.style.display = "block";
+      error1.innerHTML = "Please enter a valid name";
+    } else if (!namePattern.test(nameval)) {
+      error1.style.display = "block";
+      error1.innerHTML = "Name should contain only alphabets and spaces";
+    } else {
+      error1.style.display = "none";
+      error1.innerHTML = "";
+    }
+  }
+  
+  function emailValidateChecking() {
+    const emailVal = emailId.value.trim();
+    const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+  
+    if (!emailPattern.test(emailVal)) {
+      error2.style.display = "block";
+      error2.innerHTML = "Please enter a valid email address";
+    } else {
+      error2.style.display = "none";
+      error2.innerHTML = "";
+    }
+  }
+  
+  function passwordValidateChecking() {
+    const passval = passwordId.value;
+    const alpha = /[a-zA-Z]/;
+    const digit = /\d/;
+  
+    if (passval.length < 8) {
+      error3.style.display = "block";
+      error3.innerHTML = "Password must be at least 8 characters long";
+    } else if (!alpha.test(passval) || !digit.test(passval)) {
+      error3.style.display = "block";
+      error3.innerHTML = "Password should contain both alphabets and numbers";
+    } else {
+      error3.style.display = "none";
+      error3.innerHTML = "";
+    }
+  }
+  
+  // function imageValidateChecking() {
+  //   if (!imageId.files || imageId.files.length === 0) {
+  //     error4.style.display = "block";
+  //     error4.innerHTML = "Please upload an image";
+  //   } else {
+  //     error4.style.display = "none";
+  //     error4.innerHTML = "";
+  //   }
+  // }
+  
+  function mobileValidateChecking() {
+    const mobileVal = mobileId.value.trim();
+  
+    if (mobileVal === "") {
+      error5.style.display = "block";
+      error5.innerHTML = "Enter a valid phone number";
+    } else if (mobileVal.length !== 10 || !/^\d{10}$/.test(mobileVal)) {
+      error5.style.display = "block";
+      error5.innerHTML = "Phone number must be exactly 10 digits";
+    } else {
+      error5.style.display = "none";
+      error5.innerHTML = "";
+    }
+  }
+  
+  function genderValidateChecking() {
+    let genderSelected = false;
+    for (let gender of genderInputs) {
+      if (gender.checked) {
+        genderSelected = true;
+        break;
+      }
+    }
+  
+    if (!genderSelected) {
+      alert("Please select your gender");
+      return false;
+    }
+    return true;
+  }
+  
+  document.addEventListener("DOMContentLoaded", function () {
+    signform.addEventListener("submit", function (e) {
+      nameValidateChecking();
+      emailValidateChecking();
+      passwordValidateChecking();
+      // imageValidateChecking();
+      mobileValidateChecking();
+  
+      if (!genderValidateChecking()) {
+        e.preventDefault();
+      }
+  
+      if (
+        error1.innerHTML ||
+        error2.innerHTML ||
+        error3.innerHTML ||
+        error4.innerHTML ||
+        error5.innerHTML
+      ) {
+        e.preventDefault();
+      }
+    });
+  });
+  </script>
+  
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+
+
+
+<%  include("../layouts/footer.ejs") %>

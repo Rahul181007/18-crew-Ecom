@@ -1,0 +1,198 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>18-CREW Admin Panel</title>
+  <link rel="icon" type="image/x-icon" href="../../../images/WhatsApp Image 2025-04-27 at 16.37.33_aa55e260.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://kit.fontawesome.com/16d4885483.js" crossorigin="anonymous">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #fff;
+      height: 100vh;
+      position: fixed;
+      overflow-y: auto;
+      padding-top: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+      padding: 15px;
+      text-align: center;
+      color: #000;
+    }
+
+    .logo span {
+      display: block;
+      font-size: 12px;
+      color: #777;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: #333;
+      text-decoration: none;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .sidebar-link i {
+      margin-right: 12px;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link.active {
+      background-color: #ffd0ec;
+      color: #d10273;
+    }
+
+    .topbar {
+      margin-left: 220px;
+      height: 60px;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .profile-img {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .logout-dropdown {
+      display: none;
+      position: absolute;
+      top: 40px;
+      right: 0;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 10;
+    }
+
+    .profile-menu:hover .logout-dropdown {
+      display: block;
+    }
+
+    .logout-dropdown a {
+      text-decoration: none;
+      color: #333;
+      display: block;
+      padding: 5px 10px;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .logout-dropdown a:hover {
+      background-color: #f0f0f0;
+    }
+
+    .main-content {
+      margin-left: 220px;
+      padding: 30px;
+    }
+    .toggle-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+.sidebar.collapsed {
+  width: 0;
+  overflow: hidden;
+  transition: width 0.3s;
+}
+
+.main-content.collapsed {
+  margin-left: 0;
+  transition: margin-left 0.3s;
+}
+
+.topbar.collapsed {
+  margin-left: 0;
+  transition: margin-left 0.3s;
+}
+
+@media (max-width: 992px) {
+  .sidebar {
+    position: fixed;
+    z-index: 999;
+    left: -220px;
+    transition: left 0.3s;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .topbar {
+    margin-left: 0;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+
+<div class="screen-overlay"></div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo">18-CREW<span>Admin Panel</span></div>
+  <!-- Sidebar links -->
+  <a href="/admin" class="sidebar-link <%= activePage === 'dashboard' ? 'active' : '' %>"><i class="fas fa-home"></i> Dashboard</a>
+  <a href="/admin/addProducts" class="sidebar-link <%= activePage === 'addProduct' ? 'active' : '' %>"><i class="fas fa-plus"></i> Add Items</a>
+  <a href="/admin/products" class="sidebar-link <%= activePage === 'products' ? 'active' : '' %>"><i class="fas fa-list"></i> List Items</a>
+  <a href="/admin/orderList" class="sidebar-link <%= activePage === 'orders' ? 'active' : '' %>"><i class="fas fa-shopping-cart"></i> Orders</a>
+  <a href="/admin/users" class="sidebar-link <%= activePage === 'users' ? 'active' : '' %>"><i class="fas fa-user"></i> Customers</a>
+  <a href="/admin/category" class="sidebar-link <%= activePage === 'category' ? 'active' : '' %>"><i class="fas fa-th-list"></i> Category</a>
+  <a href="/admin/brands" class="sidebar-link <%= activePage === 'brands' ? 'active' : '' %>"><i class="fas fa-star"></i> Brands</a>
+  <a href="/admin/coupon" class="sidebar-link <%= activePage === 'coupon' ? 'active' : '' %>"><i class="fas fa-ticket-alt"></i> Coupon</a>
+  <a href="/admin/banner" class="sidebar-link <%= activePage === 'banner' ? 'active' : '' %>"><i class="fas fa-image"></i> Banner</a>
+</div>
+
+<!-- Topbar -->
+<div class="topbar">
+  <button class="btn toggle-btn d-lg-none" id="toggleSidebar">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div class="right-section">
+    <div class="profile-menu">
+      <img src="../../../images/WhatsApp Image 2025-04-27 at 16.37.33_aa55e260.jpg" class="profile-img" alt="User">
+      <div class="logout-dropdown">
+        <a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
