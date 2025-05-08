@@ -1,15 +1,15 @@
 const express = require('express');
 const admin_route = express(); 
-const adminController = require("../controllers/adminController");
+const adminController = require("../controllers/admin/adminController");
 const {userAuth,adminAuth}=require("../middlewares/auth");
-const customerController=require("../controllers/customerController");
-const categoryController=require("../controllers/categoryController");
+const customerController=require("../controllers/admin/customerController");
+const categoryController=require("../controllers/admin/categoryController");
 const nocache=require("nocache");
 const multer=require("multer");
 const storage=require("../helpers/multer");
 const upload=multer({storage:storage})
-const brandController=require("../controllers/brandController");
-const productController=require("../controllers/productContoller");
+const brandController=require("../controllers/admin/brandController");
+const productController=require("../controllers/admin/productContoller");
 
 
 
@@ -30,7 +30,7 @@ admin_route.get("/blockCustomer",adminAuth,customerController.customerBlocked);
 admin_route.get("/unblockCustomer",adminAuth,customerController.customerunBlocked);
 // category management
 admin_route.get("/category",adminAuth,categoryController.categoryInfo);
-admin_route.post("/addcategory",adminAuth,categoryController.addCategory);
+admin_route.post("/addcategory",adminAuth,upload.single('image'),categoryController.addCategory);
 admin_route.post("/addCategoryOffer",adminAuth,categoryController.addCategoryOffer);
 admin_route.post("/removeCategoryOffer",adminAuth,categoryController.removeCategoryOffer);
 admin_route.get("/listCategory",adminAuth,categoryController.getListCategory);

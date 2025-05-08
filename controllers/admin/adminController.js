@@ -1,4 +1,4 @@
-const User=require("../models/userSchema");
+const User=require("../../models/userSchema");
 const bcrypt=require("bcrypt");
 const mongoose=require("mongoose");
 
@@ -35,7 +35,7 @@ const login=async(req,res)=>{
       if(admin){
         const passwordMatch=await bcrypt.compare(password,admin.password);
         if(passwordMatch){
-            req.session.admin=true;
+            req.session.admin=admin._id;
           return res.redirect("/admin")
         }else{
             return res.redirect("/login")

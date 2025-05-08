@@ -11,9 +11,10 @@ const productSchema=new Schema({
         type:String,
         required:true
     },
-    size:{
-     type:String,
-     required:true
+    sizes: {
+        type: [String],
+        required: true,
+        enum: ['S', 'M', 'L', 'XL', 'XXL']
     },
     brand:{
         type:String,

@@ -31,7 +31,8 @@ const userSchema= new Schema({
     googleId: {
         type: String,
         unique: true,
-        sparse: true // 👈 this is important
+        sparse: true, // 👈 this is important
+        default:null
       }
 ,      
     isBlocked:{

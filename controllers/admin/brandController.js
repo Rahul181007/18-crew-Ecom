@@ -1,6 +1,7 @@
-const Brand=require("../models/brandSchema");
-const Product=require("../models/productSchema");
-const { updateOne } = require("../models/userSchema");
+const Brand=require("../../models/brandSchema");
+const Product=require("../../models/productSchema");
+
+
 
 
 const getBrandPage=async(req,res)=>{

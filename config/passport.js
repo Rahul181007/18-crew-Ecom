@@ -8,24 +8,38 @@ const env=require("dotenv").config();
 passport.use(new GoogleStrategy({
    clientID:process.env.GOOGLE_CLIENT_ID,
    clientSecret:process.env.GOOGLE_CLIENT_SECRET,
-   callbackURL:"/auth/google/callback"
+   callbackURL:"/auth/google/callback",
+   passReqToCallback:true,
+   state:true
+
 },
-async (accessToken,refreshToken,profile,done)=>{
+async (req, accessToken, refreshToken, profile, done) => {
     try {
-        let user= await User.findOne({googleId:profile.id});
-        if(user){
-            return done(null,user);
-        }else{
-            user=new User({
-                name:profile.displayName,
-                email:profile.emails[0].value,
-                googleId:profile.id
-            })
-            await user.save();
-            return done(null,user);
+        if (!profile || !profile.id || !profile.emails || !profile.emails[0]) {
+            return done(null, false, { message: "Invalid profile data from Google" });
         }
+
+        let user = await User.findOne({ googleId: profile.id });
+
+        if (!user) {            
+            user = new User({
+                firstname: profile.displayName,
+                email: profile.emails[0].value,
+                googleId: profile.id,
+                referalCode: newReferralCode,
+                redeemed: false,
+                redeemedUsers: []
+            });
+            
+            const savedUser = await user.save();
+            
+        }
+
+        req.session.user = user; 
+        return done(null, user);
     } catch (error) {
-        return done(error,null)
+        console.error("Google signup error:", error);
+        return done(error, null);
     }
 }
 
@@ -33,22 +47,27 @@ async (accessToken,refreshToken,profile,done)=>{
 ))
 
 
+
 //  assigning the data to the database using serialize user
-passport.serializeUser((user,done)=>{
+passport.serializeUser((user, done) => {
+    console.log('Serializing user with ID:', user._id);
+    done(null, user._id);
+});
 
-    done(null,user.id)
-
-})
-
-// for fetching data from the session we use deserialiser
-passport.deserializeUser((id,done)=>{
-   User.findById(id)
-   .then(user=>{
-    done(null,user)
-   })
-   .catch(err=>{
-    done(err,null)
-   })
-})
-
+passport.deserializeUser(async (id, done) => {
+    try {
+        console.log('Deserializing user with ID:', id);
+        const user = await User.findById(id);
+        if (!user) {
+            console.log('User not found for ID:', id);
+            return done(null, false);
+        }
+        console.log('Deserialized user:', user);
+        done(null, user);
+        
+    } catch (err) {
+        console.error('Deserialize error:', err);
+        done(err, null);
+    }
+});
 module.exports=passport;

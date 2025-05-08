@@ -1,6 +1,6 @@
 const { error } = require("console");
-const Category=require("../models/categorySchema");
-const Product = require("../models/productSchema");
+const Category=require("../../models/categorySchema");
+const Product = require("../../models/productSchema");
 
 
 
@@ -42,26 +42,30 @@ const categoryInfo=async(req,res)=>{
 }
 
 // addCategory
-const addCategory=async(req,res)=>{
-    const {name,description}=req.body;
+const addCategory = async (req, res) => {
     try {
-        const existingCategory=await Category.findOne({name});
-        if(existingCategory){
-            return res.status(400).json({error:"Category already exists"});
-        }
-        const newCategory=new Category({
-            name,
-            description,
-        })
-        await newCategory.save();
-        return res.json({message:"Catergory added successfully"})
-       
-     
+      const { name, description } = req.body;
+      const image = req.file ? req.file.filename : "default-category.png";
+  
+      const existingCategory = await Category.findOne({ name });
+      if (existingCategory) {
+        return res.status(400).json({ error: "Category already exists" });
+      }
+  
+      const newCategory = new Category({
+        name,
+        description,
+        image, 
+      });
+  
+      await newCategory.save();
+      return res.json({ message: "Category added successfully" });
+  
     } catch (error) {
-        return res.status(500).json("Internal server error")
+      console.error(error);
+      return res.status(500).json("Internal server error");
     }
-}
-
+  };
 
 //  addCategory Offer
 const addCategoryOffer=async(req,res)=>{
@@ -164,7 +168,6 @@ const geteditCategory=async(req,res)=>{
 const editCategory=async(req,res)=>{
 try {
     const id=req.params.id;
-    console.log(req.body)
     const {categoryName,description}=req.body;
     const existingCategory=await Category.findOne({name:categoryName});
     if(existingCategory){

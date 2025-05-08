@@ -28,6 +28,7 @@ app.use(passport.initialize());
 app.use(passport.session())
 app.use((req, res, next) => {
     res.locals.user = req.user;  
+    
     next();
   });
 app.set("view engine","ejs");
@@ -37,6 +38,7 @@ const user_route=require("./routes/userRoutes");
 const admin_route=require("./routes/adminRoutes")
 app.use("/",user_route);
 app.use("/admin",admin_route)
+
 
 
 

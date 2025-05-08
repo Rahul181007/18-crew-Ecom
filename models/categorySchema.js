@@ -22,7 +22,13 @@ const categorySchema=new mongoose.Schema({
     createdAt:{
         type:Date,
         default:Date.now
-    }
+    },
+    image: {
+        type: String,
+        required: true, 
+        default: "default-category.png"
+      }
+      
 })
 
 
