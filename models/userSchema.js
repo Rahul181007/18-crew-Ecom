@@ -43,10 +43,13 @@ const userSchema= new Schema({
        type:Boolean,
        default:false 
     },
-    cart:[{
-         type:Schema.Types.ObjectId,
-         ref:"Cart"
-    }],
+    cart: [{
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+    quantity: Number,
+    size: String,
+    price: Number,
+    totalPrice: Number
+     }],
     wallet:{
         type:String,
         default:0
@@ -74,6 +77,10 @@ const userSchema= new Schema({
         type:Schema.Types.ObjectId,
         ref:"User"
     },
+    image:{
+      type:String,
+      default:""
+    },
     
     searchHistory:[{
         category:[{
@@ -88,9 +95,9 @@ const userSchema= new Schema({
             default:Date.now
         }
 
-    }] 
+    }] ,
    
-})
+},{timestamps:true})
 
 const User= mongoose.model("User",userSchema);
 module.exports=User;

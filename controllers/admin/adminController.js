@@ -38,7 +38,7 @@ const login=async(req,res)=>{
             req.session.admin=admin._id;
           return res.redirect("/admin")
         }else{
-            return res.redirect("/login")
+            return res.redirect("/admin/login")
         }
       }
 

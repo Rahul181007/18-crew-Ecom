@@ -3,7 +3,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
 <style>
   body {
@@ -11,9 +11,11 @@
   }
   .navbar-brand {
     font-weight: 700;
-    font-size: 1.5rem;
-    letter-spacing: 1px;
+    font-size: 1.6rem;
+    color: #1a1517;
+    letter-spacing: 0.5px;
   }
+
   .brand-dot {
     width: 10px;
     height: 10px;
@@ -21,8 +23,31 @@
     border-radius: 50%;
     display: inline-block;
   }
+
   .navbar-nav {
-    gap: 2rem;
+    gap: 1.5rem;
+  }
+
+  .navbar-nav .nav-link {
+    font-weight: 500;
+    color: #333;
+    transition: color 0.3s;
+  }
+
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    color: #C586A5;
+  }
+
+  .badge-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    border: 1px solid white;
   }
   .category-card {
     transition: all 0.3s ease;
@@ -167,43 +192,80 @@
 </style>
 
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-3">
-  <div class="container d-flex align-items-center justify-content-between">
-    <a href="#" class="navbar-brand d-flex align-items-center gap-2">18-CREW <span class="brand-dot"></span></a>
-    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+  <div class="container">
+    <a href="/" class="navbar-brand d-flex align-items-center gap-2">
+      18-CREW <span class="brand-dot"></span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse flex-grow-1 justify-content-center" id="navbarContent">
-      <ul class="navbar-nav mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link active" href="/">HOME</a></li>
-        <li class="nav-item"><a class="nav-link" href="/shop">COLLECTION</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">ABOUT</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">CONTACT</a></li>
+
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>" href="/">HOME</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="#">ABOUT</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="#">CONTACT</a>
+        </li>
+
+        <% if (locals?.user || user) { %>
+          <li class="nav-item dropdown d-lg-none">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+        <% } else { %>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
+          </li>
+        <% } %>
       </ul>
-    </div>
-    <div class="d-flex align-items-center gap-3">
-      <a href="#" class="text-dark" style="font-size: 1.5rem;"><i class="bi bi-search"></i></a>
-      <a href="#" class="text-dark" style="font-size: 1.5rem;"><i class="bi bi-bag"></i></a>
-      <% if (locals?.user|| user ) { %>
-        <div class="dropdown">
-          <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <%= locals.user.name %>
+
+      <div class="d-none d-lg-flex align-items-center gap-3">
+        <% if (locals?.user || user) { %>
+          <div class="dropdown">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </div>
+        <% } else { %>
+          <a href="/signin" class="text-dark" style="font-size: 1.5rem;">
+            <i class="bi bi-person"></i>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-          </ul>
-        </div>
-      <% } else { %>
-        <a href="/signin" class="text-dark" style="font-size: 1.5rem;">
-          <i class="bi bi-person"></i>
+        <% } %>
+        <a href="/wishlist" class="text-dark position-relative" style="font-size: 1.1rem;" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
+          <i class="bi bi-heart"></i>
+          <% if (wishlistCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
         </a>
-      <% } %>
-      
-      <!-- <a href="/register" class="btn btn-dark btn-sm px-3">Sign Up</a> -->
+        <a href="/getCartPage" class="nav-link position-relative" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
+          <i class="bi bi-bag"></i>
+          <% if (cartCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
+        </a>
+      </div>
     </div>
   </div>
 </nav>
+
 
 <!-- HERO SECTION -->
 <section class="banner-section d-flex align-items-center text-white text-center">
@@ -252,12 +314,12 @@
     <h2 class="text-center mb-3">Latest Collections</h2>
     <p class="text-center text-muted mb-5">Discover new trends and styles curated just for you.</p>
     <div class="row g-4">
-      <% for(let i=0; i<products.length; i++) { %>
+      <% for(let i=0; i<4; i++) { %>
         <div class="col-6 col-md-4 col-lg-3">
           <div class="card h-100 text-center position-relative overflow-hidden">
             
             <!-- Wishlist Button -->
-            <button class="wishlist-btn" ><a href="/addToWishlist?id=<%=products[i]._id  %>">
+            <button class="wishlist-btn"  onclick="addToWishlist('<%= products[i]._id %>')"><a href="#">
               <i class="fa-regular fa-heart"></i></a>
             </button>
             
@@ -355,8 +417,74 @@
     </div>
   </div>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script>
+  async function addToWishlist(productId) {
+    try {
+      const response = await fetch("/addToWishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId })
+      });
+      const data = await response.json();
+      
+      if (response.ok && data.status) {
+        showToast({
+          message: "Product added to wishlist!",
+          type: "success",
+          icon: "✓"
+        });
+      } else {
+        showToast({
+          message: data.message || 'Failed to add to wishlist',
+          type: "error",
+          icon: "✕"
+        });
+      }
+    } catch {
+      showToast({
+        message: 'Network error - please try again',
+        type: "error",
+        icon: "⚠"
+      });
+    }
+  }
 
+  function showToast({ message, type, icon }) {
+    const colors = {
+      success: {
+        bg: "linear-gradient(to right, #00b09b, #96c93d)",
+        text: "#fff"
+      },
+      error: {
+        bg: "linear-gradient(to right, #ff5f6d, #ffc371)",
+        text: "#fff"
+      }
+    };
 
+    Toastify({
+      text: `${icon} ${message}`,
+      duration: type === "success" ? 2000 : 3000,
+      close: true,
+      gravity: "top",
+      position: "right",
+      style: {
+        background: colors[type].bg,
+        color: colors[type].text,
+        borderRadius: "8px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        padding: "12px 20px",
+        fontSize: "14px",
+        fontWeight: "500",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px"
+      },
+      stopOnFocus: true,
+      onClick: function() {}
+    }).showToast();
+  }
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 <% include("../layouts/footer.ejs") %>

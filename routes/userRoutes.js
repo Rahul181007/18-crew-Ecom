@@ -12,6 +12,10 @@ const passport = require("passport");
 const profileController=require("../controllers/user/profileControllers");
 const {userAuth,adminAuth}=require("../middlewares/auth");
 const productController=require("../controllers/user/productController");
+const cartController=require("../controllers/user/cartController");
+const wishListController=require("../controllers/user/wishListController");
+const checkoutController=require("../controllers/user/checkoutController")
+
 
 // ..storage area for image
 const storage=multer.diskStorage({
@@ -24,7 +28,6 @@ const storage=multer.diskStorage({
     }
 })
 const upload=multer({storage:storage})
-
 // signup management
 user_route.get("/register",userContoller.loadRegister);
 user_route.post("/register",userContoller.insertUser);
@@ -32,7 +35,7 @@ user_route.post("/verify-otp",userContoller.verifyOtp)
 user_route.post("/resend-otp",userContoller.resendOTP)
 user_route.get("/auth/google",passport.authenticate("google",{scope:["profile","email"]}))
 user_route.get("/auth/google/callback",passport.authenticate("google",{failureRedirect:"/register"}),(req,res)=>{
-    console.log('this is user',req.user)
+  
     req.session.user=req.user
     res.redirect("/");
     
@@ -54,22 +57,45 @@ user_route.post("/verifyPassForgot-otp",profileController.verifyForgotPassOtp);
 user_route.get("/reset-password",profileController.getresetPassword);
 user_route.post("/resend-forgot-otp",profileController.resendOTP);
 user_route.post("/reset-password",profileController.postResetPassword);
-user_route.get("/userProfile",profileController.userProfile);
+user_route.get("/userProfile",userAuth,profileController.userProfile);
 user_route.get("/change-email",userAuth,profileController.changeEmail);
 user_route.post("/change-email",userAuth,profileController.changeEmailValid)
 user_route.post("/verifyChangeEmail-otp",userAuth,profileController.verifyChangeEmailOtp);
 user_route.get("/reset-email",userAuth,profileController.getResetEmailPage);
 user_route.post("/update-email",userAuth,profileController.updateEmail);
 user_route.get("/change-password",userAuth,profileController.changePassword);
-// user_route.post("/change-password",userAuth,profileController.)
+user_route.post("/change-password",userAuth,profileController.changePassValid);
+user_route.post("/verifyChangePass-otp",userAuth,profileController.verifyChangePassOtp);
+user_route.get("/reset-pass",userAuth,profileController.getResetPassPage);
+user_route.post("/update-pass",userAuth,profileController.updatePass);
+user_route.post("/update-profile",userAuth,upload.single("image"),profileController.updateProfile);
+// address management
+user_route.get("/addAddress",userAuth,profileController.addAddress);
+user_route.post("/addAddress",userAuth,profileController.postAddAddress);
+user_route.get("/editAddress",userAuth,profileController.editAddress);
+user_route.post("/editAddress",userAuth,profileController.postEditAddress)
+user_route.get("/deleteAddress",userAuth,profileController.deleteAddress)
 
 // product details
 user_route.get("/productDetails",productController.productDetails);
-
-
-
+// cart
+user_route.get("/getCartPage",userAuth,cartController.getCartPage);
+user_route.post("/addToCart",userAuth,cartController.addToCart);
+user_route.post("/changeQuantity",userAuth,cartController.changeQuantity);
+user_route.delete("/deleteItem/:cartItemId", userAuth, cartController.deleteProduct);
+// wishlist management
+user_route.get("/wishList",userAuth,wishListController.loadWishlist);
+user_route.post("/addToWishlist",userAuth,wishListController.addToWishlist)
+user_route.get("/deleteitemwish",userAuth,wishListController.deleteProduct)
+// checkout management
+user_route.get("/checkout",userAuth,checkoutController.loadCheckout);
+user_route.post("/deleteItem",userAuth,checkoutController.deleteProduct);
+user_route.post("/orderPlaced",userAuth,checkoutController.placeOrder);
+user_route.get("/checkStock",userAuth,checkoutController.checkStock)
+user_route.get("/successPage",userAuth,checkoutController.successPage);
+user_route.get("/orders/:orderId",userAuth,checkoutController.orderDetails)
 // .........pagenot found.........
 user_route.get("/pageNotFound",userContoller.pageNotFound);
-user_route.get("/*")
+
 
 module.exports=user_route;

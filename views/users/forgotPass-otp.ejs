@@ -1,151 +1,222 @@
 <%- include("../layouts/header.ejs") %>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-   .otp-container {
+  body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+  }
+
+  .otp-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      background-color: #f9f9f9;
+      padding: 30px;
+      border: none;
+      border-radius: 12px;
+      background-color: #ffffff;
       width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    }
-   
-   
-    .otp-timer-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 10px;
+      max-width: 450px;
+      margin: 20px auto;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .otp-container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .heading_s1 {
+      text-align: center;
+      margin-bottom: 20px;
+  }
+
+  .heading_s1 h3 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #2d3748;
+      margin: 0;
+  }
+
+  .form-group {
       width: 100%;
-    }
-   
-   
-    .otp-timer {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background-color: #f0f0f0;
+      margin-bottom: 20px;
+      text-align: center;
+  }
+
+  .form-group label {
+      display: block;
       font-size: 14px;
-      color: black;
-      text-align: center;
-    }
-   
-   
-    .form-group {
+      font-weight: 500;
+      color: #4a5568;
+      margin-bottom: 8px;
+  }
+
+  .form-control {
       width: 100%;
-      text-align: center;
-    }
-   
-   
-    .btn-primary {
-      margin-top: 15px;
-    }
-   
-   
-    .resend-button {
-      margin-top: 10px;
-    }
-   </style><style>
-    .otp-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      background-color: #f9f9f9;
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    }
-   
-   
-    .otp-timer-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 10px;
-      width: 100%;
-    }
-   
-   
-    .otp-timer {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background-color: #f0f0f0;
+      padding: 12px 15px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
       font-size: 14px;
-      color: black;
+      color: #2d3748;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .form-control:focus {
+      outline: none;
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+  }
+
+  .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
       text-align: center;
-    }
-   
-   
-    .form-group {
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .btn-dark {
+      background-color: #2d3748;
+      color: #ffffff;
+  }
+
+  .btn-dark:hover {
+      background-color: #1a202c;
+      transform: translateY(-2px);
+  }
+
+  .btn-link {
+      background: none;
+      color: #3182ce;
+      text-decoration: none;
+      padding: 8px 16px;
+  }
+
+  .btn-link:hover {
+      color: #2b6cb0;
+      text-decoration: underline;
+      transform: translateY(-2px);
+  }
+
+  .otp-timer-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
       width: 100%;
+  }
+
+  .otp-timer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #edf2f7;
+      font-size: 14px;
+      font-weight: 500;
+      color: #2d3748;
+      border: 1px solid #e2e8f0;
+  }
+
+  .alert {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
       text-align: center;
-    }
-   
-   
-    .btn-primary {
-      margin-top: 15px;
-    }
-   
-   
-    .resend-button {
-      margin-top: 10px;
-    }
+  }
+
+  .alert-danger {
+      background-color: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #f87171;
+  }
+
+  .text-muted {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 20px;
+      text-align: center;
+  }
+
+  .text-muted a {
+      color: #3182ce;
+      text-decoration: none;
+      font-weight: 500;
+  }
+
+  .text-muted a:hover {
+      color: #2b6cb0;
+      text-decoration: underline;
+  }
+
+  @media (max-width: 576px) {
+      .otp-container {
+          padding: 20px;
+          max-width: 100%;
+          margin: 10px;
+      }
+
+      .heading_s1 h3 {
+          font-size: 20px;
+      }
+
+      .form-control {
+          padding: 10px;
+          font-size: 13px;
+      }
+
+      .btn {
+          padding: 10px 20px;
+          font-size: 13px;
+      }
+  }
 </style>
 
-<div class="container col-4 login_wrap widget-taber-content p-30 background-white border-radius-5 mt-30">
-  <div class="padding_eight_all bg-white">
-    <div class="heading_s1">
-      <h3 class="mb-30 text-center">Email Verification</h3>
-    </div>
-    <div class="otp-container">
-      <!-- ✅ Updated form -->
-      <form id="otpForm">
-        <div class="form-group">
-          <label for="otp">Enter OTP:</label>
-          <input type="text" id="otp" name="otp" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-dark">Verify OTP</button>
-        </div>
-      </form>
-
-      <div class="form-group otp-timer-wrapper">
-        <div class="otp-timer" id="otpTimer"></div>
-      </div>
-
+<div class="otp-container">
+  <div class="heading_s1">
+      <h3>Email Verification</h3>
+  </div>
+  <form id="otpForm">
       <div class="form-group">
-        <button type="button" class="btn btn-link resend-button" onclick="resendOtp()">Resend OTP</button>
+          <label for="otp">Enter OTP</label>
+          <input type="text" id="otp" name="otp" class="form-control" required>
       </div>
-
-      <% if(locals.message && message.length > 0) { %>
-        <div class="alert alert-danger mt-3">
+      <div class="form-group">
+          <button type="submit" class="btn btn-dark">Verify OTP</button>
+      </div>
+  </form>
+  <div class="form-group otp-timer-wrapper">
+      <div class="otp-timer" id="otpTimer"></div>
+  </div>
+  <div class="form-group">
+      <button type="button" class="btn btn-link resend-button" onclick="resendOtp()">Resend OTP</button>
+  </div>
+  <% if(locals.message && message.length > 0) { %>
+      <div class="alert alert-danger">
           <%= message %>
-        </div>
-      <% } %>
-    </div>
-    <div class="text-muted text-center pt-25">
-      Already verified? <a href="/signin">Signin now</a>
-    </div>
+      </div>
+  <% } %>
+  <div class="text-muted">
+      Already verified? <a href="/signin">Sign in now</a>
   </div>
 </div>
+
 
 <script>
   let otpTimerInterval;

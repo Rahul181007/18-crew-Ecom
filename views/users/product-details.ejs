@@ -1,271 +1,890 @@
 <% include("../layouts/header.ejs") %>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
 <style>
-      body {
-    font-family: 'Poppins', sans-serif;
+  :root {
+    --primary-color: #C586A5;
+    --secondary-color: #1a1517;
+    --accent-color: #FF6B6B;
+    --light-bg: #f8f9fa;
+    --dark-text: #212529;
+    --muted-text: #6c757d;
   }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--dark-text);
+    background-color: #fff;
+    font-size: 0.95rem;
+  }
+  
   .navbar-brand {
     font-weight: 700;
     font-size: 1.5rem;
-    letter-spacing: 1px;
+    color: var(--secondary-color);
+    letter-spacing: 0.5px;
   }
+
   .brand-dot {
-    width: 10px;
-    height: 10px;
-    background: #C586A5;
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
     border-radius: 50%;
     display: inline-block;
   }
+
   .navbar-nav {
-    gap: 2rem;
-  }
-  .thumbnail-img {
-    width: 60px;
-    cursor: pointer;
-    margin-bottom: 10px;
+    gap: 1.2rem;
   }
 
-  .btn-check:checked + .btn {
-    background-color: #000;
-    color: #fff;
-    border-color: #000;
+  .navbar-nav .nav-link {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--dark-text);
+    transition: all 0.3s ease;
+    position: relative;
   }
 
-  .related-products img {
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    color: var(--primary-color);
+  }
+
+  .navbar-nav .nav-link:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+  }
+
+  .navbar-nav .nav-link:hover:after,
+  .navbar-nav .nav-link.active:after {
     width: 100%;
   }
 
-  /* Zoom styles */
-  .product-image-wrapper {
+  .badge-dot {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    border: 1px solid white;
+  }
+
+  /* Product Gallery Styles */
+  .product-gallery {
     position: relative;
-    overflow: hidden;
+  }
+  
+  .main-product-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 10px;
+    transition: transform 0.5s ease;
     cursor: zoom-in;
   }
-
-  .product-image-wrapper img {
+  
+  .thumbnail-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .thumbnail-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+  }
+  
+  .thumbnail-img:hover, 
+  .thumbnail-img.active {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+  }
+  
+  /* Product Info Styles */
+  .product-info {
+    padding-left: 1.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .product-info {
+      padding-left: 0;
+      margin-top: 1.5rem;
+    }
+    
+    .thumbnail-container {
+      flex-direction: row;
+      order: 2;
+      margin-top: 0.8rem;
+      justify-content: center;
+    }
+  }
+  
+  .price-display {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin: 1rem 0;
+  }
+  
+  .current-price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+  
+  .original-price {
+    font-size: 1rem;
+    color: var(--muted-text);
+    text-decoration: line-through;
+  }
+  
+  .discount-badge {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  /* Size Selector */
+  .size-selector {
+    margin: 1.5rem 0;
+  }
+  
+  .size-selector h5 {
+    font-size: 0.95rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .size-option {
+    position: relative;
+  }
+  
+  .size-btn {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .size-btn:hover {
+    border-color: var(--dark-text);
+  }
+  
+  .size-btn.selected {
+    border-color: var(--primary-color);
+    background-color: rgba(197, 134, 165, 0.1);
+  }
+  
+  .size-btn.out-of-stock {
+    opacity: 0.5;
+    position: relative;
+    cursor: not-allowed;
+  }
+  
+  .size-btn.out-of-stock:after {
+    content: "";
+    position: absolute;
     width: 100%;
-    transition: transform 0.2s ease;
-    transform-origin: center center;
+    height: 1px;
+    background-color: var(--accent-color);
+    transform: rotate(-15deg);
+    top: 50%;
+    left: 0;
+  }
+  
+  /* Action Buttons */
+  .action-btns {
+    display: flex;
+    gap: 0.8rem;
+    margin: 1.5rem 0;
+  }
+  
+  .btn-add-to-cart {
+    flex: 1;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border: none;
+  }
+  
+  .btn-add-to-cart:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+  }
+  
+  .btn-buy-now {
+    flex: 1;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border: none;
+  }
+  
+  .btn-buy-now:hover {
+    background-color: #b36d8f;
+    transform: translateY(-2px);
+  }
+  
+  /* Product Details Accordion */
+  .product-accordion .accordion-item {
+    border: none;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .product-accordion .accordion-button {
+    background: none;
+    padding: 0.8rem 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  
+  .product-accordion .accordion-button:not(.collapsed) {
+    color: var(--primary-color);
+    background: none;
+    box-shadow: none;
+  }
+  
+  .product-accordion .accordion-button:focus {
+    box-shadow: none;
+  }
+  
+  .product-accordion .accordion-body {
+    padding: 0 0 0.8rem 0;
+    font-size: 0.9rem;
+  }
+  
+  /* Description List */
+  .feature-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .feature-list li {
+    padding: 0.3rem 0;
+    position: relative;
+    padding-left: 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .feature-list li:before {
+    content: "•";
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    position: absolute;
+    left: 0;
+    top: -3px;
+  }
+  
+  /* Related Products */
+  .related-products {
+    margin-top: 3rem;
+  }
+  
+  .related-products h4 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .related-product-card {
+    border: none;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  
+  .related-product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  }
+  
+  .related-product-card img {
+    transition: transform 0.5s ease;
+  }
+  
+  .related-product-card:hover img {
+    transform: scale(1.05);
+  }
+  
+  .related-product-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 0.4rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Stock Badge */
+  .stock-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .in-stock {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+  }
+  
+  .low-stock {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+  }
+  
+  .out-of-stock-badge {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+  
+  /* Rating Styles */
+  .rating-stars {
+    color: #FFD700;
+    font-size: 0.85rem;
+  }
+  
+  .review-count {
+    color: var(--muted-text);
+    font-size: 0.8rem;
+  }
+  
+  /* Footer Styles */
+  .footer {
+    background-color: var(--light-bg);
+    padding: 2.5rem 0;
+  }
+  
+  .footer-heading {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .footer-heading:after {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 2px;
+    bottom: -6px;
+    left: 0;
+    background-color: var(--primary-color);
+  }
+  
+  .footer-link {
+    color: var(--muted-text);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+  }
+  
+  .footer-link:hover {
+    color: var(--primary-color);
+    transform: translateX(5px);
+  }
+  
+  .copyright {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1.2rem;
+    color: var(--muted-text);
+    font-size: 0.85rem;
+  }
+  
+  /* Image Zoom Effect */
+  .zoom-container {
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  
+  .zoom-image {
+    transition: transform 0.5s ease;
+  }
+  
+  /* Product Title */
+  .product-info h1 {
+    font-size: 1.7rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .product-info .text-muted {
+    font-size: 0.85rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    .action-btns {
+      flex-direction: column;
+    }
+    
+    .price-display {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+    
+    .thumbnail-container {
+      justify-content: flex-start;
+    }
+    
+    .product-info h1 {
+      font-size: 1.5rem;
+    }
+    
+    .current-price {
+      font-size: 1.3rem;
+    }
   }
 </style>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-3">
-    <div class="container d-flex align-items-center justify-content-between">
-      <a href="#" class="navbar-brand d-flex align-items-center gap-2">18-CREW <span class="brand-dot"></span></a>
-      <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse flex-grow-1 justify-content-center" id="navbarContent">
-        <ul class="navbar-nav mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link active" href="/">HOME</a></li>
-          <li class="nav-item"><a class="nav-link" href="/shop">COLLECTION</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">ABOUT</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">CONTACT</a></li>
-        </ul>
-      </div>
-      <div class="d-flex align-items-center gap-3">
-        <a href="#" class="text-dark" style="font-size: 1.5rem;"><i class="bi bi-search"></i></a>
-        <a href="#" class="text-dark" style="font-size: 1.5rem;"><i class="bi bi-bag"></i></a>
-        <% if (locals?.user) { %>
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2">
+  <div class="container">
+    <a href="/" class="navbar-brand d-flex align-items-center gap-2">
+      18-CREW <span class="brand-dot"></span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>" href="/">HOME</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="#">ABOUT</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="#">CONTACT</a>
+        </li>
+
+        <% if (locals?.user || user) { %>
+          <li class="nav-item dropdown d-lg-none">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+        <% } else { %>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
+          </li>
+        <% } %>
+      </ul>
+
+      <div class="d-none d-lg-flex align-items-center gap-3">
+        <% if (locals?.user || user) { %>
           <div class="dropdown">
-            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <%= locals.user.name %>
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
             </ul>
           </div>
         <% } else { %>
-          <a href="/signin" class="text-dark" style="font-size: 1.5rem;">
+          <a href="/signin" class="text-dark" style="font-size: 1.3rem;">
             <i class="bi bi-person"></i>
           </a>
         <% } %>
+        <a href="/wishlist" class="text-dark position-relative" style="font-size: 1rem;" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
+          <i class="bi bi-heart"></i>
+          <% if (wishlistCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
+        </a>
+        <a href="/getCartPage" class="nav-link position-relative" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
+          <i class="bi bi-bag"></i>
+          <% if (cartCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
+        </a>
       </div>
-    </div>
-  </nav>
-
-<!-- Product Detail -->
-<div class="container my-5">
-  <div class="row">
-    <!-- Thumbnails -->
-    <div class="col-md-1">
-      <% for (let i = 0; i < product.productImage.length; i++) { %>
-        <img src="/uploads/re-image/<%= product.productImage[i] %>" class="thumbnail-img" alt="Thumb <%= i %>">
-      <% } %>
-    </div>
-
-    <!-- Main Product Image -->
-    <div class="col-md-5">
-      <div class="product-image-wrapper">
-        <img src="/uploads/re-image/<%= product.productImage[0] %>" class="img-fluid main-product-image" alt="Main Product">
-      </div>
-    </div>
-
-    <!-- Product Info -->
-    <div class="col-md-6">
-      <h3><%= product.productName %></h3>
-      <p class="text-muted"><%= product.brand %></p>
-      <p class="mb-1">
-        <span class="text-warning">&#9733;&#9733;&#9733;&#9733;&#9734;</span> (1222)
-      </p>
-
-      <h4>
-        <span class="text-success fw-bold">₹<%= product.salePrice.toLocaleString('en-IN') %></span>
-        <span class="text-muted ms-2"><strike>₹<%= product.regularPrice.toLocaleString('en-IN') %></strike></span>
-        <span class="text-muted ms-2">
-            <%= totalOffer ? totalOffer + "%" : "No offer" %>
-          </span>
-          
-      </h4>
-      <p><%= category.description %></p>
-
-      <!-- Offers -->
-      <div class="bg-light p-3 rounded my-3">
-        <h6 class="fw-bold mb-2">Available Offers:</h6>
-        <ul class="list-unstyled small mb-0">
-          <li><i class="bi bi-tag-fill text-success me-2"></i>Get extra 10% off on orders above ₹999</li>
-          <li><i class="bi bi-credit-card-fill text-primary me-2"></i>5% Cashback on HDFC Bank Credit Cards</li>
-          <li><i class="bi bi-truck text-warning me-2"></i>Free delivery on first order</li>
-        </ul>
-      </div>
-
-<!-- Size Selection -->
-<div class="mb-4">
-    <label class="form-label">Select Size:</label>
-    <div class="btn-group w-100" role="group">
-        <% product.sizes.forEach(size => { %>
-            <input type="radio" class="btn-check" name="size" id="size-<%= size %>" value="<%= size %>" autocomplete="off" <%= size === product.sizes[0] ? 'checked' : '' %>>
-            <label class="btn btn-outline-dark" for="size-<%= size %>"><%= size %></label>
-        <% }) %>
-    </div>
-    <div id="size-error" class="text-danger mt-1"></div>
-</div>
-
-<!-- Add to Cart Form -->
-<form action="/addToCart" method="POST">
-    <input type="hidden" name="productId" value="<%= product._id %>">
-    <input type="hidden" name="productImage" value="<%= product.productImage[0] %>">
-    <input type="hidden" name="productName" value="<%= product.productName %>">
-    <input type="hidden" name="productSalePrice" value="<%= product.salePrice %>">
-    <input type="hidden" name="productSize" id="selected-size" value="<%= product.sizes[0] %>">
-    <button type="submit" class="btn btn-dark mb-3">Add to Cart</button>
-</form>
-      <p class="text-muted small">100% Original product. Easy return within 7 days.</p>
     </div>
   </div>
+</nav>
 
-  <!-- Tabs for Description & Reviews -->
-  <div class="row mt-5">
-    <div class="col-12">
-      <ul class="nav nav-tabs" id="productTabs" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description">Description</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews">Reviews (1222)</button></li>
-      </ul>
-      <div class="tab-content p-3 border">
-        <div class="tab-pane fade show active" id="description"><p><%= product.description %></p></div>
-        <div class="tab-pane fade" id="reviews"><p>Customer reviews will be displayed here.</p></div>
+<div class="container my-4">
+  <div class="row g-3">
+    <!-- Thumbnails Column -->
+    <div class="col-md-1 order-md-1 d-flex flex-md-column thumbnail-container">
+      <% product.productImage.forEach((image, index) => { %>
+        <img src="/uploads/re-image/<%= image %>" 
+             class="thumbnail-img <%= index === 0 ? 'active' : '' %>" 
+             alt="Thumbnail <%= index + 1 %>"
+             onclick="changeMainImage(this, '<%= image %>')">
+      <% }); %>
+    </div>
+
+    <!-- Main Image Column -->
+    <div class="col-md-5 order-md-2">
+      <div class="zoom-container rounded-3 overflow-hidden">
+        <img src="/uploads/re-image/<%= product.productImage[0] %>" 
+             class="img-fluid main-product-image zoom-image" 
+             alt="<%= product.productName %>"
+             id="mainProductImage">
+      </div>
+    </div>
+
+    <!-- Product Info Column -->
+    <div class="col-md-6 order-md-3 product-info">
+      <h1 class="fw-bold mb-1"><%= product.productName %></h1>
+      <p class="text-muted mb-2"><%= product.brand %></p>
+      
+      <div class="d-flex align-items-center mb-2">
+        <div class="rating-stars me-2">
+          <i class="bi bi-star-fill"></i>
+          <i class="bi bi-star-fill"></i>
+          <i class="bi bi-star-fill"></i>
+          <i class="bi bi-star-fill"></i>
+          <i class="bi bi-star-half"></i>
+        </div>
+        <span class="review-count">(1,222 reviews)</span>
+      </div>
+
+      <!-- Price and Stock Display -->
+      <div class="price-display">
+        <div class="current-price">₹<%= product.salePrice.toLocaleString('en-IN') %></div>
+        <% if (product.regularPrice > product.salePrice) { %>
+          <div class="original-price">₹<%= product.regularPrice.toLocaleString('en-IN') %></div>
+          <div class="discount-badge"><%= totalOffer %>% OFF</div>
+        <% } %>
+      </div>
+      
+      <!-- Stock Status Badge -->
+      <% const totalStock = product.sizes.reduce((sum, size) => sum + size.stock, 0); %>
+      <div class="mb-3">
+        <% if (totalStock > 0) { %>
+          <% if (totalStock <= 5) { %>
+            <span class="stock-badge low-stock">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i> Only <%= totalStock %> left!
+            </span>
+          <% } else { %>
+            <span class="stock-badge in-stock">
+              <i class="bi bi-check-circle-fill me-1"></i> In Stock
+            </span>
+          <% } %>
+        <% } else { %>
+          <span class="stock-badge out-of-stock-badge">
+            <i class="bi bi-x-circle-fill me-1"></i> Out of Stock
+          </span>
+        <% } %>
+      </div>
+
+      <!-- Size Selection -->
+      <div class="size-selector">
+        <h5 class="fw-bold mb-2">SELECT SIZE</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <% product.sizes.forEach(sizeObj => { %>
+            <div class="size-option">
+              <input type="radio" 
+                     class="btn-check" 
+                     name="size" 
+                     id="size-<%= sizeObj.size %>" 
+                     value="<%= sizeObj.size %>"
+                     <%= sizeObj.stock <= 0 ? 'disabled' : '' %>
+                     autocomplete="off">
+              <label class="size-btn <%= sizeObj.stock <= 0 ? 'out-of-stock' : '' %>" 
+                     for="size-<%= sizeObj.size %>">
+                <%= sizeObj.size %>
+              </label>
+            </div>
+          <% }); %>
+        </div>
+        <div id="size-error" class="text-danger small mt-1"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-btns">
+        <% if (totalStock > 0) { %>
+          <button class="btn-add-to-cart" onclick="addToCart('<%= product._id %>')">
+            <i class="bi bi-cart-plus me-2"></i> ADD TO CART
+          </button>
+          <button class="btn-buy-now" onclick="buyNow('<%= product._id %>')">
+            BUY NOW
+          </button>
+        <% } else { %>
+          <button class="btn btn-secondary w-100 py-2" disabled>
+            <i class="bi bi-bell-fill me-2"></i> NOTIFY WHEN AVAILABLE
+          </button>
+        <% } %>
+      </div>
+
+      <!-- Product Details Accordion -->
+      <div class="product-accordion accordion" id="productAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDetails">
+              PRODUCT DETAILS
+            </button>
+          </h2>
+          <div id="collapseDetails" class="accordion-collapse collapse show" data-bs-parent="#productAccordion">
+            <div class="accordion-body">
+              <ul class="feature-list">
+                <li><strong>Material:</strong> <%= product.material || 'Premium quality fabric' %></li>
+                <li><strong>Fit:</strong> <%= product.fit || 'Regular fit' %></li>
+                <li><strong>Color:</strong> <%= product.color %></li>
+                <li><strong>Care Instructions:</strong> Machine wash cold, gentle cycle</li>
+              </ul>
+              <p class="mt-2"><%= product.description %></p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Related Products -->
-  <div class="mt-5">
-    <h5 class="fw-bold text-uppercase mb-3">Related Products</h5>
-    <div class="row related-products">
-      <% relatedProducts.forEach(item => { %>
-        <div class="col-6 col-md-2">
-          <a href="/productDetails?id=<%= item._id %>" class="text-black text-decoration-none">
-            <img src="/uploads/re-image/<%= item.productImage[0] %>" alt="<%= item.productName %>" class="img-fluid">
-            <p><%= item.productName %><br><strong>₹<%= item.salePrice.toLocaleString('en-IN') %></strong></p>
-          </a>
+  <div class="related-products">
+    <div class="row">
+      <div class="col-12">
+        <h4 class="fw-bold mb-3">YOU MAY ALSO LIKE</h4>
+      </div>
+      
+      <% if (relatedProducts && relatedProducts.length > 0) { %>
+        <% for(let i=0; i < Math.min(4, relatedProducts.length); i++) { %>
+          <div class="col-6 col-md-3 mb-3">
+            <a href="/productDetails?id=<%= relatedProducts[i]._id %>" class="text-decoration-none text-dark">
+              <div class="card related-product-card h-100">
+                <img src="/uploads/re-image/<%= relatedProducts[i].productImage[0] %>" 
+                     class="card-img-top" 
+                     alt="<%= relatedProducts[i].productName %>">
+                <div class="card-body">
+                  <h6 class="related-product-title"><%= relatedProducts[i].productName %></h6>
+                  <div class="d-flex align-items-center">
+                    <span class="fw-bold text-success">₹<%= relatedProducts[i].salePrice.toLocaleString('en-IN') %></span>
+                    <% if (relatedProducts[i].regularPrice > relatedProducts[i].salePrice) { %>
+                      <span class="text-muted small ms-2"><del>₹<%= relatedProducts[i].regularPrice.toLocaleString('en-IN') %></del></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        <% } %>
+      <% } else { %>
+        <div class="col-12">
+          <p class="text-muted">No related products found</p>
         </div>
-      <% }) %>
+      <% } %>
     </div>
   </div>
 </div>
+
 <!-- FOOTER -->
-<footer class="py-5 border-top">
-    <div class="container">
-      <div class="row gy-4 text-center text-md-start align-items-start">
-        
-        <div class="col-md-6 col-lg-5">
-          <h4 class="fw-bold">18-CREW<span class="text-danger">.</span></h4>
-          <p class="text-muted small mb-0">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
-          </p>
-        </div>
-        
-        <div class="col-md-3 col-lg-3">
-          <h6 class="fw-semibold mb-3">COMPANY</h6>
-          <ul class="list-unstyled text-muted small">
-            <li><a href="/home" class="text-decoration-none text-muted">Home</a></li>
-            <li><a href="/about" class="text-decoration-none text-muted">About us</a></li>
-            <li><a href="/delivery" class="text-decoration-none text-muted">Delivery</a></li>
-            <li><a href="/privacy" class="text-decoration-none text-muted">Privacy policy</a></li>
-          </ul>
-        </div>
-  
-        <div class="col-md-3 col-lg-4">
-          <h6 class="fw-semibold mb-3">GET IN TOUCH</h6>
-          <p class="mb-1 text-muted small">+1-212-456-7890</p>
-          <p class="mb-0 text-muted small">18CREW@gmail.com</p>
-        </div>
-  
+<footer class="footer">
+  <div class="container">
+    <div class="row gy-3">
+      
+      <div class="col-md-6 col-lg-5">
+        <h5 class="footer-heading">18-CREW</h5>
+        <p class="text-muted small mb-0">
+          Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
+        </p>
       </div>
-  
-      <hr class="my-5" />
-      <div class="text-center text-muted small">
-        Copyright © 2024 @ 18-CREW.dev – All Right Reserved.
+      
+      <div class="col-md-3 col-lg-3">
+        <h5 class="footer-heading">COMPANY</h5>
+        <ul class="list-unstyled">
+          <li><a href="/home" class="footer-link">Home</a></li>
+          <li><a href="/about" class="footer-link">About us</a></li>
+          <li><a href="/delivery" class="footer-link">Delivery</a></li>
+          <li><a href="/privacy" class="footer-link">Privacy policy</a></li>
+        </ul>
       </div>
+
+      <div class="col-md-3 col-lg-4">
+        <h5 class="footer-heading">GET IN TOUCH</h5>
+        <p class="mb-1 text-muted small">+1-212-456-7890</p>
+        <p class="mb-0 text-muted small">18CREW@gmail.com</p>
+      </div>
+
     </div>
-  </footer>
+
+    <div class="copyright text-center mt-4">
+      Copyright © 2024 @ 18-CREW.dev – All Right Reserved.
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-  // Thumbnail click to change main image
-  const thumbnails = document.querySelectorAll('.thumbnail-img');
-  const mainImage = document.querySelector('.main-product-image');
-
-  thumbnails.forEach(thumbnail => {
-    thumbnail.addEventListener('click', () => {
-      mainImage.src = thumbnail.src;
+  // Change main image when thumbnail is clicked
+  function changeMainImage(thumbnail, imageSrc) {
+    const mainImage = document.querySelector('.main-product-image');
+    mainImage.src = `/uploads/re-image/${imageSrc}`;
+    
+    // Remove active class from all thumbnails
+    document.querySelectorAll('.thumbnail-img').forEach(img => {
+      img.classList.remove('active');
     });
-  });
-
-  // Zoom image on hover move
-  const imageWrapper = document.querySelector('.product-image-wrapper');
-
-  imageWrapper.addEventListener('mousemove', function(e) {
-    const { left, top, width, height } = this.getBoundingClientRect();
-    const x = ((e.pageX - left) / width) * 100;
-    const y = ((e.pageY - top) / height) * 100;
-
-    mainImage.style.transformOrigin = `${x}% ${y}%`;
-    mainImage.style.transform = 'scale(2)';
-  });
-
-  imageWrapper.addEventListener('mouseleave', function() {
+    
+    // Add active class to clicked thumbnail
+    thumbnail.classList.add('active');
+    
+    // Reset zoom
     mainImage.style.transform = 'scale(1)';
-    mainImage.style.transformOrigin = 'center center';
-  });
+  }
 
+  // Add to cart function with stock validation
+async function addToCart(productId) {
+  const sizeInput = document.querySelector('input[name="size"]:checked');
+  
+  if (!sizeInput) {
+    document.getElementById('size-error').textContent = 'Please select a size';
+    return;
+  }
+  
+  const size = sizeInput.value;
+  
+  try {
+    const response = await fetch("/addToCart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId, size })
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok && data.status) { 
+      Swal.fire({
+        position: 'top-end',
+        icon: 'success',
+        title: 'Added to cart',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed',
+        text: data.message || 'Could not add to cart'
+      });
+    }
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Network error occurred'
+    });
+  }
+}
 
-  const sizeRadios = document.querySelectorAll('input[name="size"]');
-  const selectedSizeInput = document.getElementById('selected-size');
+  // Buy now function with stock validation
+  async function buyNow(productId) {
+    const sizeInput = document.querySelector('input[name="size"]:checked');
+    
+    if (!sizeInput) {
+      document.getElementById('size-error').textContent = 'Please select a size';
+      return;
+    }
+    
+    const size = sizeInput.value;
+    
+    // First check stock availability
+    try {
+      const stockCheck = await fetch(`/checkStock?productId=${productId}&size=${size}`);
+      const stockData = await stockCheck.json();
+      
+      if (!stockData) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Out of Stock',
+          text: 'This size is no longer available'
+        });
+        return;
+      }
+      
+      // Proceed to checkout
+window.location.href = `/checkout?buyNow=true&productId=${productId}&size=${size}`;
+      
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Could not verify stock availability'
+      });
+    }
+  }
 
-  sizeRadios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      selectedSizeInput.value = radio.value;
+  // Image zoom effect
+  const zoomContainer = document.querySelector('.zoom-container');
+  const zoomImage = document.querySelector('.zoom-image');
+  
+  if (zoomContainer && zoomImage) {
+    zoomContainer.addEventListener('mousemove', (e) => {
+      const { left, top, width, height } = zoomContainer.getBoundingClientRect();
+      const x = (e.clientX - left) / width * 100;
+      const y = (e.clientY - top) / height * 100;
+      zoomImage.style.transformOrigin = `${x}% ${y}%`;
+      zoomImage.style.transform = 'scale(2)';
+    });
+    
+    zoomContainer.addEventListener('mouseleave', () => {
+      zoomImage.style.transform = 'scale(1)';
+    });
+  }
+
+  // Size selection effect
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Remove selected class from all size buttons
+      document.querySelectorAll('.size-btn').forEach(b => {
+        b.classList.remove('selected');
+      });
+      
+      // Add selected class to clicked button if not out of stock
+      if (!this.classList.contains('out-of-stock')) {
+        this.classList.add('selected');
+      }
     });
   });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 <% include("../layouts/footer.ejs") %>
-
-

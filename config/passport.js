@@ -23,15 +23,14 @@ async (req, accessToken, refreshToken, profile, done) => {
 
         if (!user) {            
             user = new User({
-                firstname: profile.displayName,
+                name: profile.displayName,
                 email: profile.emails[0].value,
                 googleId: profile.id,
-                referalCode: newReferralCode,
-                redeemed: false,
-                redeemedUsers: []
+               
             });
             
             const savedUser = await user.save();
+         
             
         }
 
@@ -50,19 +49,19 @@ async (req, accessToken, refreshToken, profile, done) => {
 
 //  assigning the data to the database using serialize user
 passport.serializeUser((user, done) => {
-    console.log('Serializing user with ID:', user._id);
+    
     done(null, user._id);
 });
 
 passport.deserializeUser(async (id, done) => {
     try {
-        console.log('Deserializing user with ID:', id);
+        
         const user = await User.findById(id);
         if (!user) {
-            console.log('User not found for ID:', id);
+           
             return done(null, false);
         }
-        console.log('Deserialized user:', user);
+        
         done(null, user);
         
     } catch (err) {

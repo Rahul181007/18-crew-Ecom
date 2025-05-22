@@ -1,7 +1,13 @@
 <%- include("../layouts/header.ejs") %>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-
+<style>
+  .error-message {
+    color: red;
+    font-size: 0.875em;
+    display: none;
+  }
+</style>
 <!-- Sign In Form -->
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
   <div class="card p-4 shadow-sm border-0" style="width: 100%; max-width: 400px;">
@@ -21,7 +27,7 @@
         </script>
     <% } %>
     
-    <form action="" method="post" id="signform">
+    <form action="/admin/login" method="post" id="signform">
       
       <div class="mb-3">
         <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
@@ -39,42 +45,57 @@
         <button type="submit" class="btn btn-dark">Sign In</button>
       </div>
 <script>
-      const emailId = document.getElementById("email");
-      const passwordId = document.getElementById("password");
-      const signform = document.getElementById("signform");
-      const error2 = document.getElementById("error2");
-      const error3 = document.getElementById("error3");
+  const emailId = document.getElementById("email");
+  const passwordId = document.getElementById("password");
+  const signform = document.getElementById("signform");
+  const error2 = document.getElementById("error2");
+  const error3 = document.getElementById("error3");
 
-      function emailValidateChecking() {
+  function emailValidateChecking() {
     const emailVal = emailId.value.trim();
     const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-  
     if (!emailPattern.test(emailVal)) {
       error2.style.display = "block";
       error2.innerHTML = "Please enter a valid email address";
+      return false;
     } else {
       error2.style.display = "none";
       error2.innerHTML = "";
+      return true;
     }
   }
-  
+
   function passwordValidateChecking() {
     const passval = passwordId.value;
     const alpha = /[a-zA-Z]/;
     const digit = /\d/;
-  
     if (passval.length < 8) {
       error3.style.display = "block";
       error3.innerHTML = "Password must be at least 8 characters long";
+      return false;
     } else if (!alpha.test(passval) || !digit.test(passval)) {
       error3.style.display = "block";
       error3.innerHTML = "Password should contain both alphabets and numbers";
+      return false;
     } else {
       error3.style.display = "none";
       error3.innerHTML = "";
+      return true;
     }
   }
+
+  signform.addEventListener("submit", function (e) {
+    const isEmailValid = emailValidateChecking();
+    const isPasswordValid = passwordValidateChecking();
+
+    if (!isEmailValid || !isPasswordValid) {
+      e.preventDefault(); 
+    }
+  });
+
+
 </script>
+
 
 
 

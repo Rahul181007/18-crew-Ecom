@@ -3,6 +3,9 @@ const nodemailer=require("nodemailer");
 const bcrypt=require("bcrypt");
 const env=require("dotenv").config();
 const session=require("express-session");
+const Address=require("../../models/addressSchema");
+const { name } = require("ejs");
+const Order=require("../../models/orderSchema")
 
 function generateOtp(){
     const digits='1234567890';
@@ -152,20 +155,26 @@ const postResetPassword = async (req, res) => {
   };
   // profile
 
-const userProfile=async(req,res)=>{
+const userProfile = async (req, res) => {
     try {
-        const userId=req.session.user
-        const userData=await User.findById(userId);
-        console.log(userId);
+        const userId = req.session.user;
+        const userData = await User.findById(userId);
+        const addressData = await Address.findOne({ userId: userId }); 
+        const orderData=await Order.find({userId:userId})
         
-        res.render('profile',{
-            user:userData
-        })
+
+        res.render('profile', {
+            user: userData,
+            userAddress: addressData, 
+            order:orderData,
+            cartCount : userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+            wishlistCount : userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0
+        });
     } catch (error) {
-        console.error("Error for retrive profile data",error);
-        res.redirect("/pageNotFound")
+        console.error("Error for retrieve profile data", error);
+        res.redirect("/pageNotFound");
     }
-}
+};
 
 // change - email
 
@@ -246,8 +255,7 @@ const verifyChangeEmailOtp = async (req, res) => {
 // update email
 const updateEmail=async(req,res)=>{
     try {
-        const {email}=req.body
-        console.log(req.body)
+        const {email}=req.body;
         const userId=req.session.user
         const alreadyExist=await User.findOne({email:email});
         if(alreadyExist){
@@ -279,6 +287,333 @@ const changePassword=async(req,res)=>{
   }
 }
 
+const changePassValid=async(req,res)=>{
+    try {
+       const {email}=req.body;
+       const findUser=await User.findOne({email:email});
+       if(!findUser){
+        res.render("change-password",{
+            message:"User not found"
+        })
+       }else{
+        const otp=generateOtp();
+        const emailSent=await sendVerificationEmail(email,otp);
+        if(emailSent){
+            req.session.userOtp=otp;
+            req.session.email=email;
+            req.session.userData=req.body;
+            res.render("change-pass-otp");
+            console.log("otp is ",otp);
+            console.log("email",email);
+        }else{
+            res.json({status:false,message:"Failed send OTP. Please try again later"}) 
+        }
+       }
+    } catch (error) {
+        console.log(error);
+        res.redirect("/pageNotFound");
+    }
+}
+
+const verifyChangePassOtp=async(req,res)=>{
+ try {
+    const otpInput=req.body.otp;
+    const sessionOtp=req.session.userOtp;
+    console.log("otp:",otpInput);
+    console.log("session Otp",sessionOtp)
+    if(!sessionOtp){
+      return res.json({ status: false, message: 'No OTP found in session. Please request a new OTP.' });
+    }
+    if(otpInput===sessionOtp){
+      res.json({status:true});
+      
+    }else{
+      res.json({status:false,message:"Otp doesnot match"})
+    }
+ } catch (error) {
+    console.error('Error in verifyChangePassOtp:', error);
+    return res.status(500).json({
+      status: false,
+      message: 'An error occurred. Please try again.',
+    });
+ }
+}
+
+
+const getResetPassPage=async(req,res)=>{
+    try {
+        res.render("new-pass",{
+            userData:req.session.userData
+        })
+    } catch (error) {
+        console.log(error);
+        res.redirect("/pageNotFound")
+    }
+}
+
+const updatePass=async(req,res)=>{
+try {
+    const {newPass1,newPass2}=req.body;
+    const email = req.session.email;
+    if(newPass1===newPass2){
+      const hashPassword=await securePassword(newPass1);
+      await User.updateOne({email:email},{$set:{password:hashPassword}})
+      res.redirect("/signin")
+    }else{
+      res.render("Update-pass",{message:"Password donot match"})
+    }
+} catch (error) {
+    console.log(error);
+    res.redirect("/pageNotFound")
+}
+}
+
+//  update profile
+const updateProfile = async (req, res) => {
+  try {
+    
+    const { name,  mobile } = req.body;
+   console.log(req.file)
+    const id=req.session.user
+    const image = req.file ? req.file.filename : null;
+
+    const findUser = await User.findOne({_id:id });
+    if (findUser) {
+      const updateData = {
+        name: name,
+        mobile: mobile
+      };
+      
+      if (image) {
+        updateData.image = image;
+      }
+
+      await User.findByIdAndUpdate(id, { $set: updateData });
+      res.redirect("/userProfile");
+    } else {
+     
+      res.redirect("/pageNotFound");
+    }
+  } catch (error) {
+    console.log(error);
+    res.redirect("/pageNotFound");
+  }
+}
+
+// address Mangement
+ 
+const addAddress = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    if (!userId) {
+      return res.redirect("/signin"); //
+    }
+
+    const userData = await User.findById(userId);
+    if (!userData) {
+      return res.redirect("/pageNotFound");
+    }
+
+    res.render("add-address", {
+      user: userData,
+      cartCount: userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+      wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
+    });
+  } catch (error) {
+    console.error("Error in addAddress:", error);
+    res.redirect("/pageNotFound");
+  }
+};
+
+const postAddAddress = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    if (!userId) {
+      return res.redirect("/signin");
+    }
+
+    const userData = await User.findOne({ _id: userId });
+    if (!userData) {
+      return res.redirect("/pageNotFound");
+    }
+
+    const { addressType, name, city, landMark, state, pincode, mobile, altMobile } = req.body;
+
+    // Validate required fields
+    if (!addressType || !name || !city || !state || !pincode || !mobile) {
+      return res.status(400).render("add-address", {
+        user: userData,
+        cartCount: userData?.cart?.length ?? 0,
+        wishlistCount: userData?.wishlist?.length ?? 0,
+        error: "Please fill in all required fields.",
+      });
+    }
+
+    let userAddress = await Address.findOne({ userId: userData._id });
+
+    if (!userAddress) {
+      userAddress = new Address({
+        userId: userData._id,
+        address: [{ addressType, name, city, landMark, state, pincode, mobile, altMobile }],
+      });
+    } else {
+      userAddress.address.push({ addressType, name, city, landMark, state, pincode, mobile, altMobile });
+    }
+
+    await userAddress.save();
+    res.redirect("/userProfile");
+  } catch (error) {
+    console.error("Error in postAddAddress:", error);
+    res.redirect("/pageNotFound");
+  }
+};
+
+const editAddress = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    if (!userId) {
+      return res.redirect("/signin");
+    }
+
+    const userData = await User.findById(userId);
+    if (!userData) {
+      return res.redirect("/pageNotFound");
+    }
+
+    const { id: addressId, index } = req.query;
+    if (!addressId || index === undefined) {
+      return res.redirect("/pageNotFound");
+    }
+
+    const currAddress = await Address.findOne({ _id: addressId, userId });
+    if (!currAddress) {
+      return res.redirect("/pageNotFound");
+    }
+
+    const addressIndex = parseInt(index);
+    if (isNaN(addressIndex) || !currAddress.address[addressIndex]) {
+      return res.redirect("/pageNotFound");
+    }
+
+    const addressData = currAddress.address[addressIndex];
+
+    // Determine the source from the referer header
+    const referer = req.headers.referer || "";
+    const source = referer.includes("/checkout") ? "checkout" : "userProfile";
+
+    res.render("edit-address", {
+      address: addressData,
+      addressId,
+      addressIndex,
+      user: userData,
+      cartCount: userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+      wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
+      source, // Pass the source to the form
+    });
+  } catch (error) {
+    console.error("Error in editAddress:", error);
+    res.redirect("/pageNotFound");
+  }
+};
+
+const postEditAddress = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    if (!userId) {
+      return res.redirect("/signin");
+    }
+
+    const { addressId, addressIndex, addressType, name, city, landMark, state, pincode, mobile, altMobile, source } = req.body;
+
+    if (!addressId || addressIndex === undefined) {
+      return res.redirect("/pageNotFound");
+    }
+
+    // Validate required fields
+    if (!addressType || !name || !city || !state || !pincode || !mobile) {
+      const userData = await User.findById(userId);
+      if (!userData) {
+        return res.redirect("/pageNotFound");
+      }
+      return res.status(400).render("edit-address", {
+        address: { addressType, name, city, landMark, state, pincode, mobile, altMobile },
+        addressId,
+        addressIndex,
+        user: userData,
+        cartCount: userData?.cart?.length ?? 0,
+        wishlistCount: userData?.wishlist?.length ?? 0,
+        source, // Pass source back to the form in case of validation error
+        error: "Please fill in all required fields.",
+      });
+    }
+
+    const findAddress = await Address.findOne({ _id: addressId, userId });
+    if (!findAddress) {
+      return res.redirect("/pageNotFound");
+    }
+
+    const index = parseInt(addressIndex);
+    if (isNaN(index) || !findAddress.address[index]) {
+      return res.redirect("/pageNotFound");
+    }
+
+    // Update the specific address in the array
+    findAddress.address[index] = {
+      addressType,
+      name,
+      city,
+      landMark,
+      state,
+      pincode,
+      mobile,
+      altMobile,
+    };
+
+    // Save the updated address
+    await findAddress.save();
+
+    // Redirect based on source
+    if (source === "checkout") {
+      return res.redirect("/checkout");
+    } else {
+      return res.redirect("/userProfile");
+    }
+  } catch (error) {
+    console.error("Error in postEditAddress:", error);
+    if (!res.headersSent) {
+      return res.redirect("/pageNotFound");
+    }
+  }
+};
+
+
+
+
+
+
+
+
+
+const deleteAddress=async(req,res)=>{
+  try {
+    const addressId=req.query.id;
+    const findAddress=await Address.findOne({"address._id":addressId});
+    if(!findAddress){
+      return res.status(404).send("Address not found")
+    }
+    await Address.updateOne({
+      "address._id":addressId
+    },{$pull:{
+      address:{_id:addressId}
+    }}
+  )
+  res.redirect("/userProfile")
+  } catch (error) {
+    console.log(error);
+    res.redirect("/pageNotFound")
+  }
+}
+
 module.exports={
     getForgotPassPage,
     forgotEmailValid,
@@ -292,5 +627,15 @@ module.exports={
     changeEmailValid,
     verifyChangeEmailOtp,
     getResetEmailPage,
-    updateEmail
+    updateEmail,
+    changePassValid,
+    verifyChangePassOtp,
+    getResetPassPage,
+    updatePass,
+    updateProfile,
+    addAddress,
+    postAddAddress,
+    editAddress,
+    postEditAddress,
+    deleteAddress,
 }

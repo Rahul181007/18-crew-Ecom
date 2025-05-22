@@ -1,0 +1,433 @@
+<%- include("../layouts/header.ejs") %>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+  }
+
+  .navbar-brand {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #1a1517;
+    letter-spacing: 0.5px;
+  }
+
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    background: #C586A5;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .navbar-nav {
+    gap: 1.5rem;
+  }
+
+  .navbar-nav .nav-link {
+    font-weight: 500;
+    color: #333;
+    transition: color 0.3s;
+  }
+
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    color: #C586A5;
+  }
+
+  .badge-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    border: 1px solid white;
+  }
+
+  .page-header {
+    background: linear-gradient(180deg, #f8f9fa, #ffffff);
+    padding: 2rem 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .breadcrumb a {
+    color: #C586A5;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .breadcrumb span {
+    color: #6c757d;
+    margin: 0 0.5rem;
+  }
+
+  .wishlist-section {
+    padding: 3rem 0;
+  }
+
+  .wishlist-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: transform 0.2s;
+  }
+
+  .wishlist-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .wishlist-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .wishlist-card .product-info {
+    flex: 1;
+  }
+
+  .wishlist-card .product-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .wishlist-card .product-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+
+  .wishlist-card .price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #C586A5;
+  }
+
+  .wishlist-card .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(45deg, #1a1517, #1f1b1d);
+    border: none;
+    transition: all 0.3s;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(45deg, #2c2527, #332e30);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-danger {
+    background: #dc3545;
+    border: none;
+  }
+
+  .btn-danger:hover {
+    background: #c82333;
+  }
+
+  .empty-wishlist {
+    text-align: center;
+    padding: 3rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .empty-wishlist p {
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+  }
+
+  .empty-wishlist a {
+    font-size: 1rem;
+    color: #C586A5;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .wishlist-card {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .wishlist-card img {
+      width: 100px;
+      height: 100px;
+    }
+
+    .wishlist-card .btn {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+  }
+</style>
+
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-3">
+  <div class="container">
+    <a href="/" class="navbar-brand d-flex align-items-center gap-2">
+      18-CREW <span class="brand-dot"></span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>" href="/">HOME</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="#">ABOUT</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="#">CONTACT</a>
+        </li>
+
+        <% if (locals?.user || user) { %>
+          <li class="nav-item dropdown d-lg-none">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+        <% } else { %>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
+          </li>
+        <% } %>
+      </ul>
+
+      <div class="d-none d-lg-flex align-items-center gap-3">
+        <% if (locals?.user || user) { %>
+          <div class="dropdown">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </div>
+        <% } else { %>
+          <a href="/signin" class="text-dark" style="font-size: 1.5rem;">
+            <i class="bi bi-person"></i>
+          </a>
+        <% } %>
+        <a href="/wishlist" class="text-dark position-relative" style="font-size: 1.1rem;" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
+          <i class="bi bi-heart"></i>
+          <% if (wishlistCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
+        </a>
+        <a href="/getCartPage" class="nav-link position-relative" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
+          <i class="bi bi-bag"></i>
+          <% if (cartCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-header breadcrumb-wrap">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="/" rel="nofollow">Home</a>
+        <span>></span> Collection
+        <span>></span> My Wishlist
+      </div>
+    </div>
+  </div>
+
+  <section class="wishlist-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <% if (wishlistCount > 0) { %>
+          <% for(let product of wishlist)  {%>
+              <div class="wishlist-card">
+                <img src="/Uploads/re-image/<%=product.productImage[0]  %>" alt="<%=product.productName  %>" />
+                <div class="product-info">
+                  <h5 class="product-name">
+                    <a href="/productDetails?id=<%= product._id %>" class="text-black text-decoration-none"><%=product.productName  %></a>
+                  </h5>
+                  <p class="product-description">
+                    <%=product.category.name  %><br>
+                    <%=product.brand%>
+                  </p>
+                </div>
+                <div class="price">₹<%=product.salePrice %></div>
+                <a href="#" onclick="promptForSize('<%= product._id %>', <%= JSON.stringify(product.sizes.map(s=>s.size) || []) %>)" class="btn btn-primary">Add to Cart</a>
+                <a href="#" onclick="confirmRemove('<%= product._id %>')" class="btn btn-danger">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </div>
+           <% } %>
+          <% } else { %>
+            <div class="empty-wishlist">
+              <p class="lead mb-4">No items found in Wishlist</p>
+              <a href="/shop">Explore Collection</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script>
+async function promptForSize(productId, sizes) {
+  if (!sizes || sizes.length === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'No Sizes Available',
+      text: 'This product has no size options.',
+      timer: 1500,
+      showConfirmButton: false
+    });
+    return;
+  }
+
+  const { value: size } = await Swal.fire({
+    title: 'Select Size',
+    input: 'select',
+    inputOptions: sizes.reduce((options, size) => {
+      options[size] = size;
+      return options;
+    }, {}),
+    inputPlaceholder: 'Choose a size',
+    showCancelButton: true,
+    confirmButtonText: 'Add to Cart',
+    cancelButtonText: 'Cancel',
+    inputValidator: (value) => {
+      if (!value) {
+        return 'Please select a size!';
+      }
+    }
+  });
+
+  if (size) {
+    await addToCart(productId, size);
+  }
+}
+
+async function addToCart(productId, size) {
+  try {
+    const response = await fetch('/addToCart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId, size }),
+    });
+    const data = await response.json();
+    if (response.ok && data.status) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Added to Cart',
+        text: `Product added with size ${size} successfully!`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      const cartBadge = document.querySelector('.nav-link .badge-dot');
+      if (cartBadge) {
+        cartBadge.classList.add('active');
+        setTimeout(() => cartBadge.classList.remove('active'), 300);
+      }
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops',
+        text: data.message || 'Something went wrong.',
+      });
+    }
+  } catch {
+    Swal.fire({
+      icon: 'error',
+      title: 'Network Error',
+      text: 'Unable to contact the server.',
+    });
+  }
+}
+
+async function addToWishlist(productId) {
+  try {
+    const response = await fetch("/addToWishlist", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ productId }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.status === true) {
+      Swal.fire({
+        icon: "success",
+        title: "Added to Wishlist",
+        text: "Product added successfully!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Oops",
+        text: data.message || "Something went wrong.",
+      });
+    }
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "Network Error",
+      text: "Unable to contact the server.",
+    });
+  }
+}
+
+function confirmRemove(productId) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'You are about to remove this item.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, remove it!',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = `/deleteitemwish?id=${productId}`;
+    }
+  });
+}
+</script>
+<%- include("../layouts/footer.ejs") %>

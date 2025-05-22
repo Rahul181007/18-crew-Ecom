@@ -1,0 +1,351 @@
+<%- include("../layouts/header.ejs") %>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<style>
+   body {
+    font-family: 'Poppins', sans-serif;
+  }
+  .navbar-brand {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #1a1517;
+    letter-spacing: 0.5px;
+  }
+
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    background: #C586A5;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .navbar-nav {
+    gap: 1.5rem;
+  }
+
+  .navbar-nav .nav-link {
+    font-weight: 500;
+    color: #333;
+    transition: color 0.3s;
+  }
+
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    color: #C586A5;
+  }
+
+  .badge-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    border: 1px solid white;
+  }
+  .form-container {
+    max-width: 800px;
+    margin: auto;
+  }
+  .form-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+  }
+  .btn-primary {
+    background: linear-gradient(45deg, #1a1517, #1f1b1d);
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(4, 105, 99, 0.3);
+  }
+  .form-label {
+    font-weight: 600;
+    color: #333;
+  }
+  .form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-control:focus {
+    border-color: #C586A5;
+    box-shadow: 0 0 0 0.25rem rgba(4, 105, 99, 0.25);
+  }
+  h3 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    color: #C586A5;
+  }
+</style>
+
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-3">
+  <div class="container">
+    <a href="/" class="navbar-brand d-flex align-items-center gap-2">
+      18-CREW <span class="brand-dot"></span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>" href="/">HOME</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="#">ABOUT</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="#">CONTACT</a>
+        </li>
+        <% if (locals?.user || user) { %>
+          <li class="nav-item dropdown d-lg-none">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+        <% } else { %>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
+          </li>
+        <% } %>
+      </ul>
+      <div class="d-none d-lg-flex align-items-center gap-3">
+        <% if (locals?.user || user) { %>
+          <div class="dropdown">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </div>
+        <% } else { %>
+          <a href="/signin" class="text-dark" style="font-size: 1.5rem;">
+            <i class="bi bi-person"></i>
+          </a>
+        <% } %>
+        <a href="/wishlist" class="text-dark position-relative" style="font-size: 1.1rem;" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
+          <i class="bi bi-heart"></i>
+          <% if (wishlistCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
+        </a>
+        <a href="/getCartPage" class="nav-link position-relative" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
+          <i class="bi bi-bag"></i>
+          <% if (cartCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container my-5 form-container">
+  <h3 class="mb-4 text-center">Edit User Address</h3>
+  <div class="form-card p-4 p-md-5">
+    <form id="addressForm" method="POST" action="/editAddress">
+      <input type="hidden" name="addressId" value="<%= addressId %>">
+      <input type="hidden" name="addressIndex" value="<%= addressIndex %>">
+      <input type="hidden" name="source" value="<%= source %>">
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label for="addressType" class="form-label">Address Type:</label>
+          <input type="text" class="form-control" id="addressType" name="addressType" value="<%= address.addressType %>" required>
+        </div>
+        <div class="col-md-4">
+          <label for="name" class="form-label">Name:</label>
+          <input type="text" class="form-control" id="name" name="name" value="<%= address.name %>" required>
+        </div>
+        <div class="col-md-4">
+          <label for="city" class="form-label">City:</label>
+          <input type="text" class="form-control" id="city" name="city" value="<%= address.city %>" required>
+        </div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label for="landMark" class="form-label">Landmark:</label>
+          <input type="text" class="form-control" id="landMark" name="landMark" value="<%= address.landMark %>">
+        </div>
+        <div class="col-md-4">
+          <label for="state" class="form-label">State:</label>
+          <input type="text" class="form-control" id="state" name="state" value="<%= address.state %>" required>
+        </div>
+        <div class="col-md-4">
+          <label for="pincode" class="form-label">Pincode:</label>
+          <input type="number" class="form-control" id="pincode" name="pincode" value="<%= address.pincode %>" step="1" required>
+        </div>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <label for="mobile" class="form-label">Phone:</label>
+          <input type="text" class="form-control" id="mobile" name="mobile" value="<%= address.mobile %>" required>
+        </div>
+        <div class="col-md-4">
+          <label for="altMobile" class="form-label">Alternate Phone:</label>
+          <input type="text" class="form-control" id="altMobile" name="altMobile" value="<%= address.altMobile %>">
+        </div>
+      </div>
+      <div class="text-center">
+        <button type="submit" id="submitButton" class="btn btn-primary">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.getElementById('addressForm').addEventListener('submit', function(event) {
+    if (!validateForm()) {
+      event.preventDefault();
+    }
+  });
+
+  function validateForm() {
+    let isValid = true;
+    const requiredFields = ["addressType", "name", "city", "state", "pincode", "mobile"];
+    const optionalFields = ["landMark", "altMobile"];
+
+    // Validate required fields
+    requiredFields.forEach(function(field) {
+      const input = document.getElementById(field);
+      const inputValue = input.value.trim();
+      const errorElement = document.getElementById(field + '-error');
+
+      if (inputValue === "") {
+        if (!errorElement) {
+          const errorMessage = "This field is required.";
+          const errorDiv = document.createElement('div');
+          errorDiv.className = "text-danger mt-1 small";
+          errorDiv.textContent = errorMessage;
+          errorDiv.id = field + '-error';
+          input.parentNode.appendChild(errorDiv);
+        }
+        isValid = false;
+      } else {
+        if (errorElement) {
+          errorElement.remove();
+        }
+      }
+    });
+
+    // Validate field patterns
+    const addressType = document.getElementById('addressType').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const city = document.getElementById('city').value.trim();
+    const landMark = document.getElementById('landMark').value.trim();
+    const state = document.getElementById('state').value.trim();
+    const pincode = document.getElementById('pincode').value.trim();
+    const mobile = document.getElementById('mobile').value.trim();
+    const altMobile = document.getElementById('altMobile').value.trim();
+
+    const namePattern = /^[A-Za-z\s]+$/;
+    const pincodePattern = /^\d{6}$/;
+    const phonePattern = /^\d{10}$/;
+
+    if (!namePattern.test(addressType)) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Address Type should contain alphabets only.',
+        icon: 'error'
+      });
+      isValid = false;
+    }
+    if (!namePattern.test(name)) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Name should contain alphabets only.',
+        icon: 'error'
+      });
+      isValid = false;
+    }
+    if (!namePattern.test(city)) {
+      Swal.fire({
+        title: 'Error',
+        text: 'City should contain alphabets only.',
+        icon: 'error'
+      });
+      isValid = false;
+    }
+    if (landMark && !namePattern.test(landMark)) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Landmark should contain alphabets only.',
+        icon: 'error'
+      });
+      isValid = false;
+    }
+    if (!namePattern.test(state)) {
+      Swal.fire({
+        title: 'Error',
+        text: 'State should contain alphabets only.',
+        icon: 'error'
+      });
+      isValid = false;
+    }
+    if (!pincodePattern.test(pincode)) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Pincode should be a 6-digit number.',
+        icon: 'error'
+      });
+      isValid = false;
+    }
+    if (!phonePattern.test(mobile)) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Phone number should be a 10-digit number.',
+        icon: 'error'
+      });
+      isValid = false;
+    }
+    if (altMobile && !phonePattern.test(altMobile)) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Alternate phone number should be a 10-digit number.',
+        icon: 'error'
+      });
+      isValid = false;
+    }
+    if (mobile === altMobile && altMobile !== "") {
+      Swal.fire({
+        title: 'Error',
+        text: 'Phone number and alternate phone number should be different.',
+        icon: 'error'
+      });
+      isValid = false;
+    }
+
+    // Show success message if form is valid (will redirect after)
+    if (isValid) {
+      Swal.fire({
+        title: 'Success',
+        text: 'Address updated successfully!',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+
+    return isValid;
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<%- include("../layouts/footer.ejs") %>

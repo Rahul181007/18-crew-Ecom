@@ -31,39 +31,51 @@ const addProducts = async (req, res) => {
     if (!productExist) {
       const images = [];
       console.log(req.files);
-      
+
       if (req.files && req.files.length > 0) {
         for (let i = 0; i < req.files.length; i++) {
           const originalImagePath = req.files[i].path;
-          
+
           const resizedImagePath = path.join(
             "public",
             "uploads",
             "product-images",
-            req.files[i].filename 
+            req.files[i].filename
           );
-          
+
           await sharp(originalImagePath)
             .resize({ width: 440, height: 440 })
             .toFile(resizedImagePath);
-          
+
           images.push(req.files[i].filename);
         }
       }
-      
+
       const categoryId = await Category.findOne({ name: products.category });
       if (!categoryId) {
         return res.status(400).json("Invalid category name");
       }
+
       
-      // Fix: Handle sizes array properly
-      let sizes = [];
-      if (Array.isArray(products.sizes)) {
-        sizes = products.sizes;
-      } else if (products.sizes) {
-        sizes = [products.sizes]; // If single size comes as string
+      let sizesWithStock = [];
+
+      if (products.sizes) {
+        let selectedSizes = [];
+
+        if (Array.isArray(products.sizes)) {
+          selectedSizes = products.sizes;
+        } else {
+          selectedSizes = [products.sizes]; // Only one size selected
+        }
+
+        sizesWithStock = selectedSizes.map(size => {
+          const stockKey = `stock_${size}`;
+          const stockValue = parseInt(products[stockKey]) || 0;
+          return { size, stock: stockValue };
+        });
       }
-      console.log(sizes)
+
+      // ✅ Create and save new product
       const newProduct = new Product({
         productName: products.productName,
         description: products.description,
@@ -72,11 +84,10 @@ const addProducts = async (req, res) => {
         regularPrice: products.regularPrice,
         salePrice: products.salePrice,
         createdAt: new Date(),
-        quantity: products.quantity,
         color: products.color,
         productImage: images,
         status: "Available",
-        sizes: sizes // Now properly handles array of sizes
+        sizes: sizesWithStock 
       });
 
       await newProduct.save();
@@ -90,6 +101,7 @@ const addProducts = async (req, res) => {
     return res.redirect("/admin/pageError");
   }
 };
+
   
 const getAllProduct = async (req, res) => {
   try {
@@ -109,8 +121,8 @@ const getAllProduct = async (req, res) => {
     const productData = await Product.find(query)
       .limit(limit)
       .skip((page - 1) * limit)
-      .populate('category') // Ensure category is populated
-      .lean() // Convert to plain JS objects for better template handling
+      .populate('category')
+      .lean()
       .exec();
 
     // Get total count for pagination
@@ -122,20 +134,26 @@ const getAllProduct = async (req, res) => {
       Brand.find({ isBlocked: false })
     ]);
 
-    // Handle case where products might have null categories
-    const processedData = productData.map(product => ({
-      ...product,
-      category: product.category || { name: "Uncategorized" } // Default for null categories
-    }));
+    // Process product data - calculate total quantity and handle null categories
+    const processedData = productData.map(product => {
+      // Calculate total quantity from sizes array
+      const totalQuantity = product.sizes.reduce((sum, size) => sum + (size.stock || 0), 0);
+      
+      return {
+        ...product,
+        quantity: totalQuantity, // Add calculated quantity
+        category: product.category || { name: "Uncategorized" } // Default for null categories
+      };
+    });
 
     res.render("products", {
-      data: processedData, // Use the processed data with safe category references
+      data: processedData,
       currentPage: page,
       totalPages: Math.ceil(count / limit),
       cat: category,
       brand: brand,
       activePage: "products",
-      searchQuery: search // Pass search query back for pagination links
+      searchQuery: search
     });
 
   } catch (error) {
@@ -144,26 +162,53 @@ const getAllProduct = async (req, res) => {
   }
 };
 // adding product oofer
-const addProductOffer=async(req,res)=>{
-   try {
-    const percentage=parseInt(req.body.percentage);
-    const productId=req.body.productId;
-    const findProduct=await Product.findOne({_id:productId})
-    const findCategory=await Category.findOne({_id:findProduct.category});
-    if(findCategory.categoryOffer>percentage){
-      return res.json({status:false,message:"This product category already "})
+const addProductOffer = async (req, res) => {
+  try {
+    const percentage = parseInt(req.body.percentage);
+    const productId = req.body.productId;
+
+    // Validate inputs
+    if (!productId || isNaN(percentage) || percentage < 0) {
+      return res.status(400).json({ status: false, message: 'Invalid product ID or percentage' });
     }
- findProduct.salePrice=findProduct.salePrice-Math.floor(findProduct.regularPrice*(percentage/100));
- findProduct.productOffer=parseInt(percentage);
- await findProduct.save();
- findCategory.categoryOffer=0;
- await findCategory.save();
- res.json({status:true});
-   } catch (error) {
-    res.redirect("/admin/pageError")
-    res.status(500).json({status:false,message:"Internal server error"})
-   }
-}
+
+    const findProduct = await Product.findOne({ _id: productId });
+    if (!findProduct) {
+      return res.status(404).json({ status: false, message: 'Product not found' });
+    }
+
+    const findCategory = await Category.findOne({ _id: findProduct.category });
+    if (!findCategory) {
+      return res.status(404).json({ status: false, message: 'Category not found' });
+    }
+
+    if (findCategory.categoryOffer > percentage) {
+      return res.status(400).json({ status: false, message: 'This product category already has a higher offer' });
+    }
+
+    // Update only specific fields
+    const updatedProduct = await Product.findOneAndUpdate(
+      { _id: productId },
+      {
+        $set: {
+          salePrice: findProduct.salePrice - Math.floor(findProduct.regularPrice * (percentage / 100)),
+          productOffer: parseInt(percentage),
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    await Category.updateOne(
+      { _id: findProduct.category },
+      { $set: { categoryOffer: 0 } }
+    );
+
+    return res.json({ status: true });
+  } catch (error) {
+    console.error('Error in addProductOffer:', error);
+    return res.status(500).json({ status: false, message: 'Internal server error' });
+  }
+};
 // removeProductOffer
 const removeProductOffer=async(req,res)=>{
   try {
@@ -215,55 +260,83 @@ try {
 }
 
 // edit product
-const editProduct=async(req,res)=>{
+const editProduct = async (req, res) => {
   try {
-    const id= req.params.id;
-    const product=await Product.findOne({_id:id});
-    console.log(req.body)
-    const data=req.body;
-    const existingProduct=await Product.findOne({productName:data.productName,_id:{$ne:id}})//checking the product with same name but not same id 
-    if(existingProduct){
-      return res.status(400).json({error:"Product with this name already exist. Please try with name "})
+    const id = req.params.id;
+    const product = await Product.findOne({ _id: id });
+    const data = req.body;
+    
+    // Check for existing product with same name
+    const existingProduct = await Product.findOne({ 
+      productName: data.productName,
+      _id: { $ne: id }
+    });
+    
+    if (existingProduct) {
+      return res.status(400).json({ error: "Product with this name already exists. Please try a different name." });
     }
-    const images=[];
-    if(req.files && req.files.length>0){
-      for(let i=0;i<req.files.length;i++){
+
+    // Process sizes and stock
+    let sizesArray = [];
+    if (Array.isArray(data.sizes)) {
+      // Multiple sizes selected
+      data.sizes.forEach(size => {
+        sizesArray.push({
+          size: size,
+          stock: parseInt(data[`stock_${size}`]) || 0
+        });
+      });
+    } else if (data.sizes) {
+      // Single size selected
+      sizesArray.push({
+        size: data.sizes,
+        stock: parseInt(data[`stock_${data.sizes}`]) || 0
+      });
+    }
+
+    // Calculate total quantity
+    const totalQuantity = sizesArray.reduce((sum, size) => sum + size.stock, 0);
+
+    // Process images
+    const images = [];
+    if (req.files && req.files.length > 0) {
+      for (let i = 0; i < req.files.length; i++) {
         images.push(req.files[i].filename);
       }
     }
+
+    // Find category
     const category = await Category.findOne({ name: data.category });
     if (!category) {
       return res.status(400).json({ error: "Category not found" });
     }
-    
-    let sizesArray = data.sizes;
-    console.log(sizesArray)
-    if (!Array.isArray(sizesArray)) {
-      sizesArray = sizesArray ? [sizesArray] : [];
+
+    // Prepare update object
+    const updatedFields = {
+      productName: data.productName,
+      description: data.description,
+      brand: data.brand,
+      category: category._id, // Store reference to category
+      regularPrice: data.regularPrice,
+      salePrice: data.salePrice,
+      color: data.color,
+      sizes: sizesArray,
+      quantity: totalQuantity
+    };
+
+    // Add new images if any
+    if (req.files.length > 0) {
+      updatedFields.$push = { productImage: { $each: images } };
     }
-    
-  
-    const updatedFields={
-      productName:data.productName,
-      description:data.description,
-      brand:data.brand,
-      category:category,
-      regularPrice:data.regularPrice,
-      salePrice:data.salePrice,
-      color:data.color,
-      sizes:sizesArray,
-      quantity:data.quantity
-    }
-    if(req.files.length>0){
-     updatedFields.$push={productImage:{$each:images}}
-    }
-    await Product.findByIdAndUpdate(id,updatedFields,{new:true})
-    res.redirect("/admin/products")
+
+    // Update product
+    await Product.findByIdAndUpdate(id, updatedFields, { new: true });
+    res.redirect("/admin/products");
   } catch (error) {
-    console.log(error)
-    res.redirect("/admin/pageError")
+    console.log(error);
+    res.redirect("/admin/pageError");
   }
-}
+};
 
 
 

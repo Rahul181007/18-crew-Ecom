@@ -5,34 +5,53 @@ const Category=require("../../models/categorySchema");
 
 const productDetails = async (req, res) => {
     try {
-      const userId = req.session.user;
-      const userData = await User.findById(userId);
-      const productId = req.query.id;
-  
-      const product = await Product.findById(productId).populate("category");
-      const findCategory = product.category;
-      const categoryOffer = findCategory?.categoryOffer || 0;
-      const productOffer = product.productOffer || 0;
-      const totalOffer = categoryOffer + productOffer;
-  
-      // Related products (same category, excluding current product)
-      const relatedProducts = await Product.find({
-        category: product.category._id,
-        _id: { $ne: productId },
-      }).limit(6);
-  
-      res.render("product-details", {
-        user: userData,
-        product,
-        quantity: product.quantity,
-        totalOffer,
-        category: findCategory,
-        relatedProducts
-      });
+        const userId = req.session.user;
+        const userData = await User.findById(userId);
+        const productId = req.query.id;
+
+        // Get product with populated category
+        const product = await Product.findById(productId).populate("category");
+        
+        if (!product) {
+            return res.redirect('/page-not-found');
+        }
+
+        const findCategory = product.category;
+        const categoryOffer = findCategory?.categoryOffer || 0;
+        const productOffer = product.productOffer || 0;
+        const totalOffer = categoryOffer + productOffer;
+
+        // Calculate total quantity from sizes array
+        const totalQuantity = product.sizes.reduce((sum, size) => sum + size.stock, 0);
+
+        // Get available sizes (filter out sizes with 0 stock)
+        const availableSizes = product.sizes.filter(size => size.stock > 0);
+
+        // Related products (same category, excluding current product)
+        const relatedProducts = await Product.find({
+            category: product.category._id,
+            _id: { $ne: productId },
+        }).limit(6);
+
+        res.render("product-details", {
+            user: userData,
+            product: {
+                ...product._doc,
+                totalQuantity // Add calculated total quantity
+            },
+            totalOffer,
+            category: findCategory,
+            relatedProducts,
+            availableSizes, // Pass available sizes separately
+            cartCount: userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+            wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0
+        });
+
     } catch (error) {
-      console.log(error);
+        console.error("Error in productDetails:", error);
+        res.redirect("/page-error");
     }
-  };
+};
   
 module.exports={
     productDetails

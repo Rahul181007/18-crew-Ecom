@@ -11,11 +11,18 @@ const productSchema=new Schema({
         type:String,
         required:true
     },
-    sizes: {
-        type: [String],
-        required: true,
-        enum: ['S', 'M', 'L', 'XL', 'XXL']
-    },
+   sizes: [{
+     size: {
+       type: String,
+       required: true,
+       enum: ['S', 'M', 'L', 'XL', 'XXL']
+  },
+  stock: {
+      type: Number,
+      required: true,
+      min: 0
+  }
+  }],
     brand:{
         type:String,
         required:true
@@ -37,10 +44,6 @@ const productSchema=new Schema({
         type:Number,
         default:0,
     },
-    quantity:{
-        type:Number,
-        required:true
-    },
     color:{
         type:String,
         required:true
@@ -59,8 +62,8 @@ const productSchema=new Schema({
         enum:["Available","Out of stock","Duscontinued"], //this indicating which all status are there to put
         required:true,
         default:"Available"
-    }
-
+    },
+  
 },{timestamps:true})
 
 const Product=mongoose.model("Product",productSchema);

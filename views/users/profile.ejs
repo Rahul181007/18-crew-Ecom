@@ -3,370 +3,607 @@
 <!-- External Stylesheets -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
 <style>
   :root {
-    --bg-color: #fff;
-    --accent: #C586A5;
-    --hover-accent: #b06b90;
-    --text-dark: #333;
-    --card-bg: #fff;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --border-radius: 16px;
+    --primary: #C586A5;
+    --primary-light: #F9F5FF;
+    --dark: #101828;
+    --gray: #667085;
+    --light-gray: #F2F4F7;
+    --border-radius: 12px;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   body {
-    background-color: var(--bg-color);
-    font-family: 'Poppins', sans-serif;
-    color: var(--text-dark);
-
-  }
-  .navbar-brand {
-    font-weight: 700;
-    font-size: 1.5rem;
-    letter-spacing: 1px;
-  }
-  .brand-dot {
-    width: 10px;
-    height: 10px;
-    background: #C586A5;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .navbar-nav {
-    gap: 2rem;
-  }
-  .main {
-    padding: 60px 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
+    color: var(--dark);
+    padding-bottom: 70px;
   }
 
-  .dashboard-menu {
-    background: var(--card-bg);
+  .profile-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding-top: 20px;
+  }
+
+  .profile-sidebar {
+    background: white;
     border-radius: var(--border-radius);
-    padding: 25px 20px;
     box-shadow: var(--shadow);
+    padding: 30px;
+    height: 100%;
   }
 
-  .dashboard-menu .nav-link {
-    color: var(--text-dark);
-    font-weight: 500;
-    padding: 14px 18px;
-    border-radius: 12px;
-    margin-bottom: 8px;
-    transition: all 0.3s ease;
-  }
-
-  .dashboard-menu .nav-link.active,
-  .dashboard-menu .nav-link:hover {
-    background-color: var(--accent);
-    color: #fff;
-  }
-
-  .card {
+  .profile-content {
+    background: white;
     border-radius: var(--border-radius);
-    background-color: var(--card-bg);
     box-shadow: var(--shadow);
-    border: none;
-    margin-bottom: 25px;
+    padding: 30px;
   }
 
-  .card-header {
-    background-color: var(--accent);
-    color: #fff;
-    font-weight: 600;
+  .profile-header {
     text-align: center;
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
-    padding: 14px;
-    font-size: 1.05rem;
-    letter-spacing: 0.5px;
+    margin-bottom: 30px;
   }
 
-  .btn, .logout-btn {
-    background-color: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 20px;
-    padding: 10px 22px;
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary-light);
+    margin: 0 auto 15px;
+  }
+
+  .profile-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  .profile-email {
+    color: var(--gray);
+    margin-bottom: 20px;
+  }
+
+  .nav-pills .nav-link {
+    color: var(--gray);
     font-weight: 500;
-    transition: background-color 0.3s ease;
-  }
-
-  .btn:hover, .logout-btn:hover {
-    background-color: var(--hover-accent);
-  }
-
-  .btn-link {
-    color: var(--accent);
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .btn-link:hover {
-    text-decoration: underline;
-    color: var(--hover-accent);
-  }
-
-  .table th {
-    background-color: #d1cfd0;
-    color: var(--text-dark);
-    vertical-align: middle;
-  }
-
-  .table td {
-    background-color: #fff;
-    vertical-align: middle;
-  }
-
-  .top-header {
-    background-color: #fff;
-    padding: 18px 0;
-    box-shadow: var(--shadow);
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
-  }
-
-  .header-box {
-    background-color: #fff;
-    border-radius: var(--border-radius);
-    padding: 14px 22px;
-    box-shadow: var(--shadow);
+    padding: 12px 20px;
+    margin-bottom: 8px;
+    border-radius: 8px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
   }
 
-  .account-page {
-    padding: 50px 0;
+  .nav-pills .nav-link.active {
+    background-color: var(--primary-light);
+    color: var(--primary);
   }
 
-  .nav-item {
-    margin-bottom: 8px;
+  .nav-pills .nav-link i {
+    margin-right: 10px;
+    font-size: 1.1rem;
   }
 
-  .tab-content .card-body {
-    padding: 25px;
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--light-gray);
   }
 
-  .nav-link i {
-    margin-right: 8px;
+  .info-item {
+    margin-bottom: 20px;
   }
 
-  .btn-sm {
-    padding: 6px 14px;
-    font-size: 0.9rem;
+  .info-label {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin-bottom: 5px;
   }
 
-  .table th, .table td {
-    padding: 14px 16px;
+  .info-value {
+    font-weight: 500;
   }
 
-  .table {
-    margin-bottom: 0;
+  .btn-edit {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .btn-edit:hover {
+    background-color: #b06b90;
+    transform: translateY(-2px);
+  }
+
+  .stats-card {
+    background: var(--primary-light);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .stats-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 5px;
+  }
+
+  .stats-label {
+    font-size: 0.875rem;
+    color: var(--gray);
+  }
+
+  .order-card {
+    border: 1px solid var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s;
+  }
+
+  .order-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(126, 86, 217, 0.1);
+  }
+
+  .order-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .status-pending {
+    background: #FEF0C7;
+    color: #B54708;
+  }
+
+  .status-completed {
+    background: #ECFDF3;
+    color: #027A48;
+  }
+
+  /* Mobile Navigation */
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+  }
+
+  .mobile-nav-item {
+    padding: 12px 0;
+    text-align: center;
+    color: var(--gray);
+    text-decoration: none;
+    font-size: 0.8rem;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--primary);
+  }
+
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.4rem;
+    margin-bottom: 4px;
   }
 
   @media (max-width: 768px) {
-    .dashboard-menu {
-      margin-bottom: 20px;
+    .profile-sidebar {
+      margin-bottom: 30px;
     }
+    
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+    }
+
+    .mobile-nav {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    body {
+      padding-bottom: 70px;
+    }
+  }
+
+  /* Quick access buttons */
+  .quick-access {
+    margin-bottom: 30px;
   }
 </style>
 
-
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-3">
-  <div class="container d-flex align-items-center justify-content-between">
-    <a href="#" class="navbar-brand d-flex align-items-center gap-2">18-CREW <span class="brand-dot"></span></a>
-    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse flex-grow-1 justify-content-center" id="navbarContent">
-      <ul class="navbar-nav mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link active" href="/">HOME</a></li>
-        <li class="nav-item"><a class="nav-link" href="/shop">COLLECTION</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">ABOUT</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">CONTACT</a></li>
-      </ul>
-    </div>
-    <div class="d-flex align-items-center gap-3">
-      <a href="#" class="text-dark" style="font-size: 1.5rem;"><i class="bi bi-search"></i></a>
-      <a href="#" class="text-dark" style="font-size: 1.5rem;"><i class="bi bi-bag"></i></a>
-      <% if (locals?.user) { %>
-        <div class="dropdown">
-          <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <%= locals.user.name %>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-          </ul>
-        </div>
-      <% } else { %>
-        <a href="/signin" class="text-dark" style="font-size: 1.5rem;">
-          <i class="bi bi-person"></i>
-        </a>
-      <% } %>
+<!-- Main Content -->
+<div class="profile-container">
+  <!-- Quick Access Buttons (Desktop only) -->
+  <div class="quick-access d-none d-lg-block">
+    <div class="d-flex justify-content-center gap-2">
+      <a href="/" class="btn btn-sm btn-outline-primary" aria-label="Go to Home">
+        <i class="bi bi-house-door me-1"></i> Home
+      </a>
+      <a href="/shop" class="btn btn-sm btn-outline-primary" aria-label="Go to Shop">
+        <i class="bi bi-collection me-1"></i> Shop
+      </a>
+      <a href="/about" class="btn btn-sm btn-outline-primary" aria-label="Go to About">
+        <i class="bi bi-info-circle me-1"></i> About
+      </a>
+      <a href="/contact" class="btn btn-sm btn-outline-primary" aria-label="Go to Contact">
+        <i class="bi bi-envelope me-1"></i> Contact
+      </a>
     </div>
   </div>
-</nav>
 
-<!-- Account Section -->
-<section class="account-page">
-  <div class="container">
-    <div class="row gx-4">
-      <!-- Sidebar -->
-      <div class="col-lg-3">
-        <div class="dashboard-menu">
-          <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#address">My Address</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#orders">Orders</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#track-orders">Wallet Status</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#wallet-history">Wallet History</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#referal">Referrals</a></li>
-            <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-          </ul>
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="profile-sidebar">
+        <div class="profile-header">
+          <% if (user.image) { %>
+            <img src="/userimage/<%= user.image %>" alt="Profile picture of <%= user.name %>" class="profile-avatar">
+          <% } else { %>
+            <img src="https://ui-avatars.com/api/?name=<%= user.name %>&background=C586A5&color=fff" alt="Profile picture of <%= user.name %>" class="profile-avatar">
+          <% } %>
+          <h3 class="profile-name"><%= user.name %></h3>
+          <p class="profile-email"><%= user.email %></p>
+          <button class="btn-edit mb-4" data-bs-toggle="modal" data-bs-target="#editProfileModal" aria-label="Edit Profile">
+            <i class="bi bi-pencil me-2"></i>Edit Profile
+          </button>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="#profile" data-bs-toggle="tab" aria-selected="true">
+              <i class="bi bi-person"></i> Profile
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#orders" data-bs-toggle="tab" aria-selected="false">
+              <i class="bi bi-bag"></i> Orders
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#address" data-bs-toggle="tab" aria-selected="false">
+              <i class="bi bi-house"></i> Addresses
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#security" data-bs-toggle="tab" aria-selected="false">
+              <i class="bi bi-shield-lock"></i> Security
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout" aria-label="Logout">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+          </li>
+        </ul>
+
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="stats-card">
+              <div class="stats-number"><%= order ? order.length : 0 %></div>
+              <div class="stats-label">Total Orders</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="stats-card">
+              <div class="stats-number">₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %></div>
+              <div class="stats-label">Wallet Balance</div>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
 
-      <!-- Tab Content -->
-      <div class="col-md-8">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      <div class="profile-content">
         <div class="tab-content">
+          <!-- Profile Tab -->
+          <div class="tab-pane fade show active" id="profile">
+            <h4 class="section-title">Personal Information</h4>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <div class="info-label">Full Name</div>
+                  <div class="info-value"><%= user.name %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <div class="info-label">Email Address</div>
+                  <div class="info-value"><%= user.email %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <div class="info-label">Phone Number</div>
+                  <div class="info-value"><%= user.mobile || 'Not provided' %></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <div class="info-label">Account Created</div>
+                  <div class="info-value"><%= new Date(user.createdOn).toLocaleDateString() %></div>
+                </div>
+              </div>
+            </div>
 
-          <!-- Dashboard -->
-          <div class="tab-pane fade show active" id="dashboard">
-            <div class="card">
-              <div class="card-header">User Profile</div>
-              <div class="card-body text-center">
-                <h6><strong><%= user.name %></strong> </h6>
-                <p><strong>Email:</strong> <%= user.email %></p>
-                <p><strong>Phone:</strong> <%= user.mobile %></p>
-                
-                <a href="/change-email" class="btn btn-success btn-sm me-2">Change Email</a>
-                <%if(user.googleId===null)  {%>
-                <a href="/change-password" class="btn btn-success btn-sm">Change Password</a>
+            <h4 class="section-title mt-5">Security</h4>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <div class="info-label">Password</div>
+                  <div class="info-value">••••••••</div>
+                </div>
+              </div>
+              <div class="col-md-6 d-flex align-items-end">
+                <% if (user.googleId === null) { %>
+                  <a href="/change-password" class="btn-edit" aria-label="Change Password">Change Password</a>
                 <% } %>
               </div>
             </div>
           </div>
 
-          <!-- Address -->
+          <!-- Orders Tab -->
+          <div class="tab-pane fade" id="orders">
+            <h4 class="section-title">Recent Orders</h4>
+            <% if (order && order.length > 0) { %>
+              <% order.forEach(ord => { %>
+                <div class="order-card">
+                  <div class="d-flex justify-content-between mb-2">
+                    <div class="fw-bold">OrderID: <%= ord.orderId || 'N/A' %></div>
+                    <div class="order-status status-<%= ord.status?.toLowerCase() || 'pending' %>">
+                      <%= ord.status || 'Pending' %>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between text-muted small mb-2">
+                    <div><%= new Date(ord.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></div>
+                    <div><%= ord.orderedItems?.length || 0 %> item<%= (ord.orderedItems?.length || 0) !== 1 ? 's' : '' %></div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="fw-bold"><%= ord.finalAmount ? '₹' + ord.finalAmount.toFixed(2) : '₹0.00' %></div>
+                    <a href="/orders/<%= ord.orderId %>" class="btn btn-sm btn-outline-primary" aria-label="View details of order <%= ord.orderId %>">View Details</a>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="text-center py-4">
+                <p>You haven't placed any orders yet</p>
+                <a href="/shop" class="btn-edit" aria-label="Start Shopping">Start Shopping</a>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Address Tab -->
           <div class="tab-pane fade" id="address">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="section-title mb-0">Saved Addresses</h4>
+              <a href="/addAddress" class="btn-edit" aria-label="Add New Address">Add New Address</a>
+            </div>
+
             <div class="row">
-              <div class="col-lg-6">
-                <div class="card">
-                  <div class="card-header">Address 1</div>
-                  <div class="card-body">
-                    <address>123 Street, City, Country</address>
-                    <div class="d-flex justify-content-between">
-                      <a href="#" class="btn btn-link test-dark">Edit</a>
-                      <a href="#" class="btn btn-link text-dark">Delete</a>
+              <% if (userAddress && userAddress.address && Array.isArray(userAddress.address) && userAddress.address.length > 0) { %>
+                <% userAddress.address.forEach((address, index) => { %>
+                  <div class="col-md-6">
+                    <div class="card border-0 shadow-sm mb-3">
+                      <div class="card-body">
+                        <h5 class="card-title"><%= address.addressType %></h5>
+                        <address class="card-text">
+                          <%= address.name %><br>
+                          <%= address.landMark ? address.landMark + ',' : '' %> <%= address.city %><br>
+                          <%= address.state %>-<%= address.pincode %><br>
+                          India
+                        </address>
+                        Phone: <%= address.mobile %><br>
+                        <% if (address.altMobile) { %>
+                          Alternate Phone: <%= address.altMobile %>
+                        <% } %>
+                        <div class="d-flex gap-2">
+                          <a href="/editAddress?id=<%= userAddress._id %>&index=<%= index %>" class="btn btn-sm btn-outline-primary" aria-label="Edit address <%= address.addressType %>">Edit</a>
+                          <a href="/deleteAddress?id=<%= userAddress._id %>&index=<%= index %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this address?')" aria-label="Delete address <%= address.addressType %>">Remove</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              <% } else { %>
+                <div class="col-md-6">
+                  <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                      <h5 class="card-title">No Address</h5>
+                      <address class="card-text">
+                        No address available. Please add a new address.
+                      </address>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="col-lg-6">
-                <div class="card">
-                  <div class="card-header">Address 2</div>
-                  <div class="card-body">
-                    <address>No address</address>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Security Tab -->
+          <div class="tab-pane fade" id="security">
+            <h4 class="section-title">Account Security</h4>
+            <div class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              For your security, never share your password with anyone.
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value"><%= user.email %></div>
                   </div>
+                  <a href="/change-email" class="btn btn-edit ms-3" aria-label="Change Email">Change Email</a>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="info-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="info-label">Password</div>
+                    <div class="info-value">••••••••</div>
+                  </div>
+                  <% if (user.googleId === null) { %>
+                    <a href="/change-password" class="btn btn-edit ms-3" aria-label="Change Password">Change Password</a>
+                  <% } %>
                 </div>
               </div>
             </div>
-            <div class="text-center mt-3">
-              <button class="btn btn-primary">Add Address</button>
+
+            <div class="mt-4 pt-3 border-top">
+              <h5 class="fw-bold mb-3">Danger Zone</h5>
+              <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal" aria-label="Delete Account">
+                <i class="bi bi-trash me-2"></i>Delete Account
+              </button>
             </div>
           </div>
-
-          <!-- Orders -->
-          <div class="tab-pane fade" id="orders">
-            <div class="card">
-              <div class="card-header">Your Orders</div>
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th>Order</th>
-                        <th>Status</th>
-                        <th>Total</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>#</td>
-                        <td>Pending</td>
-                        <td>₹0.00</td>
-                        <td><a href="#" class="btn btn-link">View</a></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Wallet Status -->
-          <div class="tab-pane fade" id="track-orders">
-            <div class="card">
-              <div class="card-header">Wallet</div>
-              <div class="card-body text-center">
-                <p class="h4">Amount: ₹0.00</p>
-                <button class="btn btn-success mt-3">Add Money</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Wallet History -->
-          <div class="tab-pane fade" id="wallet-history">
-            <div class="card">
-              <div class="card-header">Wallet History</div>
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>₹0.00</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Referrals -->
-          <div class="tab-pane fade" id="referal">
-            <div class="card">
-              <div class="card-header">Referrals</div>
-              <div class="card-body text-center">
-                <p>Share this link to earn: <strong>[link]</strong></p>
-                <p>Total Earned: ₹0.00</p>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
-
     </div>
   </div>
-</section>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="/update-profile" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="name" class="form-label">Full Name</label>
+            <input type="text" name="name" class="form-control" id="name" value="<%= user.name %>">
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" value="<%= user.email %>" disabled>
+          </div>
+          <div class="mb-3">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input type="tel" name="mobile" class="form-control" id="mobile" value="<%= user.mobile || '' %>">
+          </div>
+          <div class="mb-3">
+            <label for="avatar" class="form-label">Profile Picture</label><br>
+            <% if (user.image) { %>
+              <img src="/userimage/<%= user.image %>" alt="Current profile picture" class="img-thumbnail mb-2" style="width: 120px; height: 120px; object-fit: cover;" id="profileImagePreview">
+            <% } else { %>
+              <img src="https://ui-avatars.com/api/?name=<%= user.name %>&background=C586A5&color=fff" alt="Default profile picture" class="img-thumbnail mb-2" style="width: 120px; height: 120px; object-fit: cover;" id="profileImagePreview">
+            <% } %>
+            <input type="file" name="image" class="form-control mt-2" id="avatar" accept="image/*">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Cancel">Cancel</button>
+            <button type="submit" class="btn-edit">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger" id="deleteAccountModalLabel">Delete Account</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-octagon me-2"></i>
+          This action cannot be undone. All your data will be permanently deleted.
+        </div>
+        <p>Are you sure you want to delete your account?</p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Cancel">Cancel</button>
+        <form action="/delete-account" method="post">
+          <button type="submit" class="btn btn-danger" aria-label="Confirm Delete Account">Delete Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Navigation -->
+<div class="mobile-nav">
+  <a href="/" class="mobile-nav-item" aria-label="Go to Home">
+    <i class="bi bi-house"></i>
+    Home
+  </a>
+  <a href="/shop" class="mobile-nav-item" aria-label="Go to Shop">
+    <i class="bi bi-shop"></i>
+    Shop
+  </a>
+  <a href="/profile" class="mobile-nav-item active" aria-label="Go to Profile">
+    <i class="bi bi-person"></i>
+    Profile
+  </a>
+  <a href="/contact" class="mobile-nav-item" aria-label="Go to Contact">
+    <i class="bi bi-headset"></i>
+    Contact
+  </a>
+</div>
+
+<script>
+// Activate tab based on URL hash
+document.addEventListener('DOMContentLoaded', function () {
+  const hash = window.location.hash;
+  if (hash) {
+    const targetTab = document.querySelector(`.nav-link[href="${hash}"]`);
+    if (targetTab) {
+      // Remove active class from all tabs and panes
+      document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
+      // Activate the target tab and pane
+      targetTab.classList.add('active');
+      document.querySelector(hash).classList.add('show', 'active');
+    }
+  }
+});
+
+// Profile image preview
+document.getElementById('avatar')?.addEventListener('change', function (event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      document.getElementById('profileImagePreview').src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 
-
 <%- include("../layouts/footer.ejs") %>
-

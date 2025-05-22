@@ -1,0 +1,321 @@
+<%- include("../layouts/header.ejs") %>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    background: #C586A5;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .navbar-nav {
+    gap: 2rem;
+  }
+
+  .product-thumbnail img {
+    transition: transform 0.3s ease;
+  }
+
+  .product-thumbnail:hover img {
+    transform: scale(1.05);
+  }
+
+  .product-thumbnail {
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    margin: auto;
+  }
+
+  .product-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0 !important;
+  }
+
+  .table td, .table th {
+    vertical-align: middle;
+  }
+    .breadcrumb-item a {
+    color: #000 !important;          
+    text-decoration: none !important; 
+  }
+</style>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-3">
+  <div class="container">
+    <a href="/" class="navbar-brand d-flex align-items-center gap-2">
+      18-CREW <span class="brand-dot"></span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link <%= page === 'home' ? 'active' : '' %>" href="/">HOME</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= page === 'about' ? 'active' : '' %>" href="#">ABOUT</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= page === 'contact' ? 'active' : '' %>" href="#">CONTACT</a>
+        </li>
+
+        <!-- Move user dropdown inside collapse so it's visible on small screens -->
+        <% if (locals?.user || user) { %>
+          <li class="nav-item dropdown d-lg-none">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+        <% } else { %>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
+          </li>
+        <% } %>
+      </ul>
+
+      <!-- User dropdown for large screens -->
+      <div class="d-none d-lg-flex align-items-center gap-3">
+        <% if (locals?.user || user) { %>
+          <div class="dropdown">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </div>
+        <% } else { %>
+          <a href="/signin" class="text-dark" style="font-size: 1.5rem;">
+            <i class="bi bi-person"></i>
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Breadcrumb -->
+<% if (typeof pageTitle !== 'undefined') { %>
+  <nav class="bg-light py-2" aria-label="breadcrumb">
+    <div class="container">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page"><%= pageTitle %></li>
+      </ol>
+    </div>
+  </nav>
+<% } %>
+
+
+<!-- Main Cart Layout -->
+<main class="main">
+  <section class="mt-5 mb-5">
+    <div class="container">
+      <div class="row">
+        <!-- Cart Table -->
+        <div class="col-lg-9">
+          <div class="table-responsive">
+            <table class="table text-center align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Size</th>
+                  <th>Price</th>
+                  <th>Quantity</th>
+                  <th>Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (data.length > 0) { %>
+                  <% for (let i = 0; i < data.length; i++) { %>
+                    <tr>
+                      <td>
+                        <div class="product-thumbnail">
+                          <img src="/uploads/re-image/<%= data[i].productDetails[0].productImage[0] %>" alt="Product" />
+                        </div>
+                      </td>
+                      <td>
+                        <h6><%= data[i].productDetails[0].productName %></h6>
+                        <small class="text-muted d-block">
+                          <%= data[i].productDetails[0].category.name %> — <%= data[i].productDetails[0].brand %>
+                        </small>
+                      </td>
+                     <td>
+                      <span class="badge bg-dark"><%= data[i].size || 'N/A' %></span>
+                     </td>
+                      <td>
+                        ₹<span id="subTotal<%= data[i]._id %>">
+                          <%= data[i].totalPrice.toFixed(2) %>
+                        </span>
+                        <br />
+                        <small class="text-muted">₹<%= data[i].price.toFixed(2) %>/each</small>
+                      </td>
+                      <td>
+                        <div class="d-flex justify-content-center align-items-center">
+                          <button class="btn btn-sm btn-outline-dark"
+  onclick="changeQuantity('<%= data[i]._id %>', 'quantity<%= data[i]._id %>', 1, <%= data[i].price %>)">+</button>
+
+
+                          <input class="form-control text-center mx-2" style="width: 50px;" 
+                            readonly value="<%= data[i].quantity %>" id="quantity<%= data[i]._id %>">
+                          <button class="btn btn-sm btn-outline-dark"
+  onclick="changeQuantity('<%= data[i]._id %>', 'quantity<%= data[i]._id %>', -1, <%= data[i].price %>)">-</button>
+
+                        </div>
+                      </td>
+                      <td>
+                        <button class="btn btn-sm btn-danger" 
+                          onclick="confirmRemove('<%= data[i]._id %>')">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  <% } %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="6" class="text-center py-5">
+                      <h5 class="mb-3">Your cart is empty</h5>
+                      <a href="/shop" class="btn btn-dark">Continue Shopping</a>
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Price Summary -->
+        <div class="col-lg-3">
+          <div class="border p-4 rounded shadow-sm">
+            <h5 class="mb-3">PRICE DETAILS</h5>
+            <ul class="list-unstyled">
+              <li class="d-flex justify-content-between py-2">
+                <span>Subtotal</span>
+                <span>₹<%= grandTotal.toFixed(2) %></span>
+              </li>
+              <li class="d-flex justify-content-between py-2">
+                <span>Shipping</span>
+                <span>Free</span>
+              </li>
+              <li class="d-flex justify-content-between py-2 border-top mt-2">
+                <strong>Total</strong>
+                <strong>₹<span id="total"><%= grandTotal.toFixed(2) %></span></strong>
+              </li>
+            </ul>
+            <% if (data.length > 0) { %>
+              <a href="/checkout" class="btn btn-dark w-100 mt-3">Proceed to Checkout</a>
+            <% } else { %>
+              <a href="/shop" class="btn btn-dark w-100 mt-3">Continue Shopping</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+function changeQuantity(cartItemId, quantityInputId, change, price) {
+  const quantityInput = document.getElementById(quantityInputId);
+  let currentQuantity = parseInt(quantityInput.value, 10);
+
+  const newQuantity = currentQuantity + change;
+
+  if (newQuantity < 1) return;
+  if (newQuantity > 3) {
+    Swal.fire('Limit Exceeded', 'You can order maximum 3 items of each product.', 'error');
+    return;
+  }
+
+  $.ajax({
+    url: '/changeQuantity',
+    method: 'POST',
+    data: {
+      cartItemId,
+      newQuantity,
+      price
+    },
+    success: (response) => {
+      if (response.success) {
+        quantityInput.value = newQuantity;
+        document.getElementById(`subTotal${cartItemId}`).textContent = response.newSubTotal.toFixed(2);
+        document.getElementById('total').textContent = response.newGrandTotal.toFixed(2);
+      } else {
+        Swal.fire('Error', response.message, 'error');
+      }
+    },
+    error: (xhr) => {
+      Swal.fire('Error', xhr.responseJSON?.message || 'Failed to update quantity. Please try again.', 'error');
+    }
+  });
+}
+
+
+function confirmRemove(cartItemId) {
+  Swal.fire({
+    title: 'Remove this item?',
+    text: 'This will remove the item from your cart',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, remove it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.ajax({
+        url: `/deleteItem/${cartItemId}`,
+        method: 'DELETE',
+        success: (response) => {
+          if (response.success) {
+            window.location.reload();
+          } else {
+            Swal.fire('Error', response.message, 'error');
+          }
+        },
+        error: (xhr) => {
+          Swal.fire('Error', xhr.responseJSON?.message || 'Failed to remove item. Please try again.', 'error');
+        }
+      });
+    }
+  });
+}
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<%- include("../layouts/footer.ejs") %>
+
+
