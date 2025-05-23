@@ -1,0 +1,299 @@
+<%- include("../layouts/admin/header.ejs") %>
+<!-- External Stylesheets -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<style>
+  :root {
+    --primary: #7C3AED; /* Modern violet shade */
+    --primary-light: #F5F3FF;
+    --secondary: #3B82F6; /* Bright blue for accents */
+    --dark: #0F172A; /* Slate for text */
+    --gray: #6B7280; /* Neutral gray */
+    --light-gray: #F1F5F9; /* Softer background */
+    --border-radius: 10px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.3s ease;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--light-gray);
+    color: var(--dark);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .admin-container {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 260px;
+    background: white;
+    border-right: 1px solid var(--light-gray);
+    padding: 24px;
+    position: fixed;
+    height: 100%;
+    transition: var(--transition);
+  }
+
+  .sidebar .nav-link {
+    color: var(--gray);
+    font-weight: 500;
+    padding: 12px 16px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    transition: var(--transition);
+  }
+
+  .sidebar .nav-link:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .sidebar .nav-link.active {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    box-shadow: inset 0 0 0 1px var(--primary);
+  }
+
+  .sidebar .nav-link i {
+    margin-right: 12px;
+    font-size: 1.1rem;
+  }
+
+  .main-content {
+    margin-left: 260px;
+    flex-grow: 1;
+    padding: 40px;
+    transition: var(--transition);
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--dark);
+  }
+
+  .card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 16px;
+  }
+
+  .order-status {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: var(--transition);
+  }
+
+  .status-pending {
+    background: #FFF7ED;
+    color: #EA580C;
+  }
+
+  .status-processing {
+    background: #E0F2FE;
+    color: #1D4ED8;
+  }
+
+  .status-shipped {
+    background: #D1FAE5;
+    color: #047857;
+  }
+
+  .status-delivered {
+    background: #ECFDF5;
+    color: #15803D;
+  }
+
+  .status-cancelled {
+    background: #FEE2E2;
+    color: #B91C1C;
+  }
+
+  .status-return-request {
+    background: #FEF3C7;
+    color: #D97706;
+  }
+
+  .status-returned {
+    background: #F3E8FF;
+    color: #6B21A8;
+  }
+
+  .btn-action {
+    border-radius: var(--border-radius);
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    transition: var(--transition);
+  }
+
+  .btn-action:hover {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  .product-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .list-group-item {
+    border: none;
+    padding: 12px 0;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 200px;
+      transform: translateX(-100%);
+      z-index: 1000;
+    }
+
+    .sidebar.active {
+      transform: translateX(0);
+    }
+
+    .main-content {
+      margin-left: 0;
+      padding: 24px;
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .product-image {
+      width: 48px;
+      height: 48px;
+    }
+  }
+</style>
+
+<div class="admin-container">
+  <!-- Main Content -->
+  <div class="main-content">
+    <h2 class="section-title">Order Details</h2>
+
+    <% if (order) { %>
+      <!-- Order Summary -->
+      <div class="card">
+        <h3 class="card-title">Order #<%= order.orderId || 'N/A' %></h3>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Status:</strong> <span class="order-status status-<%= order.status?.toLowerCase() || 'pending' %>"><%= order.status || 'Pending' %></span></p>
+            <p><strong>Date:</strong> <%= new Date(order.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+            <p><strong>Payment Method:</strong> <%= order.paymentMethod || 'N/A' %></p>
+            <p><strong>Payment Status:</strong> <%= order.isPaid ? 'Paid' : 'Unpaid' %></p>
+            <% if (order.isPaid && order.paidAt) { %>
+              <p><strong>Paid At:</strong> <%= new Date(order.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+            <% } %>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Total Price:</strong> ₹<%= order.totalPrice ? order.totalPrice.toFixed(2) : '0.00' %></p>
+            <p><strong>Discount:</strong> ₹<%= order.discount ? order.discount.toFixed(2) : '0.00' %></p>
+            <p><strong>Final Amount:</strong> ₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : '0.00' %></p>
+            <% if (order.couponApplied) { %>
+              <p><strong>Coupon Applied:</strong> Yes</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Information -->
+      <div class="card">
+        <h3 class="card-title">Customer Information</h3>
+        <p><strong>Name:</strong> <%= order.userId?.name || 'Unknown' %></p>
+        <p><strong>Email:</strong> <%= order.userId?.email || 'N/A' %></p>
+      </div>
+
+      <!-- Shipping Address -->
+      <div class="card">
+        <h3 class="card-title">Shipping Address</h3>
+        <% if (order.selectedAddress) { %>
+          <p><strong>Type:</strong> <%= order.selectedAddress.addressType || 'N/A' %></p>
+          <p><strong>Name:</strong> <%= order.selectedAddress.name || 'N/A' %></p>
+          <p><strong>Address:</strong> <%= order.selectedAddress.city || '' %>, <%= order.selectedAddress.state || '' %>, <%= order.selectedAddress.pincode || '' %></p>
+          <p><strong>Landmark:</strong> <%= order.selectedAddress.landMark || 'N/A' %></p>
+          <p><strong>Mobile:</strong> <%= order.selectedAddress.mobile || 'N/A' %></p>
+          <p><strong>Alternate Mobile:</strong> <%= order.selectedAddress.altMobile || 'N/A' %></p>
+        <% } else { %>
+          <p>No shipping address provided.</p>
+        <% } %>
+      </div>
+
+      <!-- Ordered Items -->
+      <div class="card">
+        <h3 class="card-title">Ordered Items</h3>
+        <% if (order.orderedItems && order.orderedItems.length > 0) { %>
+          <ul class="list-group">
+            <% order.orderedItems.forEach(item => { %>
+              <li class="list-group-item d-flex align-items-center">
+                <% if (item.product?.productImage) { %>
+                  <img src="/uploads/re-image/<%= item.product.productImage %>" alt="<%= item.product.productName %>" class="product-image me-3">
+                <% } %>
+                <div>
+                  <p class="mb-1"><strong><%= item.product?.productName || 'Unknown Product' %></strong></p>
+                  <p class="mb-0 text-muted">Quantity: <%= item.quantity || 0 %> | Price: ₹<%= item.price ? item.price.toFixed(2) : '0.00' %></p>
+                </div>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <p>No items in this order.</p>
+        <% } %>
+      </div>
+
+      <!-- Tracking Information -->
+      <% if (order.trackingNumber || order.trackingUrl) { %>
+        <div class="card">
+          <h3 class="card-title">Tracking Information</h3>
+          <p><strong>Tracking Number:</strong> <%= order.trackingNumber || 'N/A' %></p>
+          <% if (order.trackingUrl) { %>
+            <p><strong>Tracking URL:</strong> <a href="<%= order.trackingUrl %>" target="_blank" class="text-primary">Track Order</a></p>
+          <% } %>
+        </div>
+      <% } %>
+
+      <!-- Back Button -->
+      <div class="mt-4">
+        <a href="/admin/orderList" class="btn btn-outline-secondary btn-action">
+          <i class="bi bi-arrow-left"></i> Back to Orders
+        </a>
+      </div>
+    <% } else { %>
+      <div class="card">
+        <p class="text-center py-4">Order not found.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+
+<%- include("../layouts/admin/footer.ejs") %>

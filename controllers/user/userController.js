@@ -8,6 +8,7 @@ const nodemailer=require("nodemailer");
 const env=require("dotenv").config();
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
+const Cart=require("../../models/cartSchema");
 
 
 
@@ -24,14 +25,15 @@ const loadRegister=async(req,res)=>{
 const loadhomepage = async (req, res) => {
     try {
       const user = req.session.user;
+      const cartCount=0;
       
       const userData = await User.findOne({ _id: user });
       const category = await Category.find({ isListed: true });
-  
+      const cart = await Cart.findOne({ userId: user });
       let productData = await Product.find({
         isBlocked: false,
         category: { $in: category.map((cat) => cat._id) },
-        quantity: { $gt: 0 }
+        
       });
   
       productData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -44,14 +46,14 @@ const loadhomepage = async (req, res) => {
           user: userData,
           products: productData,
           category: category ,
-           cartCount : userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+           cartCount: cart && cart.items ? cart.items.length : 0,
            wishlistCount : userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0
         });
       } else {
         res.render("homepage", {
           products: productData,
           category: category,
-          cartCount : userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+          cartCount: cart && cart.items ? cart.items.length : 0,
           wishlistCount : userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0
         });
       }
@@ -261,11 +263,15 @@ const logout=async(req,res)=>{
 const loadShoppingPage = async (req, res) => {
   try {
     const user = req.session.user;
+    
     const userData = await User.findOne({ _id: user });
     const categories = await Category.find({ isListed: true });
+    const cart = await Cart.findOne({ userId: user });
+    let cartCount=0
+    cartCount = cart && cart.items ? cart.items.length : 0;
     const categoryIds = categories.map((category) => category._id.toString());
     const page = parseInt(req.query.page) || 1;
-    const limit = 12;
+    const limit = 8;
     const skip = (page - 1) * limit;
 
     console.log('Page:', page, 'Skip:', skip, 'Limit:', limit);
@@ -278,7 +284,7 @@ const loadShoppingPage = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .lean(); // Use lean() for performance
+      .lean();
 
     const totalProducts = await Product.countDocuments({
       isBlocked: false,
@@ -289,6 +295,8 @@ const loadShoppingPage = async (req, res) => {
     console.log('Products:', products.length, 'Total Products:', totalProducts, 'Total Pages:', totalPages);
 
     const brands = await Brand.find({ isBlocked: false });
+    console.log('Brands fetched in loadShoppingPage:', brands);
+
     const categoriesWithIds = categories.map((category) => ({
       _id: category._id,
       name: category.name,
@@ -306,9 +314,9 @@ const loadShoppingPage = async (req, res) => {
       totalProducts,
       currentPage: page,
       totalPages,
-      cartCount: userData?.cart?.length ?? 0,
+      cartCount,
       wishlistCount: userData?.wishlist?.length ?? 0,
-      page:'shop',
+      page: 'shop',
       activeCategory: '',
       activeBrand: '',
     });
@@ -318,7 +326,6 @@ const loadShoppingPage = async (req, res) => {
   }
 };
 
-
 const filterProduct = async (req, res) => {
   try {
     const user = req.session.user;
@@ -326,43 +333,39 @@ const filterProduct = async (req, res) => {
     const brandId = req.query.brand || '';
     const currentPage = parseInt(req.query.page) || 1;
     const itemsPerPage = 10;
-    
-    // Build the query
+   const cart = await Cart.findOne({ userId: user });
+    let cartCount=0
+    cartCount = cart && cart.items ? cart.items.length : 0;
+
+
     const query = { isBlocked: false };
 
-    // Fetch category if provided
     const findCategory = categoryId ? await Category.findOne({ _id: categoryId }) : null;
     if (findCategory) {
       query.category = findCategory._id;
     }
 
-    // Fetch brand if provided (fixed the brand query)
     const findBrand = brandId ? await Brand.findOne({ _id: brandId }) : null;
     if (findBrand) {
       query.brand = findBrand.brandName;
     }
 
-    // Get all products matching the query
     let products = await Product.find(query)
-      .sort({ createdAt: -1 }) // Sort by newest first in the query
+      .sort({ createdAt: -1 })
       .lean();
 
-    // Pagination
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const totalPages = Math.ceil(products.length / itemsPerPage);
     const currentProducts = products.slice(startIndex, endIndex);
 
-    // Get user data if logged in
     let userData = null;
     if (user) {
       userData = await User.findOne({ _id: user });
-      
-      // Record search history if user exists
       if (userData) {
         const searchEntry = {
           category: findCategory ? findCategory._id : null,
-          brand: findBrand ? findBrand._id : null, // Store brand ID instead of name
+          brand: findBrand ? findBrand._id : null,
           searchedOn: new Date(),
         };
         userData.searchHistory.push(searchEntry);
@@ -370,9 +373,9 @@ const filterProduct = async (req, res) => {
       }
     }
 
-    // Get categories and brands for filter options
     const categories = await Category.find({ isListed: true });
-    const brands = await Brand.find({}); // Consider adding isListed filter if needed
+    const brands = await Brand.find({ isBlocked: false });
+    console.log('Brands fetched in filterProduct:', brands);
 
     res.render('collection', {
       user: userData,
@@ -383,11 +386,10 @@ const filterProduct = async (req, res) => {
       totalPages,
       selectedCategory: categoryId || null,
       selectedBrand: brandId || null,
-      cartCount: userData?.cart?.length ?? 0,
+      cartCount,
       wishlistCount: userData?.wishlist?.length ?? 0,
-      page:"shop"
+      page: "shop"
     });
-
   } catch (error) {
     console.error('Error in filterProducts:', error);
     res.status(500).render('error', { 
@@ -405,6 +407,11 @@ const filterPrice = async (req, res) => {
     const limit = 12;
     const skip = (page - 1) * limit;
     const sort = req.query.sort || '';
+    const cart = await Cart.findOne({ userId: user });
+    let cartCount=0
+    cartCount = cart && cart.items ? cart.items.length : 0;
+
+
 
     let query = { isBlocked: false };
     const categories = await Category.find({ isListed: true });
@@ -435,6 +442,8 @@ const filterPrice = async (req, res) => {
     console.log('Sorted Products:', products.length, 'Total:', totalProducts);
 
     const brands = await Brand.find({ isBlocked: false });
+    console.log('Brands fetched in filterPrice:', brands);
+
     const categoriesWithIds = categories.map((category) => ({
       _id: category._id,
       name: category.name,
@@ -448,7 +457,7 @@ const filterPrice = async (req, res) => {
       totalProducts,
       currentPage: page,
       totalPages,
-      cartCount: userData?.cart?.length ?? 0,
+      cartCount,
       wishlistCount: userData?.wishlist?.length ?? 0,
       page: 'shop',
       sort,
@@ -459,54 +468,58 @@ const filterPrice = async (req, res) => {
   }
 };
 
-  const searchProduct=async(req,res)=>{
-    try {
-        const user=req.session.user;
-        const userData = await User.findById(user);
-        let search=req.body.query;
-
-        const brands=await Brand.find({}).lean();
-        const categories=await Category.find({isListed:true});
-        const categoryIds=categories.map(category=>category._id);
-        let searchResult=[];
-        if(req.session.filteredProducts && req.session.filteredProducts.length>0){
-            searchResult = req.session.filteredProducts.filter(product =>
-                product.productName.toLowerCase().includes(search.toLowerCase())
-              );
-              
-        }else{
-            searchResult=await Product.find({
-                productName:{$regex:".*"+search+".*",$options:"i"},
-                isBlocked:false,
-                category:{$in:categoryIds}
-            })
-        }
-        searchResult.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-        let itemsPerPage=6;
-        let currentPage=parseInt(req.query.page)||1
-        let startIndex=(currentPage-1)*itemsPerPage;
-        let endIndex = startIndex + itemsPerPage;
-        let totalPages=Math.ceil(searchResult.length/itemsPerPage);
-        const currentProduct=searchResult.slice(startIndex,endIndex);
+const searchProduct = async (req, res) => {
+  try {
+    const user = req.session.user;
+    const userData = await User.findById(user);
+    let search = req.body.query;
+    const cart = await Cart.findOne({ userId: user });
+    let cartCount=0
+    cartCount = cart && cart.items ? cart.items.length : 0;
 
 
-        res.render("collection",{
-            user:userData,
-            products:currentProduct,
-            category:categories,
-            brand:brands,
-            totalPages,
-            currentPage,
-            count:searchResult.length,
-            cartCount : userData?.cart?.length ?? req.user?.cart?.length ?? 0,
-            wishlistCount : userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
-            page:"shop"
-        })
-    } catch (error) {
-        console.log(error);
-        res.redirect("/pageNotFound")
+    const brands = await Brand.find({ isBlocked: false }).lean();
+    console.log('Brands fetched in searchProduct:', brands);
+
+    const categories = await Category.find({ isListed: true });
+    const categoryIds = categories.map(category => category._id);
+    let searchResult = [];
+    if (req.session.filteredProducts && req.session.filteredProducts.length > 0) {
+      searchResult = req.session.filteredProducts.filter(product =>
+        product.productName.toLowerCase().includes(search.toLowerCase())
+      );
+    } else {
+      searchResult = await Product.find({
+        productName: { $regex: ".*" + search + ".*", $options: "i" },
+        isBlocked: false,
+        category: { $in: categoryIds }
+      });
     }
+    searchResult.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    let itemsPerPage = 6;
+    let currentPage = parseInt(req.query.page) || 1;
+    let startIndex = (currentPage - 1) * itemsPerPage;
+    let endIndex = startIndex + itemsPerPage;
+    let totalPages = Math.ceil(searchResult.length / itemsPerPage);
+    const currentProduct = searchResult.slice(startIndex, endIndex);
+
+    res.render("collection", {
+      user: userData,
+      products: currentProduct,
+      category: categories,
+      brand: brands,
+      totalPages,
+      currentPage,
+      count: searchResult.length,
+      cartCount,
+      wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
+      page: "shop"
+    });
+  } catch (error) {
+    console.log(error);
+    res.redirect("/pageNotFound");
   }
+};
   
   
 

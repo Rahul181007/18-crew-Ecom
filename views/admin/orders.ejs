@@ -1,0 +1,707 @@
+<%- include("../layouts/admin/header.ejs") %>
+<!-- External Stylesheets -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<style>
+  :root {
+    --primary: #7C3AED;
+    --primary-light: #F5F3FF;
+    --secondary: #3B82F6;
+    --dark: #0F172A;
+    --gray: #6B7280;
+    --light-gray: #F1F5F9;
+    --border-radius: 10px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.3s ease;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--light-gray);
+    color: var(--dark);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .admin-container {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 260px;
+    background: white;
+    border-right: 1px solid var(--light-gray);
+    padding: 24px;
+    position: fixed;
+    height: 100%;
+    transition: var(--transition);
+  }
+
+  .sidebar .nav-link {
+    color: var(--gray);
+    font-weight: 500;
+    padding: 12px 16px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    transition: var(--transition);
+  }
+
+  .sidebar .nav-link:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .sidebar .nav-link.active {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    box-shadow: inset 0 0 0 1px var(--primary);
+  }
+
+  .sidebar .nav-link i {
+    margin-right: 12px;
+    font-size: 1.1rem;
+  }
+
+  .main-content {
+    margin-left: 260px;
+    flex-grow: 1;
+    padding: 40px;
+    transition: var(--transition);
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--dark);
+  }
+
+  .table {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .table th {
+    font-weight: 600;
+    color: var(--dark);
+    border-bottom: 1px solid var(--light-gray);
+    padding: 16px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+  }
+
+  .table td {
+    vertical-align: middle;
+    padding: 16px;
+    font-size: 0.9rem;
+  }
+
+  .order-status {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: var(--transition);
+  }
+
+  .status-pending {
+    background: #FFF7ED;
+    color: #EA580C;
+  }
+
+  .status-processing {
+    background: #E0F2FE;
+    color: #1D4ED8;
+  }
+
+  .status-shipped {
+    background: #D1FAE5;
+    color: #047857;
+  }
+
+  .status-delivered {
+    background: #ECFDF5;
+    color: #15803D;
+  }
+
+  .status-cancelled, .status-returned, .status-partially-returned {
+    background: #FEE2E2;
+    color: #B91C1C;
+  }
+
+  .status-return-request {
+    background: #FEE2E2;
+    color: #B91C1C;
+  }
+
+  .btn-action {
+    border-radius: var(--border-radius);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    transition: var(--transition);
+  }
+
+  .btn-action:hover {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  .status-select {
+    border-radius: var(--border-radius);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border: 1px solid var(--light-gray);
+    background: white;
+    color: var(--dark);
+    transition: var(--transition);
+  }
+
+  .status-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    outline: none;
+  }
+
+  .filter-group {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .filter-group select {
+    border-radius: var(--border-radius);
+    padding: 10px 16px;
+    border: 1px solid var(--light-gray);
+    background: white;
+    color: var(--dark);
+    font-size: 0.9rem;
+    transition: var(--transition);
+  }
+
+  .filter-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    outline: none;
+  }
+
+  /* Collapsible Section */
+  .collapse-toggle {
+    cursor: pointer;
+    color: var(--secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
+  }
+
+  .collapse-toggle:hover {
+    color: var(--primary);
+  }
+
+  .collapse-toggle i {
+    margin-right: 6px;
+  }
+
+  .nested-table {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .nested-table th, .nested-table td {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .nested-table img {
+    border-radius: 4px;
+  }
+
+  .alert {
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+  }
+
+  .alert-success {
+    background: #ECFDF5;
+    color: #15803D;
+  }
+
+  .alert-info {
+    background: #E0F2FE;
+    color: #1D4ED8;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 200px;
+      transform: translateX(-100%);
+      z-index: 1000;
+    }
+
+    .sidebar.active {
+      transform: translateX(0);
+    }
+
+    .main-content {
+      margin-left: 0;
+      padding: 24px;
+    }
+
+    .table {
+      font-size: 0.85rem;
+    }
+
+    .filter-group {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+</style>
+
+<div class="admin-container">
+  <!-- Main Content -->
+  <div class="main-content">
+    <h2 class="section-title">Orders</h2>
+
+    <!-- Filter Options -->
+    <div class="filter-group">
+      <select id="statusFilter" class="form-select">
+        <option value="">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="Processing">Processing</option>
+        <option value="Shipped">Shipped</option>
+        <option value="Delivered">Delivered</option>
+        <option value="Cancelled">Cancelled</option>
+        <option value="Return Request">Return Request</option>
+        <option value="Returned">Returned</option>
+        <option value="Partially Returned">Partially Returned</option>
+      </select>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTable">
+          <% if (orders && orders.length > 0) { %>
+            <% orders.forEach(order => { %>
+              <tr data-status="<%= order.status %>">
+                <td><%= order.orderId || 'N/A' %></td>
+                <td>
+                  <%= order.userId?.name || 'Unknown' %><br>
+                  <small class="text-muted"><%= order.userId?.email || 'N/A' %></small>
+                </td>
+                <td>
+                  <%= order.orderedItems?.length || 0 %> item<%= order.orderedItems?.length !== 1 ? 's' : '' %>
+                  <br>
+                  <small class="text-muted">
+                    <% order.orderedItems.forEach(item => { %>
+                      <%= item.product?.productName || 'N/A' %>: 
+                      <%= item.returnStatus === 'Returned' ? 'Returned' : item.returnStatus === 'Requested' ? 'Return Requested' : 'Delivered' %><br>
+                    <% }) %>
+                  </small>
+                </td>
+                <td>₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : '0.00' %></td>
+                <td><%= new Date(order.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                <td>
+                  <span class="order-status status-<%= order.status?.toLowerCase().replace(' ', '-') || 'pending' %>">
+                    <%= order.status || 'Pending' %>
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex gap-2 align-items-center">
+                    <% if (order.status !== 'Delivered' && order.status !== 'Return Request' && order.status !== 'Returned' && order.status !== 'Partially Returned') { %>
+                      <select class="status-select" data-order-id="<%= order.orderId %>">
+                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                      </select>
+                    <% } else { %>
+                      <span class="order-status status-<%= order.status.toLowerCase().replace(' ', '-') %>">
+                        <%= order.status %>
+                      </span>
+                    <% } %>
+                    <a href="/admin/orders/<%= order.orderId %>" class="btn btn-sm btn-outline-primary btn-action">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <% if (order.status === 'Return Request' || order.status === 'Partially Returned') { %>
+                      <span class="collapse-toggle" data-bs-toggle="collapse" data-bs-target="#returnDetails-<%= order.orderId %>">
+                        <i class="bi bi-arrow-return-left"></i> Manage Returns
+                      </span>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+              <% if (order.status === 'Return Request' || order.status === 'Partially Returned') { %>
+                <tr>
+                  <td colspan="7" class="p-0">
+                    <div id="returnDetails-<%= order.orderId %>" class="collapse">
+                      <div class="card-body p-4">
+                        <h5 class="mb-3" style="font-size: 1.25rem; font-weight: 600;">Return Requested Items</h5>
+                        <div class="table-responsive">
+                          <table class="table table-hover nested-table">
+                            <thead>
+                              <tr>
+                                <th>Product</th>
+                                <th>Size</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                <th>Reason</th>
+                                <th>Requested On</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% order.orderedItems.forEach(item => { %>
+                                <% if (item.returnStatus === 'Requested') { %>
+                                  <tr data-item-id="<%= item._id %>">
+                                    <td>
+                                      <div class="d-flex align-items-center">
+                                        <% if (item.product && item.product.productImage && item.product.productImage.length > 0) { %>
+                                          <img src="/Uploads/re-image/<%= item.product.productImage[0] %>" alt="<%= item.product.productName || 'Product' %>" class="me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                        <% } %>
+                                        <span><%= item.product?.productName || 'N/A' %></span>
+                                      </div>
+                                    </td>
+                                    <td><%= item.size || 'N/A' %></td>
+                                    <td><%= item.quantity || 1 %></td>
+                                    <td>₹<%= item.price ? item.price.toFixed(2) : '0.00' %></td>
+                                    <td>₹<%= item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : '0.00' %></td>
+                                    <td><%= item.returnReason || 'N/A' %></td>
+                                    <td><%= item.returnRequestedAt ? new Date(item.returnRequestedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : 'N/A' %></td>
+                                    <td>
+                                      <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-success btn-approve-return" data-order-id="<%= order.orderId %>" data-item-id="<%= item._id %>">
+                                          <i class="bi bi-check-circle"></i> Approve
+                                        </button>
+                                        <button class="btn btn-sm btn-danger btn-reject-return" data-order-id="<%= order.orderId %>" data-item-id="<%= item._id %>">
+                                          <i class="bi bi-x-circle"></i> Reject
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                <% } %>
+                              <% }) %>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="mt-3">
+                          <h6 style="font-weight: 600;">Order Details</h6>
+                          <p class="text-muted">
+                            Total Amount: ₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : '0.00' %><br>
+                            Payment Method: <%= order.paymentMethod || 'N/A' %><br>
+                            Status: <%= order.isPaid ? 'Paid' : 'Not Paid' %>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              <% } %>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="7" class="text-center py-4">No orders found.</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Filter orders by status
+document.getElementById('statusFilter').addEventListener('change', function () {
+  const selectedStatus = this.value;
+  const rows = document.querySelectorAll('#ordersTable tr[data-status]');
+
+  rows.forEach(row => {
+    const rowStatus = row.getAttribute('data-status');
+    if (!selectedStatus || rowStatus === selectedStatus) {
+      row.style.display = '';
+      const nextRow = row.nextElementSibling;
+      if (nextRow && nextRow.querySelector('.collapse')) {
+        nextRow.style.display = '';
+      }
+    } else {
+      row.style.display = 'none';
+      const nextRow = row.nextElementSibling;
+      if (nextRow && nextRow.querySelector('.collapse')) {
+        nextRow.style.display = 'none';
+      }
+    }
+  });
+});
+
+// Update order status via AJAX
+document.querySelectorAll('.status-select').forEach(select => {
+  select.addEventListener('change', async function () {
+    const orderId = this.getAttribute('data-order-id');
+    const newStatus = this.value;
+
+    try {
+      const response = await fetch(`/admin/orders/update-status/${orderId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Order status updated successfully!');
+        const statusBadge = this.closest('tr').querySelector('.order-status');
+        statusBadge.className = `order-status status-${newStatus.toLowerCase().replace(' ', '-')}`;
+        statusBadge.textContent = newStatus;
+        this.closest('tr').setAttribute('data-status', newStatus);
+        // If status changed to Delivered, Return Request, Returned, or Partially Returned, replace select with status badge
+        if (['Delivered', 'Return Request', 'Returned', 'Partially Returned'].includes(newStatus)) {
+          const actionsCell = this.closest('td').querySelector('.d-flex');
+          const newStatusBadge = document.createElement('span');
+          newStatusBadge.className = `order-status status-${newStatus.toLowerCase().replace(' ', '-')}`;
+          newStatusBadge.textContent = newStatus;
+          this.replaceWith(newStatusBadge);
+          // Add or remove Manage Returns link
+          const collapseToggle = actionsCell.querySelector('.collapse-toggle');
+          if (newStatus === 'Return Request' || newStatus === 'Partially Returned') {
+            if (!collapseToggle) {
+              const newCollapseToggle = document.createElement('span');
+              newCollapseToggle.className = 'collapse-toggle';
+              newCollapseToggle.setAttribute('data-bs-toggle', 'collapse');
+              newCollapseToggle.setAttribute('data-bs-target', `#returnDetails-${orderId}`);
+              newCollapseToggle.innerHTML = '<i class="bi bi-arrow-return-left"></i> Manage Returns';
+              actionsCell.appendChild(newCollapseToggle);
+            }
+          } else if (collapseToggle) {
+            collapseToggle.remove();
+          }
+        }
+      } else {
+        alert(result.message || 'Failed to update order status.');
+        this.value = statusBadge.textContent;
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('An error occurred while updating the status.');
+      const statusBadge = this.closest('tr').querySelector('.order-status');
+      this.value = statusBadge.textContent;
+    }
+  });
+});
+
+// Approve return via AJAX
+document.querySelectorAll('.btn-approve-return').forEach(button => {
+  button.addEventListener('click', async function () {
+    const orderId = this.getAttribute('data-order-id');
+    const itemId = this.getAttribute('data-item-id');
+
+    if (!confirm('Are you sure you want to approve this return request?')) {
+      return;
+    }
+
+    try {
+      this.disabled = true;
+
+      const response = await fetch(`/admin/orders/approve-return/${orderId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ itemId }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        const orderRow = document.querySelector(`tr[data-status][data-order-id="${orderId}"]`);
+        const itemRow = this.closest('tr[data-item-id]');
+        const itemQuantity = parseInt(itemRow.querySelector('td:nth-child(3)').textContent);
+        const itemSize = itemRow.querySelector('td:nth-child(2)').textContent;
+
+        const returnDetails = document.querySelector(`#returnDetails-${orderId}`);
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+          ${result.message}
+          <br>Stock updated for size ${itemSize}: +${itemQuantity} units (Total: ${result.data.stockUpdated}).
+          ${result.data.refundAmount > 0 ? `<br>Refunded ₹${result.data.refundAmount} to user's wallet.` : ''}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        returnDetails.querySelector('.card-body').prepend(alertDiv);
+
+        // Update items column with new status
+        const itemsCell = orderRow.querySelector('td:nth-child(3) small');
+        const itemName = itemRow.querySelector('td:nth-child(1) span').textContent;
+        itemsCell.innerHTML = itemsCell.innerHTML.replace(`${itemName}: Return Requested`, `${itemName}: Returned`);
+
+        if (result.data.allItemsReturned) {
+          const statusBadge = orderRow.querySelector('.order-status');
+          statusBadge.className = `order-status status-returned`;
+          statusBadge.textContent = 'Returned';
+          orderRow.setAttribute('data-status', 'Returned');
+          returnDetails.innerHTML = `
+            <div class="card-body p-4">
+              <div class="alert alert-info">
+                All items in this order have been returned. Order status updated to Returned.
+              </div>
+            </div>
+          `;
+          const actionsCell = orderRow.querySelector('td .d-flex');
+          const existingSelect = actionsCell.querySelector('.status-select');
+          if (existingSelect) {
+            const newStatusBadge = document.createElement('span');
+            newStatusBadge.className = `order-status status-returned`;
+            newStatusBadge.textContent = 'Returned';
+            existingSelect.replaceWith(newStatusBadge);
+          }
+          const collapseToggle = actionsCell.querySelector('.collapse-toggle');
+          if (collapseToggle) {
+            collapseToggle.remove();
+          }
+        } else if (result.data.someItemsReturned) {
+          const statusBadge = orderRow.querySelector('.order-status');
+          statusBadge.className = `order-status status-partially-returned`;
+          statusBadge.textContent = 'Partially Returned';
+          orderRow.setAttribute('data-status', 'Partially Returned');
+          const actionsCell = orderRow.querySelector('td .d-flex');
+          const existingSelect = actionsCell.querySelector('.status-select');
+          if (existingSelect) {
+            const newStatusBadge = document.createElement('span');
+            newStatusBadge.className = `order-status status-partially-returned`;
+            newStatusBadge.textContent = 'Partially Returned';
+            existingSelect.replaceWith(newStatusBadge);
+          }
+          // Ensure Manage Returns link remains if there are pending returns
+          const hasPendingReturns = returnDetails.querySelectorAll('tbody tr').length > 1;
+          if (!hasPendingReturns) {
+            const collapseToggle = actionsCell.querySelector('.collapse-toggle');
+            if (collapseToggle) {
+              collapseToggle.remove();
+            }
+          }
+        }
+        itemRow.remove();
+      } else {
+        alert(result.message || 'Failed to approve return.');
+        this.disabled = false;
+      }
+    } catch (error) {
+      console.error('Error approving return:', error);
+      alert('An error occurred while approving the return.');
+      this.disabled = false;
+    }
+  });
+});
+
+// Reject return via AJAX
+document.querySelectorAll('.btn-reject-return').forEach(button => {
+  button.addEventListener('click', async function () {
+    const orderId = this.getAttribute('data-order-id');
+    const itemId = this.getAttribute('data-item-id');
+
+    if (!confirm('Are you sure you want to reject this return request?')) {
+      return;
+    }
+
+    try {
+      this.disabled = true;
+
+      const response = await fetch(`/admin/orders/reject-return/${orderId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ itemId }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        const orderRow = document.querySelector(`tr[data-status][data-order-id="${orderId}"]`);
+        const itemRow = this.closest('tr[data-item-id]');
+        const returnDetails = document.querySelector(`#returnDetails-${orderId}`);
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+          Return rejected successfully!
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        returnDetails.querySelector('.card-body').prepend(alertDiv);
+
+        // Update items column with new status
+        const itemsCell = orderRow.querySelector('td:nth-child(3) small');
+        const itemName = itemRow.querySelector('td:nth-child(1) span').textContent;
+        itemsCell.innerHTML = itemsCell.innerHTML.replace(`${itemName}: Return Requested`, `${itemName}: Delivered`);
+
+        const hasPendingReturns = returnDetails.querySelectorAll('tbody tr').length > 1;
+        if (!hasPendingReturns) {
+          const statusBadge = orderRow.querySelector('.order-status');
+          const newStatus = result.data.someItemsReturned ? 'Partially Returned' : 'Delivered';
+          statusBadge.className = `order-status status-${newStatus.toLowerCase().replace(' ', '-')}`;
+          statusBadge.textContent = newStatus;
+          orderRow.setAttribute('data-status', newStatus);
+          returnDetails.innerHTML = `
+            <div class="card-body p-4">
+              <div class="alert alert-info">
+                No more return requests pending. Order status updated to ${newStatus}.
+              </div>
+            </div>
+          `;
+          const actionsCell = orderRow.querySelector('td .d-flex');
+          const existingSelect = actionsCell.querySelector('.status-select');
+          if (existingSelect) {
+            const newStatusBadge = document.createElement('span');
+            newStatusBadge.className = `order-status status-${newStatus.toLowerCase().replace(' ', '-')}`;
+            newStatusBadge.textContent = newStatus;
+            existingSelect.replaceWith(newStatusBadge);
+          }
+          const collapseToggle = actionsCell.querySelector('.collapse-toggle');
+          if (collapseToggle) {
+            collapseToggle.remove();
+          }
+        } else {
+          itemRow.remove();
+        }
+      } else {
+        alert(result.message || 'Failed to reject return.');
+        this.disabled = false;
+      }
+    } catch (error) {
+      console.error('Error rejecting return:', error);
+      alert('An error occurred while rejecting the return.');
+      this.disabled = false;
+    }
+  });
+});
+</script>
+
+<%- include("../layouts/admin/footer.ejs") %>

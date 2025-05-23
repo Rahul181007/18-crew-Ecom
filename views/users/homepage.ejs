@@ -308,40 +308,43 @@
 
 
 
+
 <!-- LATEST COLLECTIONS -->
 <section class="py-5">
   <div class="container">
     <h2 class="text-center mb-3">Latest Collections</h2>
     <p class="text-center text-muted mb-5">Discover new trends and styles curated just for you.</p>
-    <div class="row g-4">
-      <% for(let i=0; i<4; i++) { %>
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 text-center position-relative overflow-hidden">
-            
-            <!-- Wishlist Button -->
-            <button class="wishlist-btn"  onclick="addToWishlist('<%= products[i]._id %>')"><a href="#">
-              <i class="fa-regular fa-heart"></i></a>
-            </button>
-            
-            
-              <img src="/uploads/re-image/<%= products[i].productImage[0] %>" class="card-img-top" alt="<%= products[i].productName %>">
-          
-        
-            <!-- Quick View Overlay -->
-            <div class="card-overlay d-flex justify-content-center align-items-center">
-              <a href="/productDetails?id=<%= products[i]._id %>" class="btn btn-dark btn-sm">Quick View</a>
+    <% if (products && products.length > 0) { %>
+      <div class="row g-4">
+        <% for(let i = 0; i < Math.min(products.length, 4); i++) { %>
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="card h-100 text-center position-relative overflow-hidden">
+              <!-- Wishlist Button -->
+              <button class="wishlist-btn" onclick="addToWishlist('<%= products[i]._id %>')">
+                <a href="#">
+                  <i class="fa-regular fa-heart"></i>
+                </a>
+              </button>
+              <img src="/uploads/re-image/<%= products[i].productImage[0] || 'default.jpg' %>" class="card-img-top" alt="<%= products[i].productName %>">
+              <!-- Quick View Overlay -->
+              <div class="card-overlay d-flex justify-content-center align-items-center">
+                <a href="/productDetails?id=<%= products[i]._id %>" class="btn btn-dark btn-sm">Quick View</a>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title fs-6"><%= products[i].productName %></h5>
+                <p class="text-muted">₹ <%= products[i].salePrice %></p>
+              </div>
             </div>
-        
-            <div class="card-body">
-              <h5 class="card-title fs-6"><%= products[i].productName %></h5>
-              <p class="text-muted">₹ <%= products[i].salePrice %></p>
-            </div>
-        
           </div>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="row">
+        <div class="col-12 text-center">
+          <p class="text-muted">No products available at the moment.</p>
         </div>
-        
-      <% } %>
-    </div>
+      </div>
+    <% } %>
   </div>
 </section>
 

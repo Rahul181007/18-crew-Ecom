@@ -105,10 +105,16 @@
         padding: 8px 16px;
     }
 
-    .btn-link:hover {
+    .btn-link:hover:not(:disabled) {
         color: #2b6cb0;
         text-decoration: underline;
         transform: translateY(-2px);
+    }
+
+    .btn-link:disabled {
+        color: #6b7280;
+        cursor: not-allowed;
+        text-decoration: none;
     }
 
     .otp-timer-wrapper {
@@ -205,7 +211,7 @@
         <div class="otp-timer" id="otpTimer"></div>
     </div>
     <div class="form-group">
-        <button type="button" class="btn btn-link resend-button" onclick="resendOtp()">Resend OTP</button>
+        <button type="button" class="btn btn-link resend-button" onclick="resendOtp()" disabled>Resend OTP</button>
     </div>
     <% if(locals.message && message.length > 0) { %>
         <div class="alert alert-danger">
@@ -217,10 +223,10 @@
     </div>
 </div>
 
-
 <script>
   let otpTimerInterval;
   let timer = 60;
+  const resendButton = document.querySelector('.resend-button');
 
   function updateTimerColor(percentage) {
     const timerElement = document.getElementById('otpTimer');
@@ -235,6 +241,7 @@
 
   function startOtpTimer() {
     const timerElement = document.getElementById('otpTimer');
+    resendButton.disabled = true; // Disable the button while timer is running
 
     otpTimerInterval = setInterval(() => {
       const minutes = Math.floor(timer / 60);
@@ -247,6 +254,7 @@
         clearInterval(otpTimerInterval);
         timerElement.textContent = 'Expired';
         timerElement.style.backgroundColor = 'red';
+        resendButton.disabled = false; // Enable the button when timer expires
       }
     }, 1000);
   }
@@ -259,89 +267,88 @@
 
   initializeOtpTimer();
 
-  // ✅ JavaScript form handling
   document.getElementById("otpForm").addEventListener("submit", validOtpForm);
 
   async function validOtpForm(event) {
-  event.preventDefault();
+    event.preventDefault();
 
-  try {
-    const otpInput = document.getElementById('otp').value.trim();
-    if (!otpInput || !/^\d{6}$/.test(otpInput)) {
-      return Swal.fire('Error', 'Please enter a valid 6-digit OTP.', 'error');
-    }
-
-    const response = await fetch('/verifyChangeEmail-otp', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify({ otp: otpInput }),
-    });
-
-    const data = await response.json();
-    console.log('OTP Response:', data);
-
-    if (response.ok && data.status === true) {
-      Swal.fire({
-        icon: 'success',
-        title: 'OTP Verified',
-        showConfirmButton: false,
-        timer: 1500,
-        didClose: () => {
-          window.location.href = '/reset-email';
-        },
-      });
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Invalid OTP',
-        text: data.message || 'Please try again.',
-      });
-    }
-  } catch (error) {
-    console.error('Error during OTP verification:', error);
-    Swal.fire('Error', 'Failed to verify OTP. Please try again.', 'error');
-  }
-}
-  async function resendOtp() {
-  try {
-    clearInterval(otpTimerInterval);
-    timer = 60;
-    startOtpTimer();
-
-    const response = await fetch("/resend-forgot-otp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
+    try {
+      const otpInput = document.getElementById('otp').value.trim();
+      if (!otpInput || !/^\d{6}$/.test(otpInput)) {
+        return Swal.fire('Error', 'Please enter a valid 6-digit OTP.', 'error');
       }
-    });
 
-    const data = await response.json();
+      const response = await fetch('/verifyChangeEmail-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ otp: otpInput }),
+      });
 
-    if (response.ok && data.status === true) {
-      Swal.fire({
-        icon: 'success',
-        title: 'OTP Resent',
-        text: data.message || 'Check your email.',
-        timer: 2000,
-        showConfirmButton: false
-      });
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Failed to resend OTP',
-        text: data.message || 'Please try again later.'
-      });
+      const data = await response.json();
+      console.log('OTP Response:', data);
+
+      if (response.ok && data.status === true) {
+        Swal.fire({
+          icon: 'success',
+          title: 'OTP Verified',
+          showConfirmButton: false,
+          timer: 1500,
+          didClose: () => {
+            window.location.href = '/reset-email';
+          },
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid OTP',
+          text: data.message || 'Please try again.',
+        });
+      }
+    } catch (error) {
+      console.error('Error during OTP verification:', error);
+      Swal.fire('Error', 'Failed to verify OTP. Please try again.', 'error');
     }
-
-  } catch (error) {
-    console.error("Resend OTP error:", error);
-    Swal.fire("Error", "Something went wrong. Please try again.", "error");
   }
-}
 
+  async function resendOtp() {
+    try {
+      // Restart the timer and disable the button
+      clearInterval(otpTimerInterval);
+      timer = 60;
+      startOtpTimer();
+
+      const response = await fetch("/resend-forgot-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === true) {
+        Swal.fire({
+          icon: 'success',
+          title: 'OTP Resent',
+          text: data.message || 'Check your email.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed to resend OTP',
+          text: data.message || 'Please try again later.'
+        });
+      }
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      Swal.fire("Error", "Something went wrong. Please try again.", "error");
+    }
+  }
 </script>
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>

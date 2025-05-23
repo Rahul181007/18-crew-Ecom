@@ -315,6 +315,18 @@
         icon: 'error'
       });
       isValid = false;
+    } else {
+      // Check if all digits in mobile are the same
+      const firstDigitMobile = mobile[0];
+      const allSameMobile = mobile.split('').every(digit => digit === firstDigitMobile);
+      if (allSameMobile) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Phone number cannot have all digits the same (e.g., 0000000000).',
+          icon: 'error'
+        });
+        isValid = false;
+      }
     }
     if (altMobile && !phonePattern.test(altMobile)) {
       Swal.fire({
@@ -323,6 +335,18 @@
         icon: 'error'
       });
       isValid = false;
+    } else if (altMobile) {
+      // Check if all digits in altMobile are the same
+      const firstDigitAltMobile = altMobile[0];
+      const allSameAltMobile = altMobile.split('').every(digit => digit === firstDigitAltMobile);
+      if (allSameAltMobile) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Alternate phone number cannot have all digits the same (e.g., 0000000000).',
+          icon: 'error'
+        });
+        isValid = false;
+      }
     }
     if (mobile === altMobile && altMobile !== "") {
       Swal.fire({

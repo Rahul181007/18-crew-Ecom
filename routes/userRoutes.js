@@ -93,7 +93,9 @@ user_route.post("/deleteItem",userAuth,checkoutController.deleteProduct);
 user_route.post("/orderPlaced",userAuth,checkoutController.placeOrder);
 user_route.get("/checkStock",userAuth,checkoutController.checkStock)
 user_route.get("/successPage",userAuth,checkoutController.successPage);
-user_route.get("/orders/:orderId",userAuth,checkoutController.orderDetails)
+user_route.get("/orders/:orderId",userAuth,checkoutController.orderDetails);
+user_route.post("/orders/cancel/:orderId",userAuth,checkoutController.cancelOrder);
+user_route.post("/orders/return/:orderId",userAuth,checkoutController.returnOrder);
 // .........pagenot found.........
 user_route.get("/pageNotFound",userContoller.pageNotFound);
 

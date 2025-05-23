@@ -42,14 +42,7 @@
     margin-top: 1.5rem;
     padding-top: 1.5rem;
   }
-  .btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
-    padding: 0.5rem 1.5rem;
-  }
-  .btn-primary {
-    padding: 0.5rem 1.5rem;
-  }
+  /* Remove redundant custom button styles, rely on Bootstrap */
 </style>
 
 <body>
@@ -131,12 +124,8 @@
       </div>
 
       <div class="text-center">
-        <div class="d-grid gap-3 d-md-block mb-4">
-          <% if (order.trackingUrl) { %>
-            <a href="<%= order.trackingUrl %>" target="_blank" class="btn btn-success me-md-3">Track Your Order</a>
-          <% } else { %>
-            <a href="/trackOrder?id=<%= order._id %>" class="btn btn-success me-md-3">Track Your Order</a>
-          <% } %>
+        <div class="d-grid gap-3 d-md-flex justify-content-md-center mb-4">
+          <a href="/orders/<%= order.orderId %>" class="btn btn-success">Track Your Order</a>
           <a href="/shop" class="btn btn-outline-primary">Continue Shopping</a>
         </div>
         <p class="text-muted small">A confirmation email has been sent to your registered email address. You'll receive another email with tracking information once your order ships.</p>

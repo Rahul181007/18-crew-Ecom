@@ -9,9 +9,9 @@ const getCartPage = async (req, res) => {
   try {
     const userId = req.session.user?._id || req.session.user;
     if (!userId) return res.redirect("/signin");
-const user = await User.findById(userId).select('name email'); // Adjust fields as needed
+const user = await User.findById(userId).select('name email'); 
     if (!user) return res.redirect("/signin");
-    // ✅ Fetch cart from Cart collection, not User model
+   
     const cart = await Cart.findOne({ userId }).populate({
       path: 'items.productId',
       populate: {
@@ -39,6 +39,7 @@ const user = await User.findById(userId).select('name email'); // Adjust fields 
       const itemTotal = item.price * item.quantity;
       grandTotal += itemTotal;
 
+      
       return {
         _id: item._id,
         productId: item.productId._id,

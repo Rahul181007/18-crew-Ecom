@@ -5,7 +5,8 @@ const env=require("dotenv").config();
 const session=require("express-session");
 const Address=require("../../models/addressSchema");
 const { name } = require("ejs");
-const Order=require("../../models/orderSchema")
+const Order=require("../../models/orderSchema");
+const Cart=require("../../models/cartSchema")
 
 function generateOtp(){
     const digits='1234567890';
@@ -161,13 +162,15 @@ const userProfile = async (req, res) => {
         const userData = await User.findById(userId);
         const addressData = await Address.findOne({ userId: userId }); 
         const orderData=await Order.find({userId:userId})
-        
+        const cart = await Cart.findOne({ userId });
+        let cartCount=0
+        cartCount = cart && cart.items ? cart.items.length : 0;
 
         res.render('profile', {
             user: userData,
             userAddress: addressData, 
             order:orderData,
-            cartCount : userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+            cartCount ,
             wishlistCount : userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0
         });
     } catch (error) {
@@ -405,6 +408,9 @@ const updateProfile = async (req, res) => {
 const addAddress = async (req, res) => {
   try {
     const userId = req.session.user;
+    const cart = await Cart.findOne({ userId });
+    let cartCount=0
+    cartCount = cart && cart.items ? cart.items.length : 0;
     if (!userId) {
       return res.redirect("/signin"); //
     }
@@ -416,7 +422,7 @@ const addAddress = async (req, res) => {
 
     res.render("add-address", {
       user: userData,
-      cartCount: userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+      cartCount,
       wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
     });
   } catch (error) {
@@ -474,6 +480,9 @@ const editAddress = async (req, res) => {
     if (!userId) {
       return res.redirect("/signin");
     }
+    const cart = await Cart.findOne({ userId });
+    let cartCount=0
+    cartCount = cart && cart.items ? cart.items.length : 0;
 
     const userData = await User.findById(userId);
     if (!userData) {
@@ -506,7 +515,7 @@ const editAddress = async (req, res) => {
       addressId,
       addressIndex,
       user: userData,
-      cartCount: userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+      cartCount,
       wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
       source, // Pass the source to the form
     });

@@ -273,7 +273,7 @@
     margin-left: 0.75rem;
   }
 
-  .btn-add-to-cart {
+  .btn-quick-view {
     background: var(--primary-color);
     color: var(--background-color);
     border: none;
@@ -283,9 +283,13 @@
     width: 100%;
     transition: background 0.3s ease, transform 0.2s ease;
     margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
   }
 
-  .btn-add-to-cart:hover {
+  .btn-quick-view:hover {
     background: #A66E8A;
     transform: scale(1.05);
   }
@@ -324,6 +328,59 @@
     color: var(--text-color);
     cursor: pointer;
     display: none;
+  }
+
+  .modal-content {
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .modal-header {
+    border-bottom: none;
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  .modal-body img {
+    width: 100%;
+    height: 300px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .modal-footer {
+    border-top: none;
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .btn-view-details {
+    background: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+
+  .btn-view-details:hover {
+    background: #A66E8A;
+    transform: scale(1.05);
+  }
+
+  .text-muted {
+    color: #6B7280;
+    font-size: 0.95rem;
   }
 
   @media (max-width: 992px) {
@@ -365,6 +422,10 @@
     .product-card img {
       height: 200px;
     }
+
+    .modal-body img {
+      height: 250px;
+    }
   }
 
   @media (max-width: 576px) {
@@ -383,32 +444,51 @@
     .current-price {
       font-size: 1.15rem;
     }
+
+    .modal-body img {
+      height: 200px;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+    }
   }
 </style>
 
 <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
   <h4>Filters</h4>
+  <!-- Categories Filter -->
   <div class="filter-section">
     <div class="filter-title">Categories</div>
-    <ul>
-      <% category.forEach(cat => { %>
-        <li class="filter-item">
-          <a href="/filter?category=<%= cat._id %>"><%= cat.name %></a>
-        </li>
-      <% }) %>
-    </ul>
+    <% if (category && category.length > 0) { %>
+      <ul>
+        <% category.forEach(cat => { %>
+          <li class="filter-item">
+            <a href="/filter?category=<%= cat._id %>"><%= cat.name %></a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="text-muted">No categories available.</p>
+    <% } %>
   </div>
+  <!-- Brands Filter -->
   <div class="filter-section">
     <div class="filter-title">Brands</div>
-    <ul>
-      <% brand.forEach(b => { %>
-        <li class="filter-item">
-          <a href="/filter?brand=<%= b._id %>"><%= b.brandName %></a>
-        </li>
-      <% }) %>
-    </ul>
+    <% if (brand && brand.length > 0) { %>
+      <ul>
+        <% brand.forEach(b => { %>
+          <li class="filter-item">
+            <a href="/filter?brand=<%= b._id %>"><%= b.brandName %></a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="text-muted">No brands available.</p>
+    <% } %>
   </div>
+  <!-- Sort By Filter -->
   <div class="filter-section">
     <div class="filter-title">Sort By</div>
     <ul>
@@ -495,50 +575,86 @@
   </div>
 </nav>
 
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="quickViewModalLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <img id="quickViewImage" src="" alt="Product Image" class="img-fluid" />
+          </div>
+          <div class="col-md-6">
+            <h5 id="quickViewName" class="product-title"></h5>
+            <p id="quickViewBrand" class="product-brand"></p>
+            <div class="d-flex align-items-center mb-3">
+              <span id="quickViewSalePrice" class="current-price"></span>
+              <span id="quickViewRegularPrice" class="original-price"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <a id="quickViewDetailsLink" href="#" class="btn btn-view-details">View Full Details</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Main Content -->
 <div class="main-content" id="mainContent">
   <div class="container-fluid">
+    <!-- Search Bar -->
     <div class="shop-topbar">
       <form action="/search" method="POST" class="search-form">
         <input type="text" name="query" placeholder="Search items..." class="search-input" />
         <button type="submit" class="search-button">Search</button>
       </form>
     </div>
-  <% if (products.length === 0) { %>
-  <div class="row">
-    <div class="col-12 text-center">
-      <p class="text-muted">No products found for this filter.</p>
-    </div>
-  </div>
-<% } else { %>
-  <div class="row g-4">
-    <% products.forEach(product => { %>
-      <div class="col-6 col-md-4 col-lg-3">
-        <div class="product-card">
-          <a href="/productDetails?id=<%= product._id %>" class="text-decoration-none">
-            <img src="/Uploads/re-image/<%= product.productImage[0] || 'default.jpg' %>" alt="<%= product.productName %>" class="img-fluid" />
-            <div class="product-details">
-              <h5 class="product-title"><%= product.productName %></h5>
-              <p class="product-brand">Brand: <%= product.brand && product.brand.brandName ? product.brand.brandName : 'Unknown' %></p>
-              <div class="d-flex align-items-center">
-                <span class="current-price">₹<%= product.salePrice.toLocaleString('en-IN') %></span>
-                <span class="original-price">₹<%= product.regularPrice.toLocaleString('en-IN') %></span>
-              </div>
-            </div>
-          </a>
-          <div class="d-flex justify-content-between mt-3 align-items-center">
-            <a href="#" class="btn btn-add-to-cart" onclick="addToCart('<%= product._id %>')">Add To Cart</a>
-            <a href="#" class="wishlist-icon" onclick="addToWishlist('<%= product._id %>')" title="Add to Wishlist" aria-label="Add <%= product.productName %> to wishlist">
-              <i class="bi bi-heart"></i>
-            </a>
-          </div>
+
+    <!-- Product Grid -->
+    <% if (products.length === 0) { %>
+      <div class="row">
+        <div class="col-12 text-center">
+          <p class="text-muted">No products found for this filter.</p>
         </div>
       </div>
-    <% }) %>
-  </div>
-<% } %>
+    <% } else { %>
+      <div class="row g-4">
+        <% products.forEach(product => { %>
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="product-card">
+              <a href="/productDetails?id=<%= product._id %>" class="text-decoration-none">
+                <img src="/Uploads/re-image/<%= product.productImage[0] || 'default.jpg' %>" alt="<%= product.productName %>" class="img-fluid" />
+                <div class="product-details">
+                  <h5 class="product-title"><%= product.productName %></h5>
+                  <p class="product-brand">Brand: <%= product.brand && product.brand.brandName ? product.brand.brandName : product.brand %></p>
+                  <div class="d-flex align-items-center">
+                    <span class="current-price">₹<%= product.salePrice.toLocaleString('en-IN') %></span>
+                    <span class="original-price">₹<%= product.regularPrice.toLocaleString('en-IN') %></span>
+                  </div>
+                </div>
+              </a>
+              <div class="d-flex justify-content-between mt-3 align-items-center">
+                <button class="btn btn-quick-view" onclick="showQuickView('<%= product._id %>', '<%= product.productName %>', '<%=product.brand  %>', '<%= product.salePrice %>', '<%= product.regularPrice %>', '/Uploads/re-image/<%= product.productImage[0] %>')" aria-label="Quick view for <%= product.productName %>">
+                  <i class="bi bi-eye"></i> Quick View
+                </button>
+                <a href="#" class="wishlist-icon" onclick="addToWishlist('<%= product._id %>')" title="Add to Wishlist" aria-label="Add <%= product.productName %> to wishlist">
+                  <i class="bi bi-heart"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
 
-
+    <!-- Pagination -->
     <nav aria-label="Page navigation" class="mt-5">
       <ul class="pagination justify-content-center">
         <% if (currentPage > 1) { %>
@@ -561,135 +677,112 @@
   </div>
 </div>
 
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script>
-  // Sidebar toggle functionality
-  const sidebarToggle = document.getElementById('sidebarToggle');
-  const sidebar = document.getElementById('sidebar');
+// Sidebar toggle functionality
+const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebar = document.getElementById('sidebar');
 
-  if (sidebarToggle && sidebar) {
-    sidebarToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('show');
-    });
+if (sidebarToggle && sidebar) {
+  sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('show');
+  });
 
-    document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 992 && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-        sidebar.classList.remove('show');
-      }
-    });
-  }
-
-  function initSidebar() {
-    if (window.innerWidth > 992) {
-      sidebar.classList.add('show');
-    } else {
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 992 && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
       sidebar.classList.remove('show');
     }
+  });
+}
+
+function initSidebar() {
+  if (window.innerWidth > 992) {
+    sidebar.classList.add('show');
+  } else {
+    sidebar.classList.remove('show');
   }
+}
 
-  window.addEventListener('resize', initSidebar);
-  document.addEventListener('DOMContentLoaded', initSidebar);
+window.addEventListener('resize', initSidebar);
+document.addEventListener('DOMContentLoaded', initSidebar);
 
-  async function addToCart(productId) {
-    try {
-      const response = await fetch('/addToCart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
-      });
-      const data = await response.json();
-      if (response.ok && data.status) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Added to Cart',
-          text: 'Product added successfully!',
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        const cartBadge = document.querySelector('.nav-link .badge-dot');
-        if (cartBadge) {
-          cartBadge.classList.add('active');
-          setTimeout(() => cartBadge.classList.remove('active'), 300);
-        }
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops',
-          text: data.message || 'Something went wrong.',
-        });
-      }
-    } catch {
-      Swal.fire({
-        icon: 'error',
-        title: 'Network Error',
-        text: 'Unable to contact the server.',
-      });
-    }
-  }
-
-  async function addToWishlist(productId) {
-    try {
-      const response = await fetch('/addToWishlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
-      });
-      const data = await response.json();
-      if (response.ok && data.status) {
-        showToast({
-          message: 'Product added to wishlist!',
-          type: 'success',
-          icon: '✓',
-        });
-      } else {
-        showToast({
-          message: data.message || 'Failed to add to wishlist',
-          type: 'error',
-          icon: '✕',
-        });
-      }
-    } catch {
+// Add to Wishlist functionality
+async function addToWishlist(productId) {
+  try {
+    const response = await fetch('/addToWishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId }),
+    });
+    const data = await response.json();
+    if (response.ok && data.status) {
       showToast({
-        message: 'Network error - please try again',
+        message: 'Product added to wishlist!',
+        type: 'success',
+        icon: '✓',
+      });
+    } else {
+      showToast({
+        message: data.message || 'Failed to add to wishlist',
         type: 'error',
-        icon: '⚠',
+        icon: '✕',
       });
     }
+  } catch {
+    showToast({
+      message: 'Network error - please try again',
+      type: 'error',
+      icon: '⚠',
+    });
   }
+}
 
-  function showToast({ message, type, icon }) {
-    const colors = {
-      success: { bg: 'linear-gradient(to right, #00b09b, #96c93d)', text: '#fff' },
-      error: { bg: 'linear-gradient(to right, #ff5f6d, #ffc371)', text: '#fff' },
-    };
+// Show Quick View modal
+function showQuickView(productId, productName, brandName, salePrice, regularPrice, imageUrl) {
+  document.getElementById('quickViewModalLabel').textContent = productName;
+  document.getElementById('quickViewName').textContent = productName;
+  document.getElementById('quickViewBrand').textContent = `Brand: ${brandName}`;
+  document.getElementById('quickViewSalePrice').textContent = `₹${parseFloat(salePrice).toLocaleString('en-IN')}`;
+  document.getElementById('quickViewRegularPrice').textContent = `₹${parseFloat(regularPrice).toLocaleString('en-IN')}`;
+  document.getElementById('quickViewImage').src = imageUrl;
+  document.getElementById('quickViewDetailsLink').href = `/productDetails?id=${productId}`;
 
-    Toastify({
-      text: `${icon} ${message}`,
-      duration: type === 'success' ? 2000 : 3000,
-      close: true,
-      gravity: 'top',
-      position: 'right',
-      style: {
-        background: colors[type].bg,
-        color: colors[type].text,
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        padding: '12px 20px',
-        fontSize: '14px',
-        fontWeight: '500',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-      },
-      stopOnFocus: true,
-      onClick: function () {},
-    }).showToast();
-  }
+  const quickViewModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+  quickViewModal.show();
+}
 
- 
+// Toast notification utility
+function showToast({ message, type, icon }) {
+  const colors = {
+    success: { bg: 'linear-gradient(to right, #00b09b, #96c93d)', text: '#fff' },
+    error: { bg: 'linear-gradient(to right, #ff5f6d, #ffc371)', text: '#fff' },
+  };
+
+  Toastify({
+    text: `${icon} ${message}`,
+    duration: type === 'success' ? 2000 : 3000,
+    close: true,
+    gravity: 'top',
+    position: 'right',
+    style: {
+      background: colors[type].bg,
+      color: colors[type].text,
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      padding: '12px 20px',
+      fontSize: '14px',
+      fontWeight: '500',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+    },
+    stopOnFocus: true,
+    onClick: function () {},
+  }).showToast();
+}
 </script>
 
 <%- include("../layouts/footer.ejs") %>
-

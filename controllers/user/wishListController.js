@@ -1,18 +1,21 @@
 const User=require("../../models/userSchema");
 const product=require("../../models/productSchema");
 const Product = require("../../models/productSchema");
-
+const Cart=require("../../models/cartSchema");
 
 const loadWishlist=async(req,res)=>{
     try {
         const userId=req.session.user;
         const user=await User.findById(userId);
         const products=await Product.find({_id:{$in:user.wishlist}}).populate("category");
+        const cart = await Cart.findOne({ userId: user });
+        let cartCount=0
+        cartCount = cart && cart.items ? cart.items.length : 0;
         console.log(req.user)
         res.render("wishlist",{
             user,
             wishlist:products,
-            cartCount : user?.cart?.length ?? req.user?.cart?.length ?? 0,
+            cartCount ,
             wishlistCount : user?.wishlist?.length ?? req.user?.wishlist?.length ?? 0 
         })
     } catch (error) {

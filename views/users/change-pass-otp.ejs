@@ -220,6 +220,7 @@
 <script>
   let otpTimerInterval;
   let timer = 60;
+  const resendButton=document.querySelector(".resend-button");
 
   function updateTimerColor(percentage) {
     const timerElement = document.getElementById('otpTimer');
@@ -234,6 +235,7 @@
 
   function startOtpTimer() {
     const timerElement = document.getElementById('otpTimer');
+   resendButton.disabled = true; 
 
     otpTimerInterval = setInterval(() => {
       const minutes = Math.floor(timer / 60);
@@ -246,6 +248,7 @@
         clearInterval(otpTimerInterval);
         timerElement.textContent = 'Expired';
         timerElement.style.backgroundColor = 'red';
+        resendButton.disabled = false; 
       }
     }, 1000);
   }
@@ -257,8 +260,6 @@
   }
 
   initializeOtpTimer();
-
-  // ✅ JavaScript form handling
   document.getElementById("otpForm").addEventListener("submit", validOtpForm);
 
   async function validOtpForm(event) {

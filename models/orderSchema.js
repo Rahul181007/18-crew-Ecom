@@ -24,6 +24,24 @@ const orderSchema = new Schema(
           type: Number,
           default: 0,
         },
+        size: {
+          type: String,
+          required: true,
+          enum: ['S', 'M', 'L', 'XL', 'XXL'],
+        },
+        returnReason: {
+          type: String,
+          default: null,
+        },
+        returnRequestedAt: {
+          type: Date,
+          default: null,
+        },
+        returnStatus: {
+          type: String,
+          enum: [null, "Requested", "Returned", "Rejected"], // Changed "Approved" to "Returned"
+          default: null,
+        },
       },
     ],
     totalPrice: {
@@ -38,24 +56,23 @@ const orderSchema = new Schema(
       type: Number,
       required: true,
     },
- 
     selectedAddress: {
-    addressType: { type: String },
-    name: { type: String },
-    city: { type: String },
-    landMark: { type: String },
-    state: { type: String },
-    pincode: { type: Number },
-    mobile: { type: String },
-    altMobile: { type: String }
-  },
+      addressType: { type: String },
+      name: { type: String },
+      city: { type: String },
+      landMark: { type: String },
+      state: { type: String },
+      pincode: { type: Number },
+      mobile: { type: String },
+      altMobile: { type: String },
+    },
     invoiceDate: {
       type: Date,
     },
     status: {
       type: String,
       required: true,
-      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Return Request", "Returned"],
+      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Return Request", "Returned", "Partially Returned"], // Added "Partially Returned"
     },
     createdOn: {
       type: Date,
@@ -64,7 +81,7 @@ const orderSchema = new Schema(
     },
     couponApplied: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
     paymentMethod: {
       type: String,
@@ -80,14 +97,13 @@ const orderSchema = new Schema(
     },
     trackingNumber: {
       type: String,
-      default: null, 
+      default: null,
     },
     trackingUrl: {
       type: String,
-      default: null, 
+      default: null,
     },
     userId: {
-      
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

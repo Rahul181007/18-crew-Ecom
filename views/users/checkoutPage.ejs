@@ -492,9 +492,6 @@ nav.navbar {
                                     <th>Size</th>
                                     <th>Quantity</th>
                                     <th>Total</th>
-                                    <% if (isCart) { %>
-                                        <th>Delete</th>
-                                    <% } %>
                                 </tr>
                             </thead>
                             <tbody>
@@ -514,27 +511,13 @@ nav.navbar {
                                             <td><%= item.size || 'N/A' %></td>
                                             <td>
                                                 <% if (isCart) { %>
-                                                    <div class="input-group" style="max-width: 120px;">
-                                                        <button class="btn btn-outline-secondary minus-btn" type="button" 
-                                                                data-product-id="<%= item.productDetails._id %>">-</button>
-                                                        <input type="text" class="form-control text-center quantity-input" 
-                                                               value="<%= item.quantity %>" 
-                                                               data-product-id="<%= item.productDetails._id %>">
-                                                        <button class="btn btn-outline-secondary plus-btn" type="button" 
-                                                                data-product-id="<%= item.productDetails._id %>">+</button>
-                                                    </div>
+                                                  <%= item.quantity %>
                                                 <% } else { %>
                                                     <%= item.quantity %>
                                                 <% } %>
                                             </td>
                                             <td>₹<%= item.quantity * item.productDetails.salePrice %></td>
-                                            <% if (isCart) { %>
-                                                <td class="action" data-title="Remove">
-                                                    <a class="btn btn-sm btn-small" href="/deleteItem?id=<%= item.productDetails._id %>">
-                                                        <i class="bi bi-trash"></i>
-                                                    </a>
-                                                </td>
-                                            <% } %>
+                                        
                                         </tr>
                                     <% }) %>
                                 <% } else { %>

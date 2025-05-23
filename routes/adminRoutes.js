@@ -10,7 +10,7 @@ const storage=require("../helpers/multer");
 const upload=multer({storage:storage})
 const brandController=require("../controllers/admin/brandController");
 const productController=require("../controllers/admin/productContoller");
-
+const orderController=require("../controllers/admin/orderController");
 
 
 admin_route.set("view engine","ejs");
@@ -53,7 +53,14 @@ admin_route.get("/blockProduct",adminAuth,productController.blockProduct);
 admin_route.get("/unblockProduct",adminAuth,productController.unblockProduct);
 admin_route.get("/editProduct",adminAuth,productController.geteditProduct);
 admin_route.post("/editProduct/:id",adminAuth,upload.array("images",4),productController.editProduct);
-admin_route.post('/updateProductImage', upload.single('image'), productController.updateProductImage)
+admin_route.post('/updateProductImage', upload.single('image'), productController.updateProductImage);
+
+// order management
+admin_route.get("/orderList",adminAuth,orderController.loadOrderList)
+admin_route.post("/orders/update-status/:orderId",adminAuth,orderController.updateOrderStatus);
+admin_route.get("/orders/:orderId",adminAuth,orderController.loadOrderDetail);
+admin_route.post('/orders/approve-return/:orderId',adminAuth,orderController.approveReturn);
+admin_route.post('/orders/reject-return/:orderId',adminAuth,orderController.rejectReturn)
 
 
 

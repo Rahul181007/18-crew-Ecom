@@ -1,14 +1,16 @@
 const User=require("../../models/userSchema");
 const Product=require("../../models/productSchema");
 const Category=require("../../models/categorySchema");
-
+const Cart=require("../../models/cartSchema");
 
 const productDetails = async (req, res) => {
     try {
         const userId = req.session.user;
         const userData = await User.findById(userId);
         const productId = req.query.id;
-
+        const cart = await Cart.findOne({ userId });
+        let cartCount=0
+        cartCount = cart && cart.items ? cart.items.length : 0;
         // Get product with populated category
         const product = await Product.findById(productId).populate("category");
         
@@ -43,7 +45,7 @@ const productDetails = async (req, res) => {
             category: findCategory,
             relatedProducts,
             availableSizes, // Pass available sizes separately
-            cartCount: userData?.cart?.length ?? req.user?.cart?.length ?? 0,
+            cartCount,
             wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0
         });
 
