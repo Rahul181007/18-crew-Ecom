@@ -3,6 +3,7 @@ const Product = require('../../models/productSchema');
 const User = require('../../models/userSchema'); 
 const mongoose = require('mongoose');
 const mongodb=require('mongodb');
+const WishList=require("../../models/wishlistSchema")
 
 
 const getCartPage = async (req, res) => {
@@ -68,56 +69,72 @@ const user = await User.findById(userId).select('name email');
 
 
 const addToCart = async (req, res) => {
-  try {
-    const { productId, size } = req.body;
-    console.log(req.body)
-    const userId = req.session.user?._id || req.session.user;
+    try {
+        const { productId, size, fromWishlist } = req.body;
+        
+        const userId = req.session.user?._id || req.session.user;
+        if (!userId) return res.status(401).json({ success: false, message: "User not authenticated" });
 
-    if (!userId) return res.status(401).json({ success: false, message: "User not authenticated" });
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ success: false, message: "Invalid product ID" });
+        }
 
-    const product = await Product.findById(productId);
-    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+        const product = await Product.findById(productId);
+        if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    const sizeObj = product.sizes.find(s => s.size === size);
-    if (!sizeObj || sizeObj.stock <= 0) {
-      return res.status(400).json({ success: false, message: "Selected size is out of stock" });
-    }
+        const sizeObj = product.sizes.find(s => s.size === size);
+        if (!sizeObj || sizeObj.stock <= 0) {
+            return res.status(400).json({ success: false, message: "Selected size is out of stock" });
+        }
 
-    let cart = await Cart.findOne({ userId });
-    if (!cart) {
-      cart = new Cart({ userId, items: [] });
-    }
+        let cart = await Cart.findOne({ userId });
+        if (!cart) {
+            cart = new Cart({ userId, items: [] });
+        }
 
-    const existingItem = cart.items.find(item => 
-      item.productId.toString() === productId && item.size === size
-    );
+        const existingItem = cart.items.find(item => 
+            item.productId.toString() === productId && item.size === size
+        );
 
-    if (existingItem) {
-      const newQuantity = existingItem.quantity + 1;
-      if (newQuantity > 3 || newQuantity > sizeObj.stock) {
-        return res.status(400).json({ 
-          success: false, 
-          message: `Maximum ${Math.min(3, sizeObj.stock)} items allowed for this size` 
+        if (existingItem) {
+            const newQuantity = existingItem.quantity + 1;
+            if (newQuantity > 3 || newQuantity > sizeObj.stock) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Maximum ${Math.min(3, sizeObj.stock)} items allowed for this size` 
+                });
+            }
+            existingItem.quantity = newQuantity;
+            existingItem.totalPrice = newQuantity * product.salePrice;
+        } else {
+            cart.items.push({
+                productId,
+                quantity: 1,
+                size,
+                price: product.salePrice,
+                totalPrice: product.salePrice
+            });
+        }
+
+        await cart.save();
+
+        // Remove from wishlist if requested
+        if (fromWishlist) {
+            const user = await User.findById(userId);
+            if (user && user.wishlist.includes(productId)) {
+                user.wishlist = user.wishlist.filter(id => id.toString() !== productId);
+                await user.save();
+            }
+        }
+
+        return res.json({ 
+            status: true, 
+            message: fromWishlist ? "Product added to cart and removed from wishlist" : "Product added to cart" 
         });
-      }
-      existingItem.quantity = newQuantity;
-      existingItem.totalPrice = newQuantity * product.salePrice;
-    } else {
-      cart.items.push({
-        productId,
-        quantity: 1,
-        size,
-        price: product.salePrice,
-        totalPrice: product.salePrice
-      });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ status: false, message: "Server error" });
     }
-
-    await cart.save();
-    return res.json({ status: true, message: "Product added to cart" }); // Change success to status
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ status: false, message: "Server error" });
-  }
 };
 
 const changeQuantity = async (req, res) => {

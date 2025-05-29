@@ -15,7 +15,7 @@ const productController=require("../controllers/user/productController");
 const cartController=require("../controllers/user/cartController");
 const wishListController=require("../controllers/user/wishListController");
 const checkoutController=require("../controllers/user/checkoutController")
-
+const couponController=require("../controllers/user/couponController")
 
 // ..storage area for image
 const storage=multer.diskStorage({
@@ -37,6 +37,7 @@ user_route.get("/auth/google",passport.authenticate("google",{scope:["profile","
 user_route.get("/auth/google/callback",passport.authenticate("google",{failureRedirect:"/register"}),(req,res)=>{
   
     req.session.user=req.user
+    console.log('Google user ID:', req.session.user);
     res.redirect("/");
     
 })
@@ -69,6 +70,7 @@ user_route.post("/verifyChangePass-otp",userAuth,profileController.verifyChangeP
 user_route.get("/reset-pass",userAuth,profileController.getResetPassPage);
 user_route.post("/update-pass",userAuth,profileController.updatePass);
 user_route.post("/update-profile",userAuth,upload.single("image"),profileController.updateProfile);
+user_route.post("/delete-account",userAuth,profileController.deleteAccn);
 // address management
 user_route.get("/addAddress",userAuth,profileController.addAddress);
 user_route.post("/addAddress",userAuth,profileController.postAddAddress);
@@ -86,9 +88,10 @@ user_route.delete("/deleteItem/:cartItemId", userAuth, cartController.deleteProd
 // wishlist management
 user_route.get("/wishList",userAuth,wishListController.loadWishlist);
 user_route.post("/addToWishlist",userAuth,wishListController.addToWishlist)
-user_route.get("/deleteitemwish",userAuth,wishListController.deleteProduct)
+user_route.post("/deleteitemwish",userAuth,wishListController.removeFromWishlist)
 // checkout management
 user_route.get("/checkout",userAuth,checkoutController.loadCheckout);
+user_route.get("/checkStockBeforeCheckout", userAuth, checkoutController.checkStockBeforeCheckout);
 user_route.post("/deleteItem",userAuth,checkoutController.deleteProduct);
 user_route.post("/orderPlaced",userAuth,checkoutController.placeOrder);
 user_route.get("/checkStock",userAuth,checkoutController.checkStock)
@@ -96,6 +99,13 @@ user_route.get("/successPage",userAuth,checkoutController.successPage);
 user_route.get("/orders/:orderId",userAuth,checkoutController.orderDetails);
 user_route.post("/orders/cancel/:orderId",userAuth,checkoutController.cancelOrder);
 user_route.post("/orders/return/:orderId",userAuth,checkoutController.returnOrder);
+
+// coupon management 
+user_route.post("/applyCoupon",userAuth, couponController.applyCoupon)
+user_route.post("/removeCoupon",userAuth,couponController.removeCoupon);
+
+
+
 // .........pagenot found.........
 user_route.get("/pageNotFound",userContoller.pageNotFound);
 

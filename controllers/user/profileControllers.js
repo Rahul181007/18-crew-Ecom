@@ -6,7 +6,7 @@ const session=require("express-session");
 const Address=require("../../models/addressSchema");
 const { name } = require("ejs");
 const Order=require("../../models/orderSchema");
-const Cart=require("../../models/cartSchema")
+const Cart=require("../../models/cartSchema");
 
 function generateOtp(){
     const digits='1234567890';
@@ -596,16 +596,10 @@ const postEditAddress = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
 const deleteAddress=async(req,res)=>{
   try {
     const addressId=req.query.id;
+    console.log("Address ID:", addressId);
     const findAddress=await Address.findOne({"address._id":addressId});
     if(!findAddress){
       return res.status(404).send("Address not found")
@@ -622,6 +616,62 @@ const deleteAddress=async(req,res)=>{
     res.redirect("/pageNotFound")
   }
 }
+ const deleteAccn=async(req,res)=>{
+ 
+
+
+ try {
+    const { password } = req.body;
+    const user = await User.findById(req.session.user); 
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    
+    if (user.googleId) {
+      
+      await User.deleteOne({ _id: user._id });
+      await Address.deleteMany({ userId: user._id }); 
+      await Order.deleteMany({ userId: user._id }); 
+      req.session.destroy(); // Destroy the session
+      return res.status(200).json({ success: true });
+    }
+
+    // Verify password for non-Google users
+    if (!password) {
+      return res.status(400).json({ success: false, message: 'Password is required.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Incorrect password.' });
+    }
+
+    // Delete user data
+    await User.deleteOne({ _id: user._id });
+    await Address.deleteMany({ userId: user._id }); // Delete associated addresses
+    await Order.deleteMany({ userId: user._id }); // Delete associated orders, if applicable
+
+    // Destroy the session to log out the user
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Error destroying session:', err);
+        return res.status(500).json({ success: false, message: 'Failed to log out.' });
+      }
+      return res.status(200).json({ success: true });
+    });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    return res.status(500).json({ success: false, message: 'Server error.' });
+  }
+}
+
+ 
+
+
+
+
 
 module.exports={
     getForgotPassPage,
@@ -647,4 +697,6 @@ module.exports={
     editAddress,
     postEditAddress,
     deleteAddress,
+   deleteAccn
+    
 }

@@ -11,6 +11,7 @@ const upload=multer({storage:storage})
 const brandController=require("../controllers/admin/brandController");
 const productController=require("../controllers/admin/productContoller");
 const orderController=require("../controllers/admin/orderController");
+const couponController=require("../controllers/admin/couponController")
 
 
 admin_route.set("view engine","ejs");
@@ -60,13 +61,14 @@ admin_route.get("/orderList",adminAuth,orderController.loadOrderList)
 admin_route.post("/orders/update-status/:orderId",adminAuth,orderController.updateOrderStatus);
 admin_route.get("/orders/:orderId",adminAuth,orderController.loadOrderDetail);
 admin_route.post('/orders/approve-return/:orderId',adminAuth,orderController.approveReturn);
-admin_route.post('/orders/reject-return/:orderId',adminAuth,orderController.rejectReturn)
+admin_route.post('/orders/reject-return/:orderId',adminAuth,orderController.rejectReturn);
 
-
-
-
-
-
-
+// coupon management
+admin_route.get("/coupons",adminAuth,couponController.loadCouponPage);
+admin_route.post("/coupons",adminAuth,couponController.addCoupon);
+admin_route.get('/coupons/list',adminAuth, couponController.getCoupons);
+admin_route.delete('/coupons/:name',adminAuth,couponController.deleteCoupon)
+admin_route.put('/coupons/:name',adminAuth,couponController.updateCoupon);
+admin_route.get('/coupon/users/:name',adminAuth,couponController.getCouponsUsers)
 module.exports = admin_route;
 

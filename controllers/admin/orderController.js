@@ -15,40 +15,79 @@ const loadOrderList = async (req, res) => {
     res.redirect("/admin/pageError");
   }
 };
- const updateOrderStatus=async(req,res)=>{
-    try {
-        const {orderId}=req.params;
-        const {status}=req.body;
-        const validStatuses=["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Return Request", "Returned"];
-        if(!validStatuses.includes(status)){
-            return res.status(400).json({
-                success:false,
-                message:"Invalid status value",
-            })
-        }
-        const order=await Order.findOneAndUpdate(
-            { orderId},
-            {status},
-            {new:true}
-        )
-        if(!order){
-            return res.status(404).json({
-                success:false,
-                message:"Order Not found"
-            })
-        }
-        res.status(200).json({
-            success:true,
-            message:'order status updated successfully'
-        })
-    } catch (error) {
-        console.error("Error updating order status:", error);
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    const validStatuses = [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+      "Return Request",
+      "Returned",
+      "Partially Returned", 
+    ];
+    if (!validStatuses.includes(status)) {
+      console.error(`Invalid status: ${status}`);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value",
+      });
+    }
+
+    // Find the order
+    const order = await Order.findOne({ orderId }).populate('orderedItems.product');
+    if (!order) {
+      console.error(`Order ${orderId} not found`);
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Prevent updating status if order is cancelled
+    if (order.status === "Cancelled") {
+      console.error(`Order ${orderId} is already cancelled`);
+      return res.status(400).json({
+        success: false,
+        message: "Cannot update status of a cancelled order",
+      });
+    }
+
+    // Update status
+    order.status = status;
+
+    // For COD orders, set isPaid and paidAt when status is Delivered
+    if (status === "Delivered" && order.paymentMethod === "cod") {
+      order.isPaid = true;
+      order.paidAt = new Date();
+      console.log(`Updated COD order ${orderId} to isPaid: true, paidAt: ${order.paidAt}`);
+    }
+
+    // Update timestamp
+    order.updatedAt = new Date();
+
+    // Save the order
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      order, 
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
     res.status(500).json({
       success: false,
       message: "An error occurred while updating the status",
+      error: error.message,
     });
   }
-}
+};
 
 const loadOrderDetail=async(req,res)=>{
 try {
@@ -247,7 +286,7 @@ const approveReturn = async (req, res) => {
     await order.save();
     console.log(`Return approved for item ${itemId} in order ${orderId}. Order status: ${order.status}`);
 
-    res.status(200).json({
+    const responseData = {
       success: true,
       message: "Return approved successfully",
       data: {
@@ -257,9 +296,13 @@ const approveReturn = async (req, res) => {
         allItemsReturned,
         someItemsReturned,
       },
-    });
+    };
+    console.log('Sending response:', responseData);
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json(responseData);
   } catch (error) {
     console.error("Error approving return:", error);
+    res.setHeader('Content-Type', 'application/json');
     res.status(500).json({
       success: false,
       message: "An error occurred while approving the return",

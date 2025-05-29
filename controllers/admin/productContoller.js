@@ -198,10 +198,6 @@ const addProductOffer = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    await Category.updateOne(
-      { _id: findProduct.category },
-      { $set: { categoryOffer: 0 } }
-    );
 
     return res.json({ status: true });
   } catch (error) {
@@ -249,9 +245,11 @@ const unblockProduct=async(req,res)=>{
 const geteditProduct=async(req,res)=>{
 try {
   const id=req.query.id;
-  const findProduct=await Product.findOne({_id:id});
+  const findProduct=await Product.findOne({_id:id}).populate("category");
   const category=await Category.find({});
   const brand=await Brand.find({});
+  console.log(findProduct)
+  console.log(category)
   res.render("edit-product",{product:findProduct,activePage:"products",brand:brand,cat:category})
 } catch (error) {
   console.log(error)

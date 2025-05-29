@@ -39,7 +39,7 @@ const orderSchema = new Schema(
         },
         returnStatus: {
           type: String,
-          enum: [null, "Requested", "Returned", "Rejected"], // Changed "Approved" to "Returned"
+          enum: [null, "Requested", "Returned", "Rejected"], 
           default: null,
         },
       },

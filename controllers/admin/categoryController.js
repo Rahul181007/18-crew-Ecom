@@ -68,36 +68,42 @@ const addCategory = async (req, res) => {
   };
 
 //  addCategory Offer
-const addCategoryOffer=async(req,res)=>{
-    try {
-        const percentage=parseInt(req.body.percentage);     // Convert the percentage value from the request body to an integer
-        const categoryId=req.body.categoryId;               // Get the categoryId from the request body
-       const category= await Category.findById(categoryId);
-       if(!category){                                        // If no such category is found, return a 404 error response
-          return res.status(404).json({status:false,message:"Category Not found"})
-       }
-      const products=await Product.find({category:categoryId}); // Find all products that belong to this category
-      const hasProductOffer=products.some((product)=>product.productOffer>percentage);// Check if any product in this category already has a product offer greater than the new category offer
-      if(hasProductOffer){    
-          return res.json({status:false,message:"Product within this category has already has product offer"})  // If any product has a better individual offer, block the category offer to avoid conflict
-      }
-      await Category.updateOne({_id:categoryId},{$set:{categoryOffer:percentage}}); // If everything is valid, update the category with the new categoryOffer percentage
-      
-      for(let product of products){ // Loop through all the products in the category
-        product.productOffer=0;// Reset any product-level offer
-        product.salePrice=product.regularPrice;// Reset the sale price back to the regular price
-        await product.save()
-      }
-     
-     return res.json({status:true});
+const addCategoryOffer = async (req, res) => {
+  try {
+    const percentage = parseInt(req.body.percentage);
+    const categoryId = req.body.categoryId;
 
-
-
-    } catch (error) {
-        res.status(500).json({status:false,message:"internal server error"})
+    // Validate inputs
+    if (!categoryId || isNaN(percentage) || percentage < 0) {
+      return res.status(400).json({ status: false, message: 'Invalid category ID or percentage' });
     }
 
-}
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ status: false, message: 'Category not found' });
+    }
+
+    const products = await Product.find({ category: categoryId });
+
+    // Block category offer if any product has a better product-level offer
+    const hasProductOffer = products.some(product => product.productOffer > percentage);
+    if (hasProductOffer) {
+      return res.json({ status: false, message: 'One or more products in this category already have a better individual offer' });
+    }
+
+    // Update the category offer
+    await Category.updateOne(
+      { _id: categoryId },
+      { $set: { categoryOffer: percentage } }
+    );
+
+    return res.json({ status: true });
+  } catch (error) {
+    console.error('Error in addCategoryOffer:', error);
+    res.status(500).json({ status: false, message: 'Internal server error' });
+  }
+};
+
 //  removeCategory Offer
 const removeCategoryOffer=async(req,res)=>{
  try {

@@ -8,13 +8,11 @@
   body {
     font-family: 'Poppins', sans-serif;
   }
-
   .navbar-brand {
     font-weight: 700;
     font-size: 1.5rem;
     letter-spacing: 1px;
   }
-
   .brand-dot {
     width: 10px;
     height: 10px;
@@ -22,57 +20,52 @@
     border-radius: 50%;
     display: inline-block;
   }
-
   .navbar-nav {
     gap: 2rem;
   }
-
   .product-thumbnail img {
     transition: transform 0.3s ease;
   }
-
   .product-thumbnail:hover img {
     transform: scale(1.05);
   }
-
   .product-thumbnail {
     width: 100px;
     height: 100px;
     overflow: hidden;
     margin: auto;
   }
-
   .product-thumbnail img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 0 !important;
   }
-
   .table td, .table th {
     vertical-align: middle;
   }
-    .breadcrumb-item a {
-    color: #000 !important;          
-    text-decoration: none !important; 
+  .breadcrumb-item a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+  .alert-container {
+    display: none; /* Hidden by default */
   }
 </style>
 
-<!-- Navbar -->
+<!-- Navbar (unchanged) -->
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-3">
   <div class="container">
     <a href="/" class="navbar-brand d-flex align-items-center gap-2">
       18-CREW <span class="brand-dot"></span>
     </a>
-
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="navbarContent">
       <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link <%= page === 'home' ? 'active' : '' %>" href="/">HOME</a>
+          <a class="nav-link <%= page === 'home' ? 'active' : '' %>" b href="/">HOME</a>
         </li>
         <li class="nav-item">
           <a class="nav-link <%= page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
@@ -83,8 +76,6 @@
         <li class="nav-item">
           <a class="nav-link <%= page === 'contact' ? 'active' : '' %>" href="#">CONTACT</a>
         </li>
-
-        <!-- Move user dropdown inside collapse so it's visible on small screens -->
         <% if (locals?.user || user) { %>
           <li class="nav-item dropdown d-lg-none">
             <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
@@ -102,8 +93,6 @@
           </li>
         <% } %>
       </ul>
-
-      <!-- User dropdown for large screens -->
       <div class="d-none d-lg-flex align-items-center gap-3">
         <% if (locals?.user || user) { %>
           <div class="dropdown">
@@ -126,7 +115,7 @@
   </div>
 </nav>
 
-<!-- Breadcrumb -->
+<!-- Breadcrumb (unchanged) -->
 <% if (typeof pageTitle !== 'undefined') { %>
   <nav class="bg-light py-2" aria-label="breadcrumb">
     <div class="container">
@@ -138,11 +127,15 @@
   </nav>
 <% } %>
 
-
 <!-- Main Cart Layout -->
 <main class="main">
   <section class="mt-5 mb-5">
     <div class="container">
+      <!-- Alert Container for Stock Error Messages -->
+      <div id="stock-alert" class="alert-container alert alert-danger alert-dismissible fade show" role="alert">
+        <span id="stock-alert-message"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
       <div class="row">
         <!-- Cart Table -->
         <div class="col-lg-9">
@@ -164,7 +157,7 @@
                     <tr>
                       <td>
                         <div class="product-thumbnail">
-                          <img src="/uploads/re-image/<%= data[i].productDetails[0].productImage[0] %>" alt="Product" />
+                          <img src="/Uploads/re-image/<%= data[i].productDetails[0].productImage[0] %>" alt="Product" />
                         </div>
                       </td>
                       <td>
@@ -173,9 +166,9 @@
                           <%= data[i].productDetails[0].category.name %> — <%= data[i].productDetails[0].brand %>
                         </small>
                       </td>
-                     <td>
-                      <span class="badge bg-dark"><%= data[i].size || 'N/A' %></span>
-                     </td>
+                      <td>
+                        <span class="badge bg-dark"><%= data[i].size || 'N/A' %></span>
+                      </td>
                       <td>
                         ₹<span id="subTotal<%= data[i]._id %>">
                           <%= data[i].totalPrice.toFixed(2) %>
@@ -186,14 +179,11 @@
                       <td>
                         <div class="d-flex justify-content-center align-items-center">
                           <button class="btn btn-sm btn-outline-dark"
-  onclick="changeQuantity('<%= data[i]._id %>', 'quantity<%= data[i]._id %>', 1, <%= data[i].price %>)">+</button>
-
-
+                            onclick="changeQuantity('<%= data[i]._id %>', 'quantity<%= data[i]._id %>', 1, <%= data[i].price %>)">+</button>
                           <input class="form-control text-center mx-2" style="width: 50px;" 
                             readonly value="<%= data[i].quantity %>" id="quantity<%= data[i]._id %>">
                           <button class="btn btn-sm btn-outline-dark"
-  onclick="changeQuantity('<%= data[i]._id %>', 'quantity<%= data[i]._id %>', -1, <%= data[i].price %>)">-</button>
-
+                            onclick="changeQuantity('<%= data[i]._id %>', 'quantity<%= data[i]._id %>', -1, <%= data[i].price %>)">-</button>
                         </div>
                       </td>
                       <td>
@@ -236,7 +226,7 @@
               </li>
             </ul>
             <% if (data.length > 0) { %>
-              <a href="/checkout" class="btn btn-dark w-100 mt-3">Proceed to Checkout</a>
+              <button id="proceed-to-checkout" class="btn btn-dark w-100 mt-3">Proceed to Checkout</button>
             <% } else { %>
               <a href="/shop" class="btn btn-dark w-100 mt-3">Continue Shopping</a>
             <% } %>
@@ -283,7 +273,6 @@ function changeQuantity(cartItemId, quantityInputId, change, price) {
   });
 }
 
-
 function confirmRemove(cartItemId) {
   Swal.fire({
     title: 'Remove this item?',
@@ -312,6 +301,52 @@ function confirmRemove(cartItemId) {
     }
   });
 }
+
+document.getElementById('proceed-to-checkout')?.addEventListener('click', function (e) {
+  e.preventDefault(); // Prevent default navigation
+  Swal.fire({
+    title: 'Checking stock...',
+    text: 'Please wait while we verify stock availability.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  $.ajax({
+    url: '/checkStockBeforeCheckout', 
+    method: 'GET',
+    success: (response) => {
+      if (response.success) {
+        
+        window.location.href = '/checkout';
+      } else {
+        
+        let message = response.message + '<br><ul>';
+        response.outOfStockItems.forEach(item => {
+          message += `<li>${item.productName} (Size: ${item.size}) - Available: ${item.availableStock}, Requested: ${item.requestedQuantity}</li>`;
+        });
+        message += '</ul>';
+        Swal.fire({
+          icon: 'error',
+          title: 'Stock Issue',
+          html: message,
+          confirmButtonColor: '#d33',
+          confirmButtonText: 'OK'
+        });
+      }
+    },
+    error: (xhr) => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: xhr.responseJSON?.message || 'Failed to check stock. Please try again.',
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'OK'
+      });
+    }
+  });
+});
 </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

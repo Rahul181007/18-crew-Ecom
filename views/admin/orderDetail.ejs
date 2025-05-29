@@ -254,7 +254,7 @@
             <% order.orderedItems.forEach(item => { %>
               <li class="list-group-item d-flex align-items-center">
                 <% if (item.product?.productImage) { %>
-                  <img src="/uploads/re-image/<%= item.product.productImage %>" alt="<%= item.product.productName %>" class="product-image me-3">
+                  <img src="/uploads/re-image/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>" class="product-image me-3">
                 <% } %>
                 <div>
                   <p class="mb-1"><strong><%= item.product?.productName || 'Unknown Product' %></strong></p>

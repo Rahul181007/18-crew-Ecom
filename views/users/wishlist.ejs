@@ -1,11 +1,14 @@
 <%- include("../layouts/header.ejs") %>
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
 <style>
   body {
     font-family: 'Poppins', sans-serif;
     background-color: #f8f9fa;
+    color: #333;
   }
 
   .navbar-brand {
@@ -47,6 +50,13 @@
     background-color: red;
     border-radius: 50%;
     border: 1px solid white;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
   }
 
   .page-header {
@@ -185,11 +195,9 @@
     <a href="/" class="navbar-brand d-flex align-items-center gap-2">
       18-CREW <span class="brand-dot"></span>
     </a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="navbarContent">
       <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
         <li class="nav-item">
@@ -204,13 +212,13 @@
         <li class="nav-item">
           <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="#">CONTACT</a>
         </li>
-
         <% if (locals?.user || user) { %>
           <li class="nav-item dropdown d-lg-none">
-            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <%= user.name %>
             </a>
             <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
               <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
             </ul>
           </li>
@@ -220,21 +228,20 @@
           </li>
         <% } %>
       </ul>
-
       <div class="d-none d-lg-flex align-items-center gap-3">
         <% if (locals?.user || user) { %>
           <div class="dropdown">
-            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <%= user.name %>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
             </ul>
           </div>
         <% } else { %>
-          <a href="/signin" class="text-dark" style="font-size: 1.5rem;">
+          <a href="/signin" class="text-dark" style="font-size: 1.5rem;" aria-label="Sign in">
             <i class="bi bi-person"></i>
           </a>
         <% } %>
@@ -244,7 +251,7 @@
             <span class="badge-dot"></span>
           <% } %>
         </a>
-        <a href="/getCartPage" class="nav-link position-relative" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
+        <a href="/getCartPage" class="nav-link position-relative" style="font-size: 1.1rem;" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
           <i class="bi bi-bag"></i>
           <% if (cartCount > 0) { %>
             <span class="badge-dot"></span>
@@ -270,26 +277,28 @@
     <div class="container">
       <div class="row">
         <div class="col-12">
-          <% if (wishlistCount > 0) { %>
-          <% for(let product of wishlist)  {%>
-              <div class="wishlist-card">
-                <img src="/Uploads/re-image/<%=product.productImage[0]  %>" alt="<%=product.productName  %>" />
+          <% if (wishlistCount > 0 && wishlist && wishlist.length > 0) { %>
+            <% wishlist.forEach(product => { %>
+              <div class="wishlist-card" data-product-id="<%= product._id %>">
+                <img src="/Uploads/re-image/<%= product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg' %>" alt="<%= product.productName || 'Product Image' %>" />
                 <div class="product-info">
                   <h5 class="product-name">
-                    <a href="/productDetails?id=<%= product._id %>" class="text-black text-decoration-none"><%=product.productName  %></a>
+                    <a href="/productDetails?id=<%= product._id %>" class="text-black text-decoration-none">
+                      <%= product.productName || 'Unnamed Product' %>
+                    </a>
                   </h5>
                   <p class="product-description">
-                    <%=product.category.name  %><br>
-                    <%=product.brand%>
+                    <%= product.category && product.category.name ? product.category.name : 'Unknown Category' %><br>
+                    <%= product.brand && product.brand.brandName ? product.brand.brandName : product.brand || 'Unknown Brand' %>
                   </p>
                 </div>
-                <div class="price">₹<%=product.salePrice %></div>
-                <a href="#" onclick="promptForSize('<%= product._id %>', <%= JSON.stringify(product.sizes.map(s=>s.size) || []) %>)" class="btn btn-primary">Add to Cart</a>
-                <a href="#" onclick="confirmRemove('<%= product._id %>')" class="btn btn-danger">
+                <div class="price">₹<%= product.salePrice ? product.salePrice.toLocaleString('en-IN') : '0' %></div>
+                <a href="#" onclick="promptForSize('<%= product._id %>', <%= JSON.stringify(product.sizes || []) %>)" class="btn btn-primary" aria-label="Add <%= product.productName || 'product' %> to cart">Add to Cart</a>
+                <a href="#" onclick="removeFromWishlist('<%= product._id %>', this)" class="btn btn-danger" aria-label="Remove <%= product.productName || 'product' %> from wishlist">
                   <i class="bi bi-trash"></i>
                 </a>
               </div>
-           <% } %>
+            <% }) %>
           <% } else { %>
             <div class="empty-wishlist">
               <p class="lead mb-4">No items found in Wishlist</p>
@@ -317,17 +326,31 @@ async function promptForSize(productId, sizes) {
     return;
   }
 
+  const availableSizes = sizes.filter(size => size.stock > 0);
+  if (availableSizes.length === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Out of Stock',
+      text: 'No sizes are currently in stock.',
+      timer: 1500,
+      showConfirmButton: false
+    });
+    return;
+  }
+
   const { value: size } = await Swal.fire({
     title: 'Select Size',
     input: 'select',
-    inputOptions: sizes.reduce((options, size) => {
-      options[size] = size;
+    inputOptions: availableSizes.reduce((options, size) => {
+      options[size.size] = size.size;
       return options;
     }, {}),
     inputPlaceholder: 'Choose a size',
     showCancelButton: true,
     confirmButtonText: 'Add to Cart',
     cancelButtonText: 'Cancel',
+    confirmButtonColor: '#1a1517',
+    cancelButtonColor: '#6c757d',
     inputValidator: (value) => {
       if (!value) {
         return 'Please select a size!';
@@ -336,98 +359,141 @@ async function promptForSize(productId, sizes) {
   });
 
   if (size) {
-    await addToCart(productId, size);
+    await addToCart(productId, size, true);
   }
 }
 
-async function addToCart(productId, size) {
+async function addToCart(productId, size, fromWishlist = false) {
   try {
     const response = await fetch('/addToCart', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId, size }),
+      body: JSON.stringify({ productId, size, fromWishlist }),
     });
     const data = await response.json();
     if (response.ok && data.status) {
       Swal.fire({
         icon: 'success',
-        title: 'Added to Cart',
+        title: fromWishlist ? 'Added to Cart & Removed from Wishlist' : 'Added to Cart',
         text: `Product added with size ${size} successfully!`,
         timer: 1500,
         showConfirmButton: false,
       });
-      const cartBadge = document.querySelector('.nav-link .badge-dot');
-      if (cartBadge) {
-        cartBadge.classList.add('active');
-        setTimeout(() => cartBadge.classList.remove('active'), 300);
+
+      // Update cart badge
+      const cartLink = document.querySelector('a[href="/getCartPage"]');
+      if (cartLink) {
+        let cartBadge = cartLink.querySelector('.badge-dot');
+        if (!cartBadge && data.cartCount > 0) {
+          cartBadge = document.createElement('span');
+          cartBadge.className = 'badge-dot';
+          cartLink.appendChild(cartBadge);
+        }
+        if (cartBadge) {
+          cartBadge.style.display = data.cartCount > 0 ? 'block' : 'none';
+        }
+      }
+
+      // If from wishlist, remove the card and update wishlist count
+      if (fromWishlist && data.productId) {
+        const card = document.querySelector(`.wishlist-card[data-product-id="${data.productId}"]`);
+        if (card) {
+          card.remove();
+        }
+        const wishlistLink = document.querySelector('a[href="/wishlist"]');
+        if (wishlistLink) {
+          let wishlistBadge = wishlistLink.querySelector('.badge-dot');
+          if (data.wishlistCount === 0 && wishlistBadge) {
+            wishlistBadge.remove();
+          }
+          if (data.wishlistCount > 0 && !wishlistBadge) {
+            wishlistBadge = document.createElement('span');
+            wishlistBadge.className = 'badge-dot';
+            wishlistLink.appendChild(wishlistBadge);
+          }
+        }
+        // Show empty wishlist message if no items remain
+        const wishlistSection = document.querySelector('.wishlist-section .row .col-12');
+        if (data.wishlistCount === 0) {
+          wishlistSection.innerHTML = `
+            <div class="empty-wishlist">
+              <p class="lead mb-4">No items found in Wishlist</p>
+              <a href="/shop">Explore Collection</a>
+            </div>
+          `;
+        }
       }
     } else {
       Swal.fire({
         icon: 'error',
-        title: 'Oops',
-        text: data.message || 'Something went wrong.',
+        title: 'Error',
+        text: data.message || 'Failed to add to cart.',
+        confirmButtonColor: '#1a1517',
       });
     }
-  } catch {
+  } catch (error) {
     Swal.fire({
       icon: 'error',
       title: 'Network Error',
       text: 'Unable to contact the server.',
+      confirmButtonColor: '#1a1517',
     });
   }
 }
 
-async function addToWishlist(productId) {
+async function removeFromWishlist(productId, element) {
   try {
-    const response = await fetch("/addToWishlist", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const response = await fetch('/deleteitemwish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ productId }),
     });
-
     const data = await response.json();
-
-    if (response.ok && data.status === true) {
+    if (response.ok && data.status) {
       Swal.fire({
-        icon: "success",
-        title: "Added to Wishlist",
-        text: "Product added successfully!",
+        icon: 'success',
+        title: 'Removed from Wishlist',
+        text: 'Product removed successfully!',
         timer: 1500,
         showConfirmButton: false,
       });
+      const card = element.closest('.wishlist-card');
+      if (card) {
+        card.remove();
+      }
+      const wishlistLink = document.querySelector('a[href="/wishlist"]');
+      if (wishlistLink) {
+        let wishlistBadge = wishlistLink.querySelector('.badge-dot');
+        if (data.wishlistCount === 0 && wishlistBadge) {
+          wishlistBadge.remove();
+        }
+      }
+      const wishlistSection = document.querySelector('.wishlist-section .row .col-12');
+      if (data.wishlistCount === 0) {
+        wishlistSection.innerHTML = `
+          <div class="empty-wishlist">
+            <p class="lead mb-4">No items found in Wishlist</p>
+            <a href="/shop">Explore Collection</a>
+          </div>
+        `;
+      }
     } else {
       Swal.fire({
-        icon: "error",
-        title: "Oops",
-        text: data.message || "Something went wrong.",
+        icon: 'error',
+        title: 'Error',
+        text: data.message || 'Failed to remove from wishlist.',
+        confirmButtonColor: '#1a1517',
       });
     }
-  } catch (err) {
+  } catch (error) {
     Swal.fire({
-      icon: "error",
-      title: "Network Error",
-      text: "Unable to contact the server.",
+      icon: 'error',
+      title: 'Network Error',
+      text: 'Unable to contact the server.',
+      confirmButtonColor: '#1a1517',
     });
   }
 }
-
-function confirmRemove(productId) {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: 'You are about to remove this item.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, remove it!',
-    cancelButtonText: 'Cancel',
-    confirmButtonColor: '#dc3545',
-    cancelButtonColor: '#6c757d'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      window.location.href = `/deleteitemwish?id=${productId}`;
-    }
-  });
-}
 </script>
+
 <%- include("../layouts/footer.ejs") %>
