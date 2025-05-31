@@ -99,7 +99,7 @@ const addCoupon = async (req, res) => {
 
 const getCoupons = async (req, res) => {
   try {
-    const coupons = await Coupon.find().select('name discountType offerPrice offerPercentage minimumPrice maxUsage expireOn islist usedBy')
+    const coupons = await Coupon.find().select('name discountType offerPrice offerPercentage minimumPrice maxUsage expireOn isActive usedBy')
     .populate('usedBy.userId','name email')
     res.status(200).json(coupons);
   } catch (error) {

@@ -3,6 +3,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
 <style>
   :root {
@@ -69,15 +70,15 @@
     width: 100%;
   }
 
-  .badge-dot {
+ .badge-dot {
     position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 8px;
-    height: 8px;
-    background-color: var(--accent-color);
+    top: -2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    background: var(--primary-color);
     border-radius: 50%;
-    border: 1px solid white;
+    border: 2px solid var(--card-bg);
   }
 
   /* Product Gallery Styles */
@@ -474,6 +475,84 @@
   .product-info .text-muted {
     font-size: 0.85rem;
   }
+/* Premium Toast Styles */
+.toast-premium-success {
+  background: linear-gradient(135deg, #38a169 0%, #48bb78 100%) !important;
+  padding: 16px 24px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  color: white !important;
+  margin: 12px !important;
+}
+
+.toast-premium-error {
+  background: linear-gradient(135deg, #e53e3e 0%, #f56565 100%) !important;
+  padding: 16px 24px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  color: white !important;
+  margin: 12px !important;
+}
+
+.toast-premium-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-tick-animation {
+  width: 24px;
+  height: 24px;
+}
+
+.toast-icon {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Checkmark animation */
+.checkmark {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 4;
+  stroke: #fff;
+  stroke-miterlimit: 10;
+  animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+}
+
+.checkmark__circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 4;
+  stroke-miterlimit: 10;
+  stroke: #fff;
+  fill: none;
+  animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark__check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards;
+}
+
+@keyframes stroke {
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes scale {
+  0%, 100% { transform: none; }
+  50% { transform: scale3d(1.1, 1.1, 1); }
+}
+
+@keyframes fill {
+  100% { box-shadow: inset 0 0 0 100vh transparent; }
+}
   
   /* Responsive adjustments */
   @media (max-width: 576px) {
@@ -630,8 +709,10 @@
       <div class="discount-badge"><%= product.productOffer %>% OFF</div>
     <% } else if (product.category.categoryOffer > 0) { %>
       <div class="discount-badge"><%= product.category.categoryOffer %>% OFF</div>
-    <% } %>
+    <% }else{ %>
+      <div class="discount-badge"><%= (product.regularPrice-product.salePrice )/100%>% OFF</div>
   <% } %>
+    <% } %>
 </div>
       
       <!-- Stock Status Badge -->
@@ -810,7 +891,7 @@
   }
 
   // Add to cart function with stock validation
-  async function addToCart(productId) {
+async function addToCart(productId) {
     const sizeInput = document.querySelector('input[name="size"]:checked');
     
     if (!sizeInput) {
@@ -830,13 +911,25 @@
       const data = await response.json();
       
       if (response.ok && data.status) { 
-        Swal.fire({
-          position: 'top-end',
-          icon: 'success',
-          title: 'Added to cart',
-          showConfirmButton: false,
-          timer: 1500
-        });
+        // Premium success toast with tick animation
+        const toast = Toastify({
+          text: `<div class="toast-premium-content">
+                  <div class="toast-tick-animation">
+                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                      <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                      <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                  </div>
+                  <span>Added to cart</span>
+                </div>`,
+          duration: 2000,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+          className: "toast-premium-success",
+          escapeMarkup: false
+        }).showToast();
+        
         // Update cart badge
         const cartLink = document.querySelector('a[href="/getCartPage"]');
         if (cartLink) {
@@ -851,21 +944,36 @@
           }
         }
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed',
-          text: data.message || 'Could not add to cart'
-        });
+        // Premium error toast
+        Toastify({
+          text: `<div class="toast-premium-content">
+                  <div class="toast-icon">✕</div>
+                  <span>${data.message || 'Could not add to cart'}</span>
+                </div>`,
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          className: "toast-premium-error",
+          stopOnFocus: true,
+          escapeMarkup: false
+        }).showToast();
       }
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Network error occurred'
-      });
+      // Premium network error toast
+      Toastify({
+        text: `<div class="toast-premium-content">
+                <div class="toast-icon">⚠</div>
+                <span>Network error occurred</span>
+              </div>`,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        className: "toast-premium-error",
+        stopOnFocus: true,
+        escapeMarkup: false
+      }).showToast();
     }
-  }
-
+}
   async function buyNow(productId) {
     const sizeInput = document.querySelector('input[name="size"]:checked');
     
@@ -903,73 +1011,111 @@
   }
 
   // Toggle wishlist function
-  async function toggleWishlist(productId) {
+async function toggleWishlist(productId) {
     const wishlistHeart = document.getElementById('wishlist-heart');
     const isInWishlist = wishlistHeart.classList.contains('active');
     const endpoint = isInWishlist ? '/removeFromWishlist' : '/addToWishlist';
     
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok && data.status) {
-        Swal.fire({
-          position: 'top-end',
-          icon: 'success',
-          title: isInWishlist ? 'Removed from Wishlist' : 'Added to Wishlist',
-          showConfirmButton: false,
-          timer: 1500
+        // Show processing state with animation
+        wishlistHeart.classList.add('processing');
+        wishlistHeart.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId })
         });
         
-        // Toggle heart state
-        wishlistHeart.classList.toggle('active');
-        wishlistHeart.classList.toggle('bi-heart');
-        wishlistHeart.classList.toggle('bi-heart-fill');
-        wishlistHeart.setAttribute('aria-label', isInWishlist ? 'Add to wishlist' : 'Remove from wishlist');
+        const data = await response.json();
         
-        // Update wishlist badge
-        const wishlistLink = document.querySelector('a[href="/wishlist"]');
-        if (wishlistLink) {
-          let wishlistBadge = wishlistLink.querySelector('.badge-dot');
-          if (!wishlistBadge && data.wishlistCount > 0) {
-            wishlistBadge = document.createElement('span');
-            wishlistBadge.className = 'badge-dot';
-            wishlistLink.appendChild(wishlistBadge);
-          }
-          if (data.wishlistCount === 0 && wishlistBadge) {
-            wishlistBadge.remove();
-          }
+        if (response.ok && data.status) {
+            // Premium success toast with animation
+            Toastify({
+                text: `<div class="toast-premium-content">
+                        <div class="toast-tick-animation">
+                            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        </div>
+                        <span>${isInWishlist ? 'Removed from Wishlist' : 'Added to Wishlist'}</span>
+                    </div>`,
+                duration: 2000,
+                gravity: "top",
+                position: "right",
+                className: "toast-premium-success",
+                escapeMarkup: false
+            }).showToast();
+            
+            // Toggle heart state with animation
+            wishlistHeart.classList.remove('processing');
+            wishlistHeart.innerHTML = isInWishlist ? '<i class="bi bi-heart"></i>' : '<i class="bi bi-heart-fill"></i>';
+            wishlistHeart.classList.toggle('active');
+            wishlistHeart.setAttribute('aria-label', isInWishlist ? 'Add to wishlist' : 'Remove from wishlist');
+            
+            // Add bounce animation
+            wishlistHeart.classList.add('animate-bounce');
+            setTimeout(() => wishlistHeart.classList.remove('animate-bounce'), 1000);
+            
+            // Update wishlist badge
+            const wishlistLink = document.querySelector('a[href="/wishlist"]');
+            if (wishlistLink) {
+                let wishlistBadge = wishlistLink.querySelector('.badge-dot');
+                if (!wishlistBadge && data.wishlistCount > 0) {
+                    wishlistBadge = document.createElement('span');
+                    wishlistBadge.className = 'badge-dot';
+                    wishlistLink.appendChild(wishlistBadge);
+                }
+                if (data.wishlistCount === 0 && wishlistBadge) {
+                    wishlistBadge.remove();
+                }
+            }
+        } else if (response.status === 401) {
+            // Premium auth required toast
+            Toastify({
+                text: `<div class="toast-premium-content">
+                        <div class="toast-icon">🔒</div>
+                        <span>Please sign in to manage wishlist</span>
+                    </div>`,
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                className: "toast-premium-warning",
+                escapeMarkup: false,
+                onClick: () => window.location.href = '/signin'
+            }).showToast();
+        } else {
+            // Premium error toast
+            Toastify({
+                text: `<div class="toast-premium-content">
+                        <div class="toast-icon">✕</div>
+                        <span>${data.message || `Could not ${isInWishlist ? 'remove from' : 'add to'} wishlist`}</span>
+                    </div>`,
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                className: "toast-premium-error",
+                escapeMarkup: false
+            }).showToast();
         }
-      } else if (response.status === 401) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Login Required',
-          text: 'Please sign in to manage wishlist',
-          confirmButtonText: 'Sign In'
-        }).then(() => {
-          window.location.href = '/signin';
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: data.message || `Could not ${isInWishlist ? 'remove from' : 'add to'} wishlist`
-        });
-      }
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Network error occurred'
-      });
+        // Premium network error toast
+        Toastify({
+            text: `<div class="toast-premium-content">
+                    <div class="toast-icon">⚠</div>
+                    <span>Network error occurred</span>
+                </div>`,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            className: "toast-premium-error",
+            escapeMarkup: false
+        }).showToast();
+    } finally {
+        wishlistHeart.classList.remove('processing');
     }
-  }
-
+}
   // Image zoom effect
   const zoomContainer = document.querySelector('.zoom-container');
   const zoomImage = document.querySelector('.zoom-image');
@@ -1008,5 +1154,8 @@
     });
   });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+
 
 <%- include("../layouts/footer.ejs") %>

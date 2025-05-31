@@ -39,7 +39,7 @@ const orderSchema = new Schema(
         },
         returnStatus: {
           type: String,
-          enum: [null, "Requested", "Returned", "Rejected"], 
+          enum: [null, "Requested", "Returned", "Rejected"],
           default: null,
         },
       },
@@ -72,7 +72,7 @@ const orderSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Return Request", "Returned", "Partially Returned"], // Added "Partially Returned"
+      enum: ["Initiated","Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Return Request", "Returned", "Partially Returned"],
     },
     createdOn: {
       type: Date,
@@ -82,6 +82,14 @@ const orderSchema = new Schema(
     couponApplied: {
       type: Boolean,
       default: false,
+    },
+    couponCode: {
+      type: String,
+      default: null,
+    },
+    tempCouponCode: {
+      type: String,
+      default: null,
     },
     paymentMethod: {
       type: String,
@@ -107,6 +115,20 @@ const orderSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    razorpayDetails: {
+      paymentId: {
+        type: String,
+        default: null,
+      },
+      orderId: {
+        type: String,
+        default: null,
+      },
+      signature: {
+        type: String,
+        default: null,
+      },
     },
   },
   { timestamps: true }

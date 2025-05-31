@@ -37,7 +37,7 @@ user_route.get("/auth/google",passport.authenticate("google",{scope:["profile","
 user_route.get("/auth/google/callback",passport.authenticate("google",{failureRedirect:"/register"}),(req,res)=>{
   
     req.session.user=req.user
-    console.log('Google user ID:', req.session.user);
+    console.log(req.user)
     res.redirect("/");
     
 })
@@ -91,6 +91,7 @@ user_route.post("/addToWishlist",userAuth,wishListController.addToWishlist)
 user_route.post("/deleteitemwish",userAuth,wishListController.removeFromWishlist)
 // checkout management
 user_route.get("/checkout",userAuth,checkoutController.loadCheckout);
+user_route.post("/retry-checkout",userAuth,checkoutController.retryCheckout)
 user_route.get("/checkStockBeforeCheckout", userAuth, checkoutController.checkStockBeforeCheckout);
 user_route.post("/deleteItem",userAuth,checkoutController.deleteProduct);
 user_route.post("/orderPlaced",userAuth,checkoutController.placeOrder);
@@ -99,8 +100,10 @@ user_route.get("/successPage",userAuth,checkoutController.successPage);
 user_route.get("/orders/:orderId",userAuth,checkoutController.orderDetails);
 user_route.post("/orders/cancel/:orderId",userAuth,checkoutController.cancelOrder);
 user_route.post("/orders/return/:orderId",userAuth,checkoutController.returnOrder);
-
+user_route.post('/verify-payment',userAuth,checkoutController.verifyPayment)
+user_route.get("/failedPage",userAuth,checkoutController.failedPage)
 // coupon management 
+
 user_route.post("/applyCoupon",userAuth, couponController.applyCoupon)
 user_route.post("/removeCoupon",userAuth,couponController.removeCoupon);
 
