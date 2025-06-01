@@ -6,149 +6,182 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
 <style>
+/* Updated Professional Styles */
 :root {
     --primary: #C586A5;
     --primary-dark: #A76C86;
+    --primary-light: #f0e1e8;
     --text-dark: #1A202C;
     --text-muted: #6B7280;
     --background: #F7FAFC;
     --white: #FFFFFF;
     --border: #E2E8F0;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.1);
+    --border-light: #f1f5f9;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --error: #EF4444;
     --success: #10B981;
 }
 
+/* Modern Typography */
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background-color: var(--background);
     color: var(--text-dark);
-    line-height: 1.6;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Improved section cards */
+/* Enhanced Section Cards */
 .section-card {
     background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
     box-shadow: var(--shadow);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .section-card:hover {
     box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
 }
 
 .section-card h4 {
     font-weight: 600;
     color: var(--text-dark);
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     font-size: 1.25rem;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 12px;
+    padding-bottom: 16px;
+    position: relative;
 }
 
-/* Enhanced order table */
+.section-card h4:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 48px;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+/* Modern Table */
 .order_table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .order_table th {
-    background: #F9FAFB;
-    font-weight: 500;
-    font-size: 0.875rem;
+    background: var(--white);
+    font-weight: 600;
+    font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
     padding: 12px 16px;
     text-align: left;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-light);
+    position: sticky;
+    top: 0;
 }
 
 .order_table td {
     padding: 16px;
     vertical-align: middle;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-light);
+    background: var(--white);
+}
+
+.order_table tr:last-child td {
+    border-bottom: none;
 }
 
 .order_table img {
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
     object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid var(--border);
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-/* Address cards */
+/* Enhanced Address Cards */
 .address-card {
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
     padding: 20px;
     margin-bottom: 16px;
     background: var(--white);
     position: relative;
     transition: all 0.3s ease;
     cursor: pointer;
+    overflow: hidden;
 }
 
 .address-card:hover {
     border-color: var(--primary);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-hover);
 }
 
 .address-card.selected {
     border: 2px solid var(--primary);
-    background-color: rgba(197, 134, 165, 0.05);
+    background-color: rgba(197, 134, 165, 0.03);
+}
+
+.address-card.selected:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary);
 }
 
 .address-card .form-check {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 16px;
+    right: 16px;
+    z-index: 2;
 }
 
-.address-card h5 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 12px;
-}
-
-.address-card address, .address-card p {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin: 4px 0;
-}
-
-/* Payment methods */
+/* Modern Payment Methods */
 .payment_method .form-check {
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 8px;
+    padding: 16px;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    margin-bottom: 12px;
     transition: all 0.2s ease;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .payment_method .form-check:hover {
     border-color: var(--primary);
+    transform: translateY(-2px);
 }
 
-.payment_method .form-check-input:checked ~ .form-check-label {
-    color: var(--primary);
+.payment_method .form-check-input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.payment_method .form-check-label {
     font-weight: 500;
+    flex: 1;
 }
 
-.payment_method .form-check-input:checked {
-    background-color: var(--primary);
-    border-color: var(--primary);
-}
-
-/* Order summary */
+/* Enhanced Order Summary */
 .order-summary {
     position: sticky;
-    top: 20px;
+    top: 24px;
 }
 
 .summary-table {
@@ -158,16 +191,19 @@ body {
 
 .summary-table th, .summary-table td {
     padding: 12px 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-light);
 }
 
 .summary-table th {
     font-weight: 500;
-    color: var(--text-dark);
+    color: var(--text-muted);
 }
 
-.summary-table .total-row {
-    font-weight: 600;
+.summary-table .total-row th,
+.summary-table .total-row td {
+    border-top: 2px solid var(--border);
+    border-bottom: none;
+    padding-top: 16px;
 }
 
 .summary-table .font-xl {
@@ -176,15 +212,18 @@ body {
     color: var(--primary);
 }
 
-/* Buttons */
+/* Modern Buttons */
 .btn-primary {
     background: var(--primary);
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 14px 24px;
+    border-radius: 12px;
     color: var(--white);
-    font-weight: 500;
-    transition: all 0.3s ease;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.8125rem;
 }
 
 .btn-primary:hover {
@@ -193,40 +232,82 @@ body {
     box-shadow: var(--shadow-hover);
 }
 
-.btn-primary:disabled {
-    background: #D1D5DB;
-    transform: none;
-    box-shadow: none;
-    cursor: not-allowed;
+.btn-outline-primary {
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
-/* Coupon section */
+.btn-outline-primary:hover {
+    background: var(--primary-light);
+}
+
+/* Professional Coupon Section */
 .coupon-section {
     margin-top: 24px;
     padding-top: 24px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border-light);
 }
 
 .coupon-list {
-    margin-top: 16px;
-    max-height: 200px;
-    overflow-y: auto;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 0;
+    border-radius: 12px;
+    background-color: var(--white);
+    border: 1px solid transparent;
 }
 
-.coupon-item {
-    display: flex;
-    justify-content: space-between;
+.coupon-list.show {
+    max-height: 400px;
+    margin-top: 12px;
+    border-color: var(--border-light);
     padding: 12px;
-    border-bottom: 1px solid var(--border);
+}
+
+#toggleCouponsBtn {
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    font-weight: 500;
+    font-size: 0.8125rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+#toggleCouponsBtn:hover {
+    background: var(--primary-light);
+}
+
+#toggleCouponsBtn .bi-chevron-down {
+    transition: transform 0.3s ease;
     font-size: 0.875rem;
 }
 
+#toggleCouponsBtn.collapsed .bi-chevron-down {
+    transform: rotate(180deg);
+}
+
+.coupon-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 0.8125rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--background);
+    transition: all 0.2s ease;
+}
+
 .coupon-item:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .coupon-item:hover {
-    background-color: #F9FAFB;
+    background-color: var(--primary-light);
+    transform: translateX(2px);
 }
 
 .coupon-name {
@@ -236,22 +317,79 @@ body {
 
 .coupon-details {
     color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* Input Group Enhancements */
+.input-group {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.form-control {
+    border: 1px solid var(--border-light);
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(197, 134, 165, 0.1);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .order_table th, .order_table td {
-        padding: 8px;
-        font-size: 0.8125rem;
+    .section-card {
+        padding: 20px;
+        border-radius: 12px;
+    }
+    
+    .order_table th, 
+    .order_table td {
+        padding: 12px;
     }
     
     .address-card {
         padding: 16px;
     }
-    
-    .section-card {
-        padding: 16px;
-    }
+}
+
+/* Micro-interactions */
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(197, 134, 165, 0.25);
+}
+
+/* Loading state for buttons */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-loading:after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: var(--white);
+    border-radius: 50%;
+    animation: button-loading-spinner 1s ease infinite;
+}
+
+@keyframes button-loading-spinner {
+    from { transform: rotate(0turn); }
+    to { transform: rotate(1turn); }
 }
 </style>
 
@@ -432,30 +570,38 @@ body {
                     </table>
 
                     <!-- Coupon Section -->
-                    <div class="coupon-section">
-                        <h5>Apply Coupon</h5>
-                        <div class="input-group mb-2">
-                            <input type="text" id="couponCode" class="form-control" placeholder="Enter coupon code">
-                            <button class="btn btn-primary" type="button" id="applyCoupon">Apply</button>
-                        </div>
-                        <div id="couponMessage" class="small mb-2"></div>
-                        <% if (Coupon && Coupon.length > 0) { %>
-                            <div class="coupon-list">
-                                <% Coupon.forEach(coupon => { %>
-                                    <div class="coupon-item">
-                                        <span class="coupon-name"><%= coupon.name %></span>
-                                        <span class="coupon-details">
-                                            <% if (coupon.offerPercentage) { %>
-                                                <%= coupon.offerPercentage %>% off, Min. ₹<%= coupon.minimumPrice %>
-                                            <% } else { %>
-                                                ₹<%= coupon.offerPrice %> off, Min. ₹<%= coupon.minimumPrice %>
-                                            <% } %>
-                                        </span>
-                                    </div>
-                                <% }) %>
-                            </div>
+<!-- Coupon Section -->
+<div class="coupon-section">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">Apply Coupon</h5>
+        <% if (Coupon && Coupon.length > 0) { %>
+            <button class="btn btn-sm btn-outline-primary" id="toggleCouponsBtn">
+                Show Coupons <i class="bi bi-chevron-down"></i>
+            </button>
+        <% } %>
+    </div>
+    <div class="input-group mb-2">
+        <input type="text" id="couponCode" class="form-control" placeholder="Enter coupon code">
+        <button class="btn btn-primary" type="button" id="applyCoupon">Apply</button>
+    </div>
+    <div id="couponMessage" class="small mb-2"></div>
+    <% if (Coupon && Coupon.length > 0) { %>
+        <div class="coupon-list" id="couponList" style="display: none;">
+            <% Coupon.forEach(coupon => { %>
+                <div class="coupon-item">
+                    <span class="coupon-name"><%= coupon.name %></span>
+                    <span class="coupon-details">
+                        <% if (coupon.offerPercentage) { %>
+                            <%= coupon.offerPercentage %>% off, Min. ₹<%= coupon.minimumPrice %>
+                        <% } else { %>
+                            ₹<%= coupon.offerPrice %> off, Min. ₹<%= coupon.minimumPrice %>
                         <% } %>
-                    </div>
+                    </span>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</div>
 
                     <!-- Payment Options -->
                     <div class="payment_method mt-4">
@@ -848,6 +994,38 @@ function handleRazorpayPayment(razorpayOrder, orderId) {
   });
   rzp.open();
 }
+// Coupon list toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleCouponsBtn');
+    const couponList = document.getElementById('couponList');
+    
+    if (toggleBtn && couponList) {
+        // Initialize state
+        let isExpanded = false;
+        
+        toggleBtn.addEventListener('click', function() {
+            isExpanded = !isExpanded;
+            
+            // Toggle visibility
+            if (isExpanded) {
+                couponList.style.display = 'block';
+                setTimeout(() => {
+                    couponList.classList.add('show');
+                }, 10);
+                this.innerHTML = 'Hide Coupons <i class="bi bi-chevron-down"></i>';
+                this.classList.add('collapsed');
+            } else {
+                couponList.classList.remove('show');
+                setTimeout(() => {
+                    couponList.style.display = 'none';
+                }, 300); // Match this with your CSS transition time
+                this.innerHTML = 'Show Coupons <i class="bi bi-chevron-down"></i>';
+                this.classList.remove('collapsed');
+            }
+        });
+        
+    }
+});
 </script>
 
 <%- include("../layouts/footer.ejs") %>

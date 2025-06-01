@@ -81,6 +81,16 @@ const userSchema= new Schema({
       type:String,
       default:""
     },
+    usedCoupons: [{
+        couponId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Coupon'
+        },
+        usedOn: {
+            type: Date,
+            default: Date.now
+        }
+    }],
     
     searchHistory:[{
         category:[{

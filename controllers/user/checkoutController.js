@@ -163,14 +163,21 @@ const loadCheckout = async (req, res) => {
     }
 
     // Find valid coupons
-    const today = new Date();
-    const findCoupons = await Coupon.find({
-      isActive: true,
-      createdOn: { $lt: today },
-      expireOn: { $gt: today },
-      minimumPrice: { $lt: grandTotal + discount },
-    });
-    console.log("Available coupons", findCoupons);
+  // In your route/controller where you fetch coupons:
+const today = new Date();
+
+// Get array of coupon IDs the user has already used
+const usedCouponIds = findUser.usedCoupons.map(uc => uc.couponId);
+
+const findCoupons = await Coupon.find({
+    isActive: true,
+    createdOn: { $lt: today },
+    expireOn: { $gt: today },
+    minimumPrice: { $lt: grandTotal + discount },
+    _id: { $nin: usedCouponIds } // Exclude used coupons
+}).lean();
+
+console.log("Available coupons for user:", findCoupons);
 
     // Store coupon in session if retrying
     if (couponCode) {
@@ -998,6 +1005,28 @@ const placeOrder = async (req, res) => {
       sizeVariant.stock -= item.quantity;
       await product.save();
     }
+        // Handle coupon usage tracking (for non-Razorpay payments)
+    if (req.session.appliedCoupon) {
+      // Update coupon usage
+      await Coupon.findByIdAndUpdate(req.session.appliedCoupon.couponId, {
+        $push: { usedBy: { userId: userId, usageDate: new Date() } },
+        $inc: { usageCount: 1 }
+      });
+
+      // Update user's used coupons
+      await User.findByIdAndUpdate(userId, {
+        $push: {
+          usedCoupons: {
+            couponId: req.session.appliedCoupon.couponId,
+            usedOn: new Date()
+          }
+        }
+      });
+
+      // Clear applied coupon from session
+      delete req.session.appliedCoupon;
+    }
+
 
     // Clear cart for non-Buy Now orders
     if (!isBuyNowOrder) {
@@ -1085,15 +1114,25 @@ const verifyPayment = async (req, res) => {
     }
 
     // Apply coupon
-    if (order.tempCouponCode) {
+   if (order.tempCouponCode) {
       const coupon = await Coupon.findOne({ name: order.tempCouponCode });
-      console.log("hello",coupon)
       if (coupon) {
-        coupon.usedBy.push({
-          userId: order.userId,
-          usageDate: new Date(),
+        // Update coupon usage
+        await Coupon.findByIdAndUpdate(coupon._id, {
+          $push: { usedBy: { userId: order.userId, usageDate: new Date() } },
+          $inc: { usageCount: 1 }
         });
-        await coupon.save();
+
+        // Update user's used coupons
+        await User.findByIdAndUpdate(order.userId, {
+          $push: {
+            usedCoupons: {
+              couponId: coupon._id,
+              usedOn: new Date()
+            }
+          }
+        });
+
         order.couponCode = order.tempCouponCode;
         order.tempCouponCode = null;
         await order.save();

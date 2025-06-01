@@ -47,7 +47,12 @@ const applyCoupon = async (req, res) => {
 
     // Cap the discount if it exceeds cartTotal
     if (discount > cartTotal) discount = cartTotal;
-req.session.appliedCoupon = coupon.name;
+    req.session.appliedCoupon = {
+      code: coupon.name,
+      couponId: coupon._id,  // Store coupon ID for later reference
+      discount: parseFloat(discount.toFixed(2))
+    };
+
     return res.status(200).json({
       status: true,
       message: "Coupon applied successfully",
