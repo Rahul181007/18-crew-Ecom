@@ -50,7 +50,7 @@ const couponSchema = new mongoose.Schema({
     required: true,
     min: [1, 'Usage limit must be at least 1'],
   },
-  isActive: {                  // <-- Add this to manage if coupon is enabled/disabled
+  isActive: {                  
     type: Boolean,
     default: true,
   },

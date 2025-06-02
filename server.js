@@ -42,25 +42,6 @@ const admin_route=require("./routes/adminRoutes")
 app.use("/",user_route);
 app.use("/admin",admin_route)
 
-cron.schedule('*/5 * * * *', async () => {
-  try {
-    const deleted = await Order.deleteMany({
-      status: 'Initiated',
-      isPaid: false,
-      createdAt: { $lt: new Date(Date.now() - 3 * 60 * 1000) }, 
-    });
-    if (deleted.deletedCount > 0) {
-      console.log(`Cleaned up ${deleted.deletedCount} unpaid initiated orders`);
-    }
-  } catch (error) {
-    console.error('Error cleaning unpaid initiated orders:', error);
-  }
-});
-
-
-
-
-
 app.listen(process.env.PORT,()=>{
     console.log("server is started")
 });

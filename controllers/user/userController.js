@@ -9,6 +9,14 @@ const env=require("dotenv").config();
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const Cart=require("../../models/cartSchema");
+const Coupon=require("../../models/couponSchema")
+ const crypto=require('crypto');
+
+
+// generate unique referal code
+function generateRefferalcode(){
+  return 'REF'+crypto.randomBytes(4).toString('hex').toUpperCase();
+};
 
 
 
@@ -114,11 +122,19 @@ async function sendVerificationEmail(email,otp){
    
     try{
         
-        const {name,email,mobile,password,gender}=req.body;
+        const {name,email,mobile,password,gender,referralCode}=req.body;
         
         const findUser=await User.findOne({email});
         if(findUser){
             return res.render("registeration",{message:"User with email already exist"})
+        }
+
+        let referrer=null;
+        if(referralCode && referralCode.trim()){
+          referrer=await User.findOne({referalCode:referralCode});
+          if(!referrer){
+            return res.render("registeration",{message:"Invalid referral code"})
+          }
         }
          const otp=generateOtp();
          
@@ -127,7 +143,7 @@ async function sendVerificationEmail(email,otp){
             return res.json("email-error")
          }
        req.session.userOtp=otp;
-       req.session.userData={name,email,password,mobile,gender}
+       req.session.userData={name,email,password,mobile,gender,referralCode:referralCode||null}
 
        res.render("verify-otp");
        console.log("OTP sent")
@@ -138,33 +154,74 @@ async function sendVerificationEmail(email,otp){
     }
  }
 // ..............verify otp...............
-const verifyOtp=async(req,res)=>{
-    try {
-        const {otp}=req.body;
-        if(otp===req.session.userOtp){
-            const user=req.session.userData;
-            const passwordHash=await securePassword(user.password);
+const verifyOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+    if (otp === req.session.userOtp) {
+      const user = req.session.userData;
+      console.log(user)
+      const passwordHash = await securePassword(user.password);
 
-            const saveUserData=new User({
-                name:user.name,
-                email:user.email,
-                password:passwordHash,
-                mobile:user.mobile,
-                gender:user.gender
-            })
-            await saveUserData.save();
-            req.session.user=saveUserData.id;
-            res.json({success:true, redirectUrl:"/"})
+      // generate unique referral code for new user
+      let referralCode;
+      let unique = false;
+      while (!unique) {
+        referralCode = generateRefferalcode();
+        const existingUser = await User.findOne({ referralCode });
+        if (!existingUser) unique = true;
+      }
 
-        }else{
-           res.status(400).json({success:false,message:"Invalid OTP: please try again"})
+      const saveUserData = new User({
+        name: user.name,
+        email: user.email,
+        password: passwordHash,
+        mobile: user.mobile,
+        gender: user.gender,
+        wallet: user.referralCode ? 50 : 0,
+        redeemed: !!user.referralCode,
+        redeemedUser: user.referralCode
+          ? (await User.findOne({ referralCode: user.referralCode }))?._id
+          : null,
+        referalCode:referralCode,
+      });
+      await saveUserData.save();
+
+      if (user.referralCode) {
+        const referrer = await User.findOne({ referalCode: user.referralCode });
+        console.log(referrer)
+        if (referrer) {
+          referrer.wallet = (referrer.wallet || 0) + 100;
+          referrer.walletTransactions.push({
+            type: "credit",
+            amount: 100,
+            source: "Referral bonus",
+            reference: `Referred user: ${saveUserData.email}`,
+          });
+          await referrer.save();
+
+          saveUserData.walletTransactions.push({
+            type: "credit",
+            amount: 50,
+            source: "Referral signup bonus",
+            reference: `Referred by: ${referrer.email}`,
+          });
+          await saveUserData.save();
         }
-        
-    } catch (error) {
-        console.error("Error verifying OTP",error);
-        res.status(500).json({success:false,message:"An error occured"})
+      }
+
+      req.session.user = saveUserData.id;
+      res.json({ success: true, redirectUrl: "/" });
+
+    } else {
+      res.status(400).json({ success: false, message: "Invalid OTP: please try again" });
     }
-}
+
+  } catch (error) {
+    console.error("Error verifying OTP", error);
+    res.status(500).json({ success: false, message: "An error occurred" });
+  }
+};
+
 // ...............resend OTP..............
 const resendOTP=async(req,res)=>{
     try {
@@ -520,7 +577,19 @@ const searchProduct = async (req, res) => {
     res.redirect("/pageNotFound");
   }
 };
-  
+ 
+const copyReferralCode=async(req,res)=>{
+  try {
+    const user=await User.findById(req.session.user||req.session.user._id);
+    if(!user){
+      return res.status(400).json({success:false,message:'Unauthorized'})
+    }
+    res.json({success:true,referalCode:user.referalCode})
+  } catch (error) {
+        console.error('Copy referral code error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
   
 
 module.exports={
@@ -536,5 +605,5 @@ module.exports={
     loadShoppingPage,
     filterProduct,
     filterPrice,
-    searchProduct
+    searchProduct, copyReferralCode
 }

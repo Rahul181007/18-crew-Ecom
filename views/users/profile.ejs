@@ -178,6 +178,16 @@
     color: #027A48;
   }
 
+  .status-credit {
+    background: #ECFDF3;
+    color: #027A48;
+  }
+
+  .status-debit {
+    background: #FEE4E2;
+    color: #B42318;
+  }
+
   /* Mobile Navigation */
   .mobile-nav {
     display: none;
@@ -288,8 +298,18 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="#wallet" data-bs-toggle="tab" aria-selected="false">
+              <i class="bi bi-wallet"></i> Wallet
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="#security" data-bs-toggle="tab" aria-selected="false">
               <i class="bi bi-shield-lock"></i> Security
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#referral" data-bs-toggle="tab" aria-selected="false">
+              <i class="bi bi-gift"></i> Referral
             </a>
           </li>
           <li class="nav-item">
@@ -308,7 +328,7 @@
           </div>
           <div class="col-md-6">
             <div class="stats-card">
-              <div class="stats-number">₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %></div>
+              <div class="stats-number">₹<%= user.wallet ? user.wallet.toFixed(2) : '0.00' %></div>
               <div class="stats-label">Wallet Balance</div>
             </div>
           </div>
@@ -443,6 +463,49 @@
             </div>
           </div>
 
+          <!-- Wallet Tab -->
+          <div class="tab-pane fade" id="wallet">
+            <h4 class="section-title">Wallet Transactions</h4>
+            <div class="stats-card mb-4">
+              <div class="stats-number">₹<%= user.wallet ? user.wallet.toFixed(2) : '0.00' %></div>
+              <div class="stats-label">Current Wallet Balance</div>
+            </div>
+            <% if (user.walletTransactions && user.walletTransactions.length > 0) { %>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Source</th>
+                      
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% user.walletTransactions.forEach(transaction => { %>
+                      <tr>
+                        <td><%= new Date(transaction.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                        <td><%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) %></td>
+                        <td>₹<%= transaction.amount.toFixed(2) %></td>
+                        <td>
+                      <span class="order-status status-<%= transaction.type ? transaction.type.toLowerCase() : 'unknown' %>">
+                  <%= transaction.source ? (transaction.source.charAt(0).toUpperCase() + transaction.source.slice(1)) : 'Unknown' %>
+                </span>
+                        </td>
+                       
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            <% } else { %>
+              <div class="text-center py-4">
+                <p>No transactions yet.</p>
+              </div>
+            <% } %>
+          </div>
+
           <!-- Security Tab -->
           <div class="tab-pane fade" id="security">
             <h4 class="section-title">Account Security</h4>
@@ -481,6 +544,113 @@
                 <i class="bi bi-trash me-2"></i>Delete Account
               </button>
             </div>
+          </div>
+
+          <!-- Referral Tab -->
+          <div class="tab-pane fade" id="referral">
+            <h4 class="section-title">Refer & Earn</h4>
+            
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              Share your referral code to earn ₹100 in your wallet when friends sign up, and they get ₹50!
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body">
+                <h5 class="card-title">Your Referral Code</h5>
+                <div class="d-flex align-items-center">
+                  <div class="bg-primary-light p-3 rounded me-3">
+                    <h3 class="mb-0 text-primary"><%= user.referralCode %></h3>
+                  </div>
+                  <button class="btn btn-outline-primary" onclick="copyReferralCode()" aria-label="Copy referral code">
+                    <i class="bi bi-clipboard"></i> Copy Code
+                  </button>
+                </div>
+                <p class="small text-muted mt-2">Share this code with friends when they register on our site.</p>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="stats-card">
+                  <div class="stats-number"><%= user.referrals ? user.referrals.length : 0 %></div>
+                  <div class="stats-label">Successful Referrals</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="stats-card">
+                  <div class="stats-number">₹<%= user.wallet ? user.wallet.toFixed(2) : '0.00' %></div>
+                  <div class="stats-label">Wallet Balance</div>
+                </div>
+              </div>
+            </div>
+
+            <h5 class="section-title mt-4">How It Works</h5>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0">
+                  <div class="card-body text-center">
+                    <div class="bg-primary-light rounded-circle p-3 mb-3 d-inline-block">
+                      <i class="bi bi-share fs-4 text-primary"></i>
+                    </div>
+                    <h6>Share Your Code</h6>
+                    <p class="small text-muted">Give your unique referral code to friends.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0">
+                  <div class="card-body text-center">
+                    <div class="bg-primary-light rounded-circle p-3 mb-3 d-inline-block">
+                      <i class="bi bi-person-plus fs-4 text-primary"></i>
+                    </div>
+                    <h6>They Register</h6>
+                    <p class="small text-muted">Friends use your code during registration.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0">
+                  <div class="card-body text-center">
+                    <div class="bg-primary-light rounded-circle p-3 mb-3 d-inline-block">
+                      <i class="bi bi-wallet fs-4 text-primary"></i>
+                    </div>
+                    <h6>Earn Wallet Credits</h6>
+                    <p class="small text-muted">Get ₹100, and they get ₹50 in wallet credits.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <% if (user.referrals && user.referrals.length > 0) { %>
+              <h5 class="section-title mt-4">Your Referrals</h5>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Date Joined</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% user.referrals.forEach(ref => { %>
+                      <tr>
+                        <td><%= ref.name %></td>
+                        <td><%= new Date(ref.date).toLocaleDateString() %></td>
+                        <td>
+                          <span class="badge bg-<%= ref.status === 'completed' ? 'success' : 'warning' %>">
+                            <%= ref.status %>
+                          </span>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            <% } else { %>
+              <p class="text-muted">No referrals yet. Start sharing your code!</p>
+            <% } %>
           </div>
         </div>
       </div>
@@ -626,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       // Submit the form via AJAX to delete the account
       const response = await fetch('/delete-account', {
-        method: 'POST',
+        method :'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -640,7 +810,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = '/signin';
       } else {
         // Show error message
-        passwordError.textContent = result.message || 'Failed to delete account. Please try again.';
+        passwordError.textContent = result.message || 'Failed to delete account';
         passwordError.style.display = 'block';
       }
     } catch (error) {
@@ -657,26 +827,57 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 async function deleteAddressWithAlert(addressId, index) {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to delete this address?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
-    });
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'Do you want to delete this address?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  });
 
-    if (result.isConfirmed) {
-      
-      window.location.href = `/deleteAddress?id=${addressId}&index=${index}`;
-    }
+  if (result.isConfirmed) {
+    window.location.href = `/deleteAddress/${addressId}/${index}`;
   }
+}
 
-
+async function copyReferralCode() {
+  try {
+    const response = await fetch('/copy-referral-code', { method: 'GET' });
+    const data = await response.json();
+    if (data.success) {
+      await navigator.clipboard.writeText(data.referralCode);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Referral code copied!',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: data.message || 'Failed to copy referral code',
+      });
+    }
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to copy referral code',
+    });
+  }
+}
 </script>
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <%- include("../layouts/footer.ejs") %>

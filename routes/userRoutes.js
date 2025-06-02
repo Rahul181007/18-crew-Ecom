@@ -59,6 +59,7 @@ user_route.get("/reset-password",profileController.getresetPassword);
 user_route.post("/resend-forgot-otp",profileController.resendOTP);
 user_route.post("/reset-password",profileController.postResetPassword);
 user_route.get("/userProfile",userAuth,profileController.userProfile);
+user_route.get("/copy-referral-code", userAuth, profileController.copyReferralCode);
 user_route.get("/change-email",userAuth,profileController.changeEmail);
 user_route.post("/change-email",userAuth,profileController.changeEmailValid)
 user_route.post("/verifyChangeEmail-otp",userAuth,profileController.verifyChangeEmailOtp);
@@ -101,7 +102,8 @@ user_route.get("/orders/:orderId",userAuth,checkoutController.orderDetails);
 user_route.post("/orders/cancel/:orderId",userAuth,checkoutController.cancelOrder);
 user_route.post("/orders/return/:orderId",userAuth,checkoutController.returnOrder);
 user_route.post('/verify-payment',userAuth,checkoutController.verifyPayment)
-user_route.get("/failedPage",userAuth,checkoutController.failedPage)
+user_route.get("/failedPage",userAuth,checkoutController.failedPage);
+user_route.get('/orders/invoice/:orderId',userAuth,checkoutController.downloadInvoice)
 // coupon management 
 
 user_route.post("/applyCoupon",userAuth, couponController.applyCoupon)

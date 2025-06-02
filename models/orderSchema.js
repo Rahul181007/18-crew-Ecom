@@ -42,6 +42,18 @@ const orderSchema = new Schema(
           enum: [null, "Requested", "Returned", "Rejected"],
           default: null,
         },
+      isRefunded: {
+      type: Boolean,
+      default: false,
+    },
+    refundedAt: {
+      type: Date,
+      default: null,
+    },
+    refundedAmount: {
+      type: Number,
+      default: 0,
+    },
       },
     ],
     totalPrice: {
@@ -100,6 +112,15 @@ const orderSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    refundedAmount: {
+    type: Number,
+    default: 0,
+   },
+  isFullyRefunded: {
+  type: Boolean,
+  default: false,
+ },
+
     paidAt: {
       type: Date,
     },

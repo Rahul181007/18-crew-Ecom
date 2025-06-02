@@ -212,6 +212,18 @@
             <% if (order.isPaid && order.paidAt) { %>
               <p><strong>Paid At:</strong> <%= new Date(order.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
             <% } %>
+            <% if (order.refundedAmount && order.refundedAmount > 0) { %>
+  <p>
+    <strong>Refund Amount:</strong>
+    ₹<%= order.refundedAmount.toFixed(2) %>
+  </p>
+  <% if (order.isFullyRefunded) { %>
+    <p><strong>Refund Status:</strong> <span class="badge bg-success">Fully Refunded</span></p>
+  <% } else { %>
+    <p><strong>Refund Status:</strong> <span class="badge bg-warning text-dark">Partially Refunded</span></p>
+  <% } %>
+<% } %>
+
           </div>
           <div class="col-md-6">
             <p><strong>Total Price:</strong> ₹<%= order.totalPrice ? order.totalPrice.toFixed(2) : '0.00' %></p>

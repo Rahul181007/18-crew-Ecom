@@ -270,18 +270,47 @@ const approveReturn = async (req, res) => {
 
       const itemTotal = item.price * item.quantity;
       refundAmount = (itemTotal / order.totalPrice) * order.finalAmount;
+if (order.paymentMethod === "wallet" || order.paymentMethod === "razorpay") {
+  user.wallet = (user.wallet || 0) + refundAmount;
 
-      if (order.paymentMethod === "wallet" || order.paymentMethod === "razorpay") {
-        user.walletBalance = (user.walletBalance || 0) + refundAmount;
-        await user.save();
-        console.log(`Refunded ${refundAmount} to wallet for user ${order.userId} for item ${itemId}`);
-      }
+  user.walletTransactions = user.walletTransactions || [];
+  user.walletTransactions.push({
+    type: "credit",
+    amount: refundAmount,
+    source: "Return Refund",
+    reference: order.orderId,
+    date: new Date()
+  });
+
+  order.refundedAmount = (order.refundedAmount || 0) + refundAmount;
+  item.isRefunded = true;
+  item.refundedAt = new Date();
+
+  await Promise.all([user.save(), order.save()]);
+}
+
     }
 
-    // Check return status of all items
-    const allItemsReturned = order.orderedItems.every(i => i.returnStatus === "Returned");
-    const someItemsReturned = order.orderedItems.some(i => i.returnStatus === "Returned");
-    order.status = allItemsReturned ? "Returned" : someItemsReturned ? "Partially Returned" : "Delivered";
+    const totalItems=order.orderedItems.length;
+    const returnedItems=order.orderedItems.filter(i=>i.returnStatus==="Returned").length
+    if(returnedItems===totalItems){
+      console.log("1");
+      order.status="Returned"
+    }else if(returnedItems>0){
+      console.log("2")
+      order.status=totalItems===1?"Returned":"Partially Returned";
+    }else{
+      console.log("3")
+      order.status="Delivered"
+    }
+    const refundableItems = order.orderedItems.filter(i => i.price > 0 && i.returnStatus === "Returned");
+const allRefunded = refundableItems.every(i => i.isRefunded);
+
+if (order.isPaid && allRefunded && refundableItems.length > 0) {
+  order.isFullyRefunded = true;
+} else {
+  order.isFullyRefunded = false;
+}
 
     await order.save();
     console.log(`Return approved for item ${itemId} in order ${orderId}. Order status: ${order.status}`);
@@ -293,8 +322,7 @@ const approveReturn = async (req, res) => {
         refundAmount: refundAmount.toFixed(2),
         stockUpdated: updatedSizeVariant.stock,
         orderStatus: order.status,
-        allItemsReturned,
-        someItemsReturned,
+       
       },
     };
     console.log('Sending response:', responseData);

@@ -157,26 +157,45 @@ const postResetPassword = async (req, res) => {
   // profile
 
 const userProfile = async (req, res) => {
-    try {
-        const userId = req.session.user;
-        const userData = await User.findById(userId);
-        const addressData = await Address.findOne({ userId: userId }); 
-        const orderData=await Order.find({userId:userId})
-        const cart = await Cart.findOne({ userId });
-        let cartCount=0
-        cartCount = cart && cart.items ? cart.items.length : 0;
+  try {
+    const userId = req.session.user;
+    const userData = await User.findById(userId);
+    const addressData = await Address.findOne({ userId: userId });
+    const orderData = await Order.find({ userId: userId });
+    const cart = await Cart.findOne({ userId });
+    let cartCount = 0;
+    cartCount = cart && cart.items ? cart.items.length : 0;
 
-        res.render('profile', {
-            user: userData,
-            userAddress: addressData, 
-            order:orderData,
-            cartCount ,
-            wishlistCount : userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0
-        });
-    } catch (error) {
-        console.error("Error for retrieve profile data", error);
-        res.redirect("/pageNotFound");
-    }
+    // Derive referrals for EJS compatibility
+    const referrals = await User.find({ redeemedUser: userId })
+      .select('name createdOn')
+      .lean()
+      .then(users => users.map(ref => ({
+        name: ref.name,
+        date: ref.createdOn,
+        status: 'completed' // Assuming successful signup means completed
+      })));
+
+    // No coupons generated, so return empty referralCoupons
+    const referralCoupons = [];
+
+    res.render('profile', {
+      user: {
+        ...userData._doc,
+        referralCode: userData.referalCode, // Map referalCode to referralCode for EJS
+        referrals, // Derived referrals
+        referralCoupons // Empty coupons
+      },
+      userAddress: addressData || { address: [] },
+      order: orderData,
+      cartCount,
+      wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
+      page: 'profile'
+    });
+  } catch (error) {
+    console.error("Error for retrieve profile data", error);
+    res.redirect("/pageNotFound");
+  }
 };
 
 // change - email
@@ -667,7 +686,22 @@ const deleteAddress=async(req,res)=>{
   }
 }
 
- 
+ const copyReferralCode = async (req, res) => {
+  try {
+    console.log("hi")
+    const user = await User.findById(req.session.user);
+    console.log(user)
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+    res.json({ success: true, referralCode: user.referalCode });
+  } catch (error) {
+    console.error('Copy referral code error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+  
+};
+
 
 
 
@@ -697,6 +731,7 @@ module.exports={
     editAddress,
     postEditAddress,
     deleteAddress,
-   deleteAccn
+   deleteAccn,
+   copyReferralCode
     
 }

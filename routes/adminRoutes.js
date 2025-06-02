@@ -12,7 +12,7 @@ const brandController=require("../controllers/admin/brandController");
 const productController=require("../controllers/admin/productContoller");
 const orderController=require("../controllers/admin/orderController");
 const couponController=require("../controllers/admin/couponController")
-
+const reportController=require("../controllers/admin/reportController")
 
 admin_route.set("view engine","ejs");
 admin_route.set("views","./views/admin");
@@ -23,7 +23,13 @@ admin_route.post("/login",adminController.login);
 // page error
 admin_route.get("/pageError",adminController.pageError)
 // dashboarmanagement
-admin_route.get("/",adminAuth,adminController.loadDashboard);
+admin_route.get("/dashboard",adminAuth,adminController.loadDashboard);
+admin_route.get('/dashboard/reports', adminAuth, reportController.salesReportPage);
+admin_route.post('/dashboard/reports/data', adminAuth, reportController.getSalesData);
+admin_route.get('/dashboard/reports/download',adminAuth, reportController.downloadReport);
+
+
+
 admin_route.get("/logout",adminController.logout)
 // customer management
 admin_route.get("/users",adminAuth,customerController.customerInfo);

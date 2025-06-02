@@ -461,7 +461,7 @@ body {
                                                          alt="<%= item.productDetails.productName %>">
                                                     <div>
                                                         <h5 class="mb-1">
-                                                            <a href="/productDetails?id=<%= item.productDetails._id %>">
+                                                            <a href="/productDetails?id=<%= item.productDetails._id %>" class="text-dark text-decoration none">
                                                                 <%= item.productDetails.productName %>
                                                             </a>
                                                         </h5>
@@ -628,7 +628,7 @@ body {
                             <input class="form-check-input payment" type="radio" 
                                    value="wallet" name="payment_option" id="wallet">
                             <label class="form-check-label" for="wallet">
-                                Wallet (Balance: ₹<%= user.walletBalance || 0 %>)
+                                Wallet (Balance: ₹<%= user.wallet || 0 %>)
                             </label>
                         </div>
                     </div>
@@ -1028,4 +1028,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<%- include("../layouts/footer.ejs") %>
+<%- include("../layouts/footer.ejs") %> 
