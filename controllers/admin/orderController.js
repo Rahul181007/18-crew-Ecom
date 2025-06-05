@@ -2,34 +2,59 @@
 const User = require("../../models/userSchema");
 const Order = require("../../models/orderSchema");
 const Product=require("../../models/productSchema")
+const { logWalletTransaction } = require("../../utils/wallet");
+const { WalletSources, TransactionTypes } = require("../../constants/walletConstants");
 
-const loadOrderList = async (req, res) => {
+const loadOrderList = async (req, res, next) => {
   try {
-    const orders = await Order.find()
-      .populate('userId', 'name email') 
+    const { page = 1, limit = 10, status, search } = req.query;
+    const query = {};
+    if (status) query.status = status;
+    if (search) {
+      query.$or = [
+        { orderId: { $regex: search, $options: 'i' } },
+        { 'userId.name': { $regex: search, $options: 'i' } },
+        { 'userId.email': { $regex: search, $options: 'i' } }
+      ];
+    }
+    const orders = await Order.find(query)
+      .populate('userId', 'name email')
       .populate('orderedItems.product', 'productName productImage')
-      .sort({ createdOn: -1 });
-    res.render('orders', { orders, page: 'orders', activePage: "orders" });
+      .sort({ createdOn: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+    const totalOrders = await Order.countDocuments(query);
+    const totalPages = Math.ceil(totalOrders / limit);
+    res.render('orders', {
+      orders,
+      page: 'orders',
+      activePage: 'orders',
+      currentPage: parseInt(page),
+      totalPages,
+      statusFilter: status || '',
+      searchQuery: search || ''
+    });
   } catch (error) {
-    console.log(error);
-    res.redirect("/admin/pageError");
+    next(error);
   }
 };
-const updateOrderStatus = async (req, res) => {
+const updateOrderStatus = async (req, res, next) => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
 
     // Validate status
     const validStatuses = [
+      "Initiated", // Added to match schema
       "Pending",
       "Processing",
       "Shipped",
       "Delivered",
       "Cancelled",
+      "Partially Cancelled", // Added to match schema
       "Return Request",
       "Returned",
-      "Partially Returned", 
+      "Partially Returned",
     ];
     if (!validStatuses.includes(status)) {
       console.error(`Invalid status: ${status}`);
@@ -49,17 +74,27 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Prevent updating status if order is cancelled
-    if (order.status === "Cancelled") {
-      console.error(`Order ${orderId} is already cancelled`);
+    // Prevent updating status if order is cancelled or fully returned
+    if (["Cancelled", "Returned"].includes(order.status)) {
+      console.error(`Order ${orderId} is ${order.status.toLowerCase()}`);
       return res.status(400).json({
         success: false,
-        message: "Cannot update status of a cancelled order",
+        message: `Cannot update status of a ${order.status.toLowerCase()} order`,
       });
     }
 
-    // Update status
+    // Update order status
     order.status = status;
+
+    // Update item statuses for non-cancelled and non-returned items
+    if (["Processing", "Shipped", "Delivered"].includes(status)) {
+      order.orderedItems = order.orderedItems.map(item => {
+        if (item.status !== "Cancelled" && !item.returnStatus) {
+          return { ...item.toObject(), status };
+        }
+        return item;
+      });
+    }
 
     // For COD orders, set isPaid and paidAt when status is Delivered
     if (status === "Delivered" && order.paymentMethod === "cod") {
@@ -77,19 +112,15 @@ const updateOrderStatus = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Order status updated successfully",
-      order, 
+      order,
     });
   } catch (error) {
-    console.error("Error updating order status:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while updating the status",
-      error: error.message,
-    });
+    console.error(`Error updating order ${orderId}:`, error);
+    next(error);
   }
 };
 
-const loadOrderDetail=async(req,res)=>{
+const loadOrderDetail=async(req,res,next)=>{
 try {
     const {orderId}=req.params;
     const order=await Order.findOne({orderId})
@@ -105,19 +136,17 @@ try {
         activePage:'orders'
     })
 } catch (error) {
-    console.error("Error loading order detail:", error);
-    res.status(500).render('pageError', { message: 'An error occurred while loading the order details' });
+    next(error)
 }
 }
  
-const rejectReturn = async (req, res) => {
+const rejectReturn = async (req, res, next) => {
   try {
     const { orderId } = req.params;
-    const { itemId } = req.body;
+    const { itemId, rejectionReason } = req.body;
 
     const order = await Order.findOne({ orderId }).populate('orderedItems.product');
     if (!order) {
-      console.error(`Order ${orderId} not found`);
       return res.status(404).json({
         success: false,
         message: "Order not found",
@@ -125,7 +154,6 @@ const rejectReturn = async (req, res) => {
     }
 
     if (order.status !== "Return Request" && order.status !== "Partially Returned") {
-      console.error(`Order ${orderId} cannot be processed in status ${order.status}`);
       return res.status(400).json({
         success: false,
         message: "Order must be in Return Request or Partially Returned status to reject",
@@ -134,7 +162,6 @@ const rejectReturn = async (req, res) => {
 
     const item = order.orderedItems.find(i => i._id.toString() === itemId);
     if (!item) {
-      console.error(`Item ${itemId} not found in order ${orderId}`);
       return res.status(400).json({
         success: false,
         message: "Item not found in order",
@@ -142,46 +169,49 @@ const rejectReturn = async (req, res) => {
     }
 
     if (item.returnStatus !== "Requested") {
-      console.error(`No return request found for item ${itemId} in order ${orderId}`);
       return res.status(400).json({
         success: false,
         message: "No return request found for this item",
       });
     }
 
-    // Reset return details
+    // Update item status and store rejection reason
     item.returnStatus = "Rejected";
-    item.returnReason = null;
-    item.returnRequestedAt = null;
+    item.returnRejectionReason = rejectionReason;
+    item.returnProcessedAt = new Date();
 
-    // Check return status of all items
-    const allItemsReturned = order.orderedItems.every(i => i.returnStatus === "Returned");
-    const someItemsReturned = order.orderedItems.some(i => i.returnStatus === "Returned");
-    order.status = allItemsReturned ? "Returned" : someItemsReturned ? "Partially Returned" : "Delivered";
+    // Update order status based on remaining items
+    const totalItems = order.orderedItems.length;
+    const returnedItems = order.orderedItems.filter(i => i.returnStatus === "Returned").length;
+    const rejectedItems = order.orderedItems.filter(i => i.returnStatus === "Rejected").length;
+
+    if (returnedItems === totalItems) {
+      order.status = "Returned";
+    } else if (returnedItems > 0) {
+      order.status = "Partially Returned";
+    } else if (rejectedItems === totalItems) {
+      order.status = "Delivered";
+    } else {
+      order.status = "Delivered";
+    }
 
     await order.save();
-    console.log(`Return rejected for item ${itemId} in order ${orderId}. Order status: ${order.status}`);
 
     res.status(200).json({
       success: true,
       message: "Return rejected successfully",
       data: {
         orderStatus: order.status,
-        allItemsReturned,
-        someItemsReturned,
-      },
+        rejectionReason: rejectionReason
+      }
     });
   } catch (error) {
-    console.error("Error rejecting return:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while rejecting the return",
-    });
+    next(error);
   }
 };
 
 
-const approveReturn = async (req, res) => {
+const approveReturn = async (req, res,next) => {
   try {
     const { orderId } = req.params;
     const { itemId } = req.body;
@@ -271,16 +301,13 @@ const approveReturn = async (req, res) => {
       const itemTotal = item.price * item.quantity;
       refundAmount = (itemTotal / order.totalPrice) * order.finalAmount;
 if (order.paymentMethod === "wallet" || order.paymentMethod === "razorpay") {
-  user.wallet = (user.wallet || 0) + refundAmount;
-
-  user.walletTransactions = user.walletTransactions || [];
-  user.walletTransactions.push({
-    type: "credit",
-    amount: refundAmount,
-    source: "Return Refund",
-    reference: order.orderId,
-    date: new Date()
-  });
+  await logWalletTransaction(
+    user._id,
+    TransactionTypes.CREDIT,
+    refundAmount,
+    WalletSources.ORDER_REFUND,
+    order.orderId
+  );
 
   order.refundedAmount = (order.refundedAmount || 0) + refundAmount;
   item.isRefunded = true;
@@ -329,12 +356,8 @@ if (order.isPaid && allRefunded && refundableItems.length > 0) {
     res.setHeader('Content-Type', 'application/json');
     res.status(200).json(responseData);
   } catch (error) {
-    console.error("Error approving return:", error);
-    res.setHeader('Content-Type', 'application/json');
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while approving the return",
-    });
+  console.log(error)
+    next(error)
   }
 };
 

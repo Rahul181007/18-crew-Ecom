@@ -306,7 +306,7 @@
         <tbody id="ordersTable">
           <% if (orders && orders.length > 0) { %>
             <% orders.forEach(order => { %>
-              <tr data-status="<%= order.status %>">
+              <tr data-status="<%= order.status %>" data-order-id="<%= order.orderId %>">
                 <td><%= order.orderId || 'N/A' %></td>
                 <td>
                   <%= order.userId?.name || 'Unknown' %><br>
@@ -442,9 +442,9 @@
 // Configure SweetAlert2 Toast
 const Toast = Swal.mixin({
   toast: true,
-  position: 'top-end', // Position of the toast
+  position: 'top-end',
   showConfirmButton: false,
-  timer: 3000, // Auto-dismiss after 3 seconds
+  timer: 3000,
   timerProgressBar: true,
   didOpen: (toast) => {
     toast.addEventListener('mouseenter', Swal.stopTimer);
@@ -492,7 +492,6 @@ document.querySelectorAll('.status-select').forEach(select => {
 
       const result = await response.json();
       if (result.success) {
-        // Show success toast
         Toast.fire({
           icon: 'success',
           title: 'Order status updated successfully!'
@@ -503,7 +502,6 @@ document.querySelectorAll('.status-select').forEach(select => {
         statusBadge.textContent = newStatus;
         this.closest('tr').setAttribute('data-status', newStatus);
 
-        // If status changed to Delivered, Return Request, Returned, or Partially Returned, replace select with status badge
         if (['Delivered', 'Return Request', 'Returned', 'Partially Returned'].includes(newStatus)) {
           const actionsCell = this.closest('td').querySelector('.d-flex');
           const newStatusBadge = document.createElement('span');
@@ -511,7 +509,6 @@ document.querySelectorAll('.status-select').forEach(select => {
           newStatusBadge.textContent = newStatus;
           this.replaceWith(newStatusBadge);
 
-          // Add or remove Manage Returns link
           const collapseToggle = actionsCell.querySelector('.collapse-toggle');
           if (newStatus === 'Return Request' || newStatus === 'Partially Returned') {
             if (!collapseToggle) {
@@ -527,7 +524,6 @@ document.querySelectorAll('.status-select').forEach(select => {
           }
         }
       } else {
-        // Show error toast
         Toast.fire({
           icon: 'error',
           title: result.message || 'Failed to update order status.'
@@ -536,7 +532,6 @@ document.querySelectorAll('.status-select').forEach(select => {
       }
     } catch (error) {
       console.error('Error updating status:', error);
-      // Show error toast
       Toast.fire({
         icon: 'error',
         title: 'An error occurred while updating the status.'
@@ -547,13 +542,18 @@ document.querySelectorAll('.status-select').forEach(select => {
   });
 });
 
-// Approve return via AJAX
+// Approve return request
 document.querySelectorAll('.btn-approve-return').forEach(button => {
   button.addEventListener('click', async function () {
     const orderId = this.getAttribute('data-order-id');
     const itemId = this.getAttribute('data-item-id');
 
-    // SweetAlert2 confirmation dialog
+    console.log('Approving return for orderId:', orderId, 'itemId:', itemId);
+    console.log('All order rows in DOM:');
+    document.querySelectorAll('tr[data-status]').forEach(row => {
+      console.log('Row - data-order-id:', row.getAttribute('data-order-id'), 'data-status:', row.getAttribute('data-status'));
+    });
+
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'Do you want to approve this return request?',
@@ -582,28 +582,17 @@ document.querySelectorAll('.btn-approve-return').forEach(button => {
         credentials: 'include'
       });
 
-      // Log response details
-      console.log('Request URL:', `/admin/orders/approve-return/${orderId}`);
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      console.log('Response redirected:', response.redirected);
-      console.log('Response URL:', response.url);
-      console.log('Content-Type:', response.headers.get('content-type'));
-
-      // Handle authentication errors
-      if (response.status === 401 || response.status === 403) {
-        console.error('Authentication error:', response.status, response.url);
+      if (response.status === 401) {
         await Swal.fire({
           icon: 'error',
-          title: response.status === 401 ? 'Session Expired' : 'Access Denied',
-          text: response.status === 401 ? 'Please log in again.' : 'Admin access required.',
+          title: 'Session Expired',
+          text: 'Please log in again.',
           confirmButtonText: 'Go to Login'
         });
         window.location.href = '/admin/login';
         return;
       }
 
-      // Check for JSON content
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
@@ -612,85 +601,128 @@ document.querySelectorAll('.btn-approve-return').forEach(button => {
       }
 
       const result = await response.json();
-      console.log('Response JSON:', result);
-
       if (response.ok && result.success) {
-        const orderRow = document.querySelector(`tr[data-status][data-order-id="${orderId}"]`);
-        const itemRow = this.closest('tr[data-item-id]');
-        const itemQuantity = parseInt(itemRow.querySelector('td:nth-child(3)').textContent);
-        const itemSize = itemRow.querySelector('td:nth-child(2)').textContent;
+        try {
+          const orderRow = document.querySelector(`tr[data-status][data-order-id="${orderId}"]`);
+          if (!orderRow) {
+            console.error('Order row not found in DOM for orderId:', orderId);
+            throw new Error(`Order row with ID ${orderId} not found in the DOM`);
+          }
 
-        const returnDetails = document.querySelector(`#returnDetails-${orderId}`);
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `
-          ${result.message}
-          <br>Stock updated for size ${itemSize}: +${itemQuantity} units (Total: ${result.data.stockUpdated}).
-          ${result.data.refundAmount > 0 ? `<br>Refunded ₹${result.data.refundAmount} to user's wallet.` : ''}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        returnDetails.querySelector('.card-body').prepend(alertDiv);
+          const itemRow = this.closest('tr[data-item-id]');
+          if (!itemRow) {
+            throw new Error(`Item row with ID ${itemId} not found in the DOM`);
+          }
 
-        // Update items column with new status
-        const itemsCell = orderRow.querySelector('td:nth-child(3) small');
-        const itemName = itemRow.querySelector('td:nth-child(1) span').textContent;
-        itemsCell.innerHTML = itemsCell.innerHTML.replace(`${itemName}: Return Requested`, `${itemName}: Returned`);
+          const returnDetails = document.querySelector(`#returnDetails-${orderId}`);
+          if (!returnDetails) {
+            throw new Error(`Return details section for order ID ${orderId} not found in the DOM`);
+          }
 
-        if (result.data.allItemsReturned) {
-          const statusBadge = orderRow.querySelector('.order-status');
-          statusBadge.className = `order-status status-returned`;
-          statusBadge.textContent = 'Returned';
-          orderRow.setAttribute('data-status', 'Returned');
-          returnDetails.innerHTML = `
-            <div class="card-body p-4">
-              <div class="alert alert-info">
-                All items in this order have been returned. Order status updated to Returned.
-              </div>
-            </div>
+          const itemQuantityCell = itemRow.querySelector('td:nth-child(3)');
+          const itemSizeCell = itemRow.querySelector('td:nth-child(2)');
+          if (!itemQuantityCell || !itemSizeCell) {
+            throw new Error(`Item quantity or size cell not found for item ID ${itemId}`);
+          }
+          const itemQuantity = parseInt(itemQuantityCell.textContent);
+          const itemSize = itemSizeCell.textContent;
+
+          const cardBody = returnDetails.querySelector('.card-body');
+          if (!cardBody) {
+            throw new Error(`Card body not found in return details for order ID ${orderId}`);
+          }
+          const alertDiv = document.createElement('div');
+          alertDiv.className = 'alert alert-success alert-dismissible fade show';
+          alertDiv.role = 'alert';
+          alertDiv.innerHTML = `
+            ${result.message}
+            <br>Stock updated for size ${itemSize}: +${itemQuantity} units (Total: ${result.data.stockUpdated}).
+            ${result.data.refundAmount > 0 ? `<br>Refunded ₹${result.data.refundAmount} to user's wallet.` : ''}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           `;
-          const actionsCell = orderRow.querySelector('td .d-flex');
-          const existingSelect = actionsCell.querySelector('.status-select');
-          if (existingSelect) {
-            const newStatusBadge = document.createElement('span');
-            newStatusBadge.className = `order-status status-returned`;
-            newStatusBadge.textContent = 'Returned';
-            existingSelect.replaceWith(newStatusBadge);
+          cardBody.prepend(alertDiv);
+
+          const itemsCell = orderRow.querySelector('td:nth-child(3) small');
+          if (!itemsCell) {
+            throw new Error(`Items cell not found in order row for order ID ${orderId}`);
           }
-          const collapseToggle = actionsCell.querySelector('.collapse-toggle');
-          if (collapseToggle) {
-            collapseToggle.remove();
+          const itemNameCell = itemRow.querySelector('td:nth-child(1) span');
+          if (!itemNameCell) {
+            throw new Error(`Item name cell not found for item ID ${itemId}`);
           }
-        } else if (result.data.someItemsReturned) {
-          const statusBadge = orderRow.querySelector('.order-status');
-          statusBadge.className = `order-status status-partially-returned`;
-          statusBadge.textContent = 'Partially Returned';
-          orderRow.setAttribute('data-status', 'Partially Returned');
-          const actionsCell = orderRow.querySelector('td .d-flex');
-          const existingSelect = actionsCell.querySelector('.status-select');
-          if (existingSelect) {
-            const newStatusBadge = document.createElement('span');
-            newStatusBadge.className = `order-status status-partially-returned`;
-            newStatusBadge.textContent = 'Partially Returned';
-            existingSelect.replaceWith(newStatusBadge);
-          }
-          const hasPendingReturns = returnDetails.querySelectorAll('tbody tr').length > 1;
-          if (!hasPendingReturns) {
+          const itemName = itemNameCell.textContent;
+          itemsCell.innerHTML = itemsCell.innerHTML.replace(`${itemName}: Return Requested`, `${itemName}: Returned`);
+
+          if (result.data.allItemsReturned) {
+            const statusBadge = orderRow.querySelector('.order-status');
+            if (!statusBadge) {
+              throw new Error(`Status badge not found in order row for order ID ${orderId}`);
+            }
+            statusBadge.className = `order-status status-returned`;
+            statusBadge.textContent = 'Returned';
+            orderRow.setAttribute('data-status', 'Returned');
+            returnDetails.innerHTML = `
+              <div class="card-body p-4">
+                <div class="alert alert-info">
+                  All items in this order have been returned. Order status updated to Returned.
+                </div>
+              </div>
+            `;
+            const actionsCell = orderRow.querySelector('td .d-flex');
+            const existingSelect = actionsCell.querySelector('.status-select');
+            if (existingSelect) {
+              const newStatusBadge = document.createElement('span');
+              newStatusBadge.className = `order-status status-returned`;
+              newStatusBadge.textContent = 'Returned';
+              existingSelect.replaceWith(newStatusBadge);
+            }
             const collapseToggle = actionsCell.querySelector('.collapse-toggle');
             if (collapseToggle) {
               collapseToggle.remove();
             }
+          } else if (result.data.someItemsReturned) {
+            const statusBadge = orderRow.querySelector('.order-status');
+            if (!statusBadge) {
+              throw new Error(`Status badge not found in order row for order ID ${orderId}`);
+            }
+            statusBadge.className = `order-status status-partially-returned`;
+            statusBadge.textContent = 'Partially Returned';
+            orderRow.setAttribute('data-status', 'Partially Returned');
+            const actionsCell = orderRow.querySelector('td .d-flex');
+            const existingSelect = actionsCell.querySelector('.status-select');
+            if (existingSelect) {
+              const newStatusBadge = document.createElement('span');
+              newStatusBadge.className = `order-status status-partially-returned`;
+              newStatusBadge.textContent = 'Partially Returned';
+              existingSelect.replaceWith(newStatusBadge);
+            }
+            const hasPendingReturns = returnDetails.querySelectorAll('tbody tr').length > 1;
+            if (!hasPendingReturns) {
+              const collapseToggle = actionsCell.querySelector('.collapse-toggle');
+              if (collapseToggle) {
+                collapseToggle.remove();
+              }
+            }
           }
-        }
-        itemRow.remove();
 
-        // Show success toast
+          itemRow.remove();
+        } catch (domError) {
+          console.error('DOM update failed:', domError.message);
+          Toast.fire({
+            icon: 'warning',
+            title: 'Return approved, but UI update failed. Reloading page...'
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+          return;
+        }
+
         Toast.fire({
           icon: 'success',
           title: result.message || 'Return approved successfully!'
         });
       } else {
-        // Show error toast
         Toast.fire({
           icon: 'error',
           title: result.message || `Failed to approve return (status: ${response.status}).`
@@ -699,7 +731,6 @@ document.querySelectorAll('.btn-approve-return').forEach(button => {
       }
     } catch (error) {
       console.error('Error approving return:', error);
-      // Show error toast
       Toast.fire({
         icon: 'error',
         title: 'An error occurred while approving the return: ' + error.message
@@ -708,110 +739,173 @@ document.querySelectorAll('.btn-approve-return').forEach(button => {
     }
   });
 });
-// Reject return via AJAX
+
+// Reject return request
 document.querySelectorAll('.btn-reject-return').forEach(button => {
   button.addEventListener('click', async function () {
     const orderId = this.getAttribute('data-order-id');
     const itemId = this.getAttribute('data-item-id');
 
-    // Replace confirm with SweetAlert2 confirmation
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to reject this return request?',
-      icon: 'warning',
+    const { value: rejectionReason } = await Swal.fire({
+      title: 'Reject Return Request',
+      input: 'textarea',
+      inputLabel: 'Reason for rejection',
+      inputPlaceholder: 'Enter the reason for rejecting this return...',
+      inputAttributes: {
+        'aria-label': 'Type your rejection reason here',
+        maxlength: 500
+      },
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, reject',
-      cancelButtonText: 'Cancel'
+      confirmButtonText: 'Reject',
+      cancelButtonText: 'Cancel',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to provide a rejection reason!';
+        }
+        if (value.length < 10) {
+          return 'Reason should be at least 10 characters long';
+        }
+      }
     });
 
-    if (!result.isConfirmed) {
+    if (!rejectionReason) {
       return;
     }
 
     try {
       this.disabled = true;
+      this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
       const response = await fetch(`/admin/orders/reject-return/${orderId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ itemId }),
+        body: JSON.stringify({ itemId, rejectionReason }),
+        credentials: 'include'
       });
 
-      const result = await response.json();
-      if (result.success) {
-        const orderRow = document.querySelector(`tr[data-status][data-order-id="${orderId}"]`);
-        const itemRow = this.closest('tr[data-item-id]');
-        const returnDetails = document.querySelector(`#returnDetails-${orderId}`);
-
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `
-          Return rejected successfully!
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        returnDetails.querySelector('.card-body').prepend(alertDiv);
-
-        // Update items column with new status
-        const itemsCell = orderRow.querySelector('td:nth-child(3) small');
-        const itemName = itemRow.querySelector('td:nth-child(1) span').textContent;
-        itemsCell.innerHTML = itemsCell.innerHTML.replace(`${itemName}: Return Requested`, `${itemName}: Delivered`);
-
-        const hasPendingReturns = returnDetails.querySelectorAll('tbody tr').length > 1;
-        if (!hasPendingReturns) {
-          const statusBadge = orderRow.querySelector('.order-status');
-          const newStatus = result.data.someItemsReturned ? 'Partially Returned' : 'Delivered';
-          statusBadge.className = `order-status status-${newStatus.toLowerCase().replace(' ', '-')}`;
-          statusBadge.textContent = newStatus;
-          orderRow.setAttribute('data-status', newStatus);
-          returnDetails.innerHTML = `
-            <div class="card-body p-4">
-              <div class="alert alert-info">
-                No more return requests pending. Order status updated to ${newStatus}.
-              </div>
-            </div>
-          `;
-          const actionsCell = orderRow.querySelector('td .d-flex');
-          const existingSelect = actionsCell.querySelector('.status-select');
-          if (existingSelect) {
-            const newStatusBadge = document.createElement('span');
-            newStatusBadge.className = `order-status status-${newStatus.toLowerCase().replace(' ', '-')}`;
-            newStatusBadge.textContent = newStatus;
-            existingSelect.replaceWith(newStatusBadge);
-          }
-          const collapseToggle = actionsCell.querySelector('.collapse-toggle');
-          if (collapseToggle) {
-            collapseToggle.remove();
-          }
-        } else {
-          itemRow.remove();
-        }
-
-        // Show success toast
-        Toast.fire({
-          icon: 'success',
-          title: 'Return rejected successfully!'
+      if (response.status === 401) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Session Expired',
+          text: 'Please log in again.',
+          confirmButtonText: 'Go to Login'
         });
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error(`Server returned non-JSON response (status: ${response.status})`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        try {
+          const orderRow = document.querySelector(`tr[data-status][data-order-id="${orderId}"]`);
+          if (!orderRow) {
+            throw new Error(`Order row with ID ${orderId} not found in the DOM`);
+          }
+
+          const itemRow = this.closest('tr[data-item-id]');
+          if (!itemRow) {
+            throw new Error(`Item row with ID ${itemId} not found in the DOM`);
+          }
+
+          const returnDetails = document.querySelector(`#returnDetails-${orderId}`);
+          if (!returnDetails) {
+            throw new Error(`Return details section for order ID ${orderId} not found in the DOM`);
+          }
+
+          const cardBody = returnDetails.querySelector('.card-body');
+          if (!cardBody) {
+            throw new Error(`Card body not found in return details for order ID ${orderId}`);
+          }
+
+          // Create alert with rejection reason
+          const alertDiv = document.createElement('div');
+          alertDiv.className = 'alert alert-warning alert-dismissible fade show';
+          alertDiv.role = 'alert';
+          alertDiv.innerHTML = `
+            <strong>Return Rejected:</strong> ${rejectionReason}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          `;
+          cardBody.prepend(alertDiv);
+
+          // Update items cell in main row
+          const itemsCell = orderRow.querySelector('td:nth-child(3) small');
+          const itemNameCell = itemRow.querySelector('td:nth-child(1) span');
+          const itemName = itemNameCell.textContent;
+          itemsCell.innerHTML = itemsCell.innerHTML.replace(
+            `${itemName}: Return Requested`, 
+            `${itemName}: Rejected`
+          );
+
+          // Update order status if needed
+          const hasPendingReturns = returnDetails.querySelectorAll('tbody tr').length > 1;
+          if (!hasPendingReturns) {
+            const statusBadge = orderRow.querySelector('.order-status');
+            const newStatus = result.data.orderStatus || 'Delivered';
+            statusBadge.className = `order-status status-${newStatus.toLowerCase().replace(' ', '-')}`;
+            statusBadge.textContent = newStatus;
+            orderRow.setAttribute('data-status', newStatus);
+
+            const actionsCell = orderRow.querySelector('td .d-flex');
+            const existingSelect = actionsCell.querySelector('.status-select');
+            if (existingSelect) {
+              const newStatusBadge = document.createElement('span');
+              newStatusBadge.className = `order-status status-${newStatus.toLowerCase().replace(' ', '-')}`;
+              newStatusBadge.textContent = newStatus;
+              existingSelect.replaceWith(newStatusBadge);
+            }
+
+            const collapseToggle = actionsCell.querySelector('.collapse-toggle');
+            if (collapseToggle) {
+              collapseToggle.remove();
+            }
+          }
+
+          // Remove the rejected item row
+          itemRow.remove();
+
+          Toast.fire({
+            icon: 'success',
+            title: 'Return rejected successfully!'
+          });
+        } catch (domError) {
+          console.error('DOM update failed:', domError.message);
+          Toast.fire({
+            icon: 'warning',
+            title: 'Return rejected, but UI update failed. Reloading page...'
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        }
       } else {
-        // Show error toast
+        this.disabled = false;
+        this.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
         Toast.fire({
           icon: 'error',
           title: result.message || 'Failed to reject return.'
         });
-        this.disabled = false;
       }
     } catch (error) {
       console.error('Error rejecting return:', error);
-      // Show error toast
+      this.disabled = false;
+      this.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
       Toast.fire({
         icon: 'error',
-        title: 'An error occurred while rejecting the return.'
+        title: 'An error occurred while rejecting the return: ' + error.message
       });
-      this.disabled = false;
     }
   });
 });

@@ -1,248 +1,352 @@
 <%- include("../layouts/header.ejs") %>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-/* General Card Styling */
+/* General Styling */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f5f7fa;
+    color: #1e293b;
+}
+
 .navbar-brand {
-    font-weight: 700;
-    font-size: 1.6rem;
-    color: #1a1517;
-    letter-spacing: 0.5px;
+    font-weight: 600;
+    font-size: 1.75rem;
+    color: #1e293b;
+    letter-spacing: -0.025em;
+    transition: color 0.2s ease;
+}
+
+.navbar-brand:hover {
+    color: #3b82f6;
 }
 
 .brand-dot {
-    width: 10px;
-    height: 10px;
-    background: #C586A5;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
     border-radius: 50%;
     display: inline-block;
+    margin-left: 6px;
 }
 
 .navbar-nav {
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 .navbar-nav .nav-link {
     font-weight: 500;
-    color: #333;
-    transition: color 0.3s;
+    font-size: 1rem;
+    color: #475569;
+    transition: color 0.2s ease;
 }
 
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
-    color: #C586A5;
+    color: #3b82f6;
 }
 
-.badge-dot {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 10px;
-    height: 10px;
-    background-color: red;
-    border-radius: 50%;
-    border: 1px solid white;
-}
-
+/* Card Styling */
 .card {
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-bottom: 1px solid #e5e7eb;
+    background: #fafafa;
+    padding: 1.5rem;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.card-footer {
+    border-top: 1px solid #e5e7eb;
+    background: #fafafa;
+    padding: 1.5rem;
 }
 
 /* Modernized Tracking Timeline */
 .tracking-timeline {
     position: relative;
-    padding-left: 40px;
+    padding-left: 48px;
     margin: 0;
 }
 
 .tracking-timeline::before {
     content: '';
     position: absolute;
-    left: 15px;
+    left: 20px;
     top: 0;
     bottom: 0;
-    width: 2px;
-    background: linear-gradient(to bottom, #007bff, #28a745);
+    width: 4px;
+    background: linear-gradient(to bottom, #3b82f6, #22c55e);
+    border-radius: 2px;
 }
 
 .timeline-item {
     position: relative;
-    margin-bottom: 24px;
+    margin-bottom: 2rem;
+    transition: opacity 0.3s ease;
+}
+
+.timeline-item:hover {
+    opacity: 0.9;
 }
 
 .timeline-dot {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     position: absolute;
-    left: -25px;
-    top: 5px;
+    left: -30px;
+    top: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: 10px;
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
-    transition: transform 0.3s ease;
+    font-size: 12px;
+    box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .timeline-dot:hover {
-    transform: scale(1.2);
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15);
 }
 
 .bg-primary {
-    background: linear-gradient(45deg, #007bff, #00b7ff);
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
 }
 
 .bg-success {
-    background: linear-gradient(45deg, #28a745, #34d058);
+    background: linear-gradient(135deg, #22c55e, "Shipped"4ade80);
 }
 
 .bg-danger {
-    background: linear-gradient(45deg, #dc3545, #ff4d4d);
+    background: linear-gradient(135deg, #ef4444, #f87171);
 }
 
 .timeline-item .status-icon {
     position: absolute;
-    left: -48px;
+    left: -54px;
     top: 4px;
-    font-size: 1.25rem;
-    color: #007bff;
+    font-size: 1.5rem;
+    color: #3b82f6;
+    transition: color 0.3s ease;
 }
 
 .timeline-item .status-icon.success {
-    color: #28a745;
+    color: #22c55e;
 }
 
 .timeline-content {
-    background: #fff;
-    border-radius: 8px;
-    padding: 12px 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.3s ease;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .timeline-content:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
 .timeline-content .fw-bold {
-    font-size: 1rem;
-    color: #1a202c;
+    font-size: 1.1rem;
+    color: #1e293b;
+    letter-spacing: -0.025em;
 }
 
 .timeline-content .text-muted {
-    font-size: 0.875rem;
-    color: #6b7280;
+    font-size: 0.85rem;
+    color: #64748b;
 }
 
 /* Status Badges */
 .status-pending {
-    background-color: #fff3cd;
-    color: #856404;
-    padding: 5px 10px;
-    border-radius: 15px;
+    background-color: #fef3c7;
+    color: #92400e;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 500;
 }
 
-.status-processing, .status-shipped, .status-delivered, .status-cancelled, .status-returned, .status-return-request, .status-partially-returned, .status-rejected {
-    padding: 5px 10px;
-    border-radius: 15px;
+.status-processing, .status-shipped, .status-delivered, .status-cancelled, 
+.status-returned, .status-return-request, .status-partially-returned, .status-rejected {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 500;
 }
 
-.status-processing { background-color: #cce5ff; color: #004085; }
-.status-shipped { background-color: #d4edda; color: #155724; }
-.status-delivered { background-color: #28a745; color: #fff; }
+.status-processing { background-color: #dbeafe; color: #1e40af; }
+.status-shipped { background-color: #d1fae5; color: #065f46; }
+.status-delivered { background-color: #22c55e; color: #fff; }
 .status-cancelled, .status-returned, .status-return-request, .status-partially-returned, .status-rejected { 
-    background-color: #f8d7da; 
-    color: #721c24; 
+    background-color: #fee2e2; 
+    color: #991b1b; 
 }
 
-/* Additional Styles for Other Sections */
-.card-header {
-    border-bottom: 1px solid #e2e8f0;
+/* Table Styling */
+.table {
+    border-collapse: separate;
+    border-spacing: 0 8px;
 }
 
-.card-footer {
-    border-top: 1px solid #e2e8f0;
+.table th {
+    font-weight: 600;
+    color: #1e293b;
+    border: none;
+    padding: 1rem;
+}
+
+.table td {
+    vertical-align: middle;
+    border: none;
+    padding: 1rem;
+    background: #ffffff;
+    border-radius: 8px;
 }
 
 .table img {
-    border-radius: 4px;
+    border-radius: 6px;
+    transition: transform 0.3s ease;
 }
 
+.table img:hover {
+    transform: scale(1.05);
+}
+
+/* Buttons */
 .btn-outline-secondary, .btn-outline-primary, .btn-outline-danger, .btn-outline-warning {
-    border-radius: 8px;
-    padding: 8px 16px;
+    border-radius: 10px;
+    padding: 10px 20px;
     font-weight: 500;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary {
+    border-color: #e5e7eb;
+    color: #475569;
 }
 
 .btn-outline-secondary:hover {
-    background-color: #f1f5f9;
-    color: #1a202c;
+    background-color: #f8fafc;
+    color: #1e293b;
+}
+
+.btn-outline-primary {
+    border-color: #3b82f6;
+    color: #3b82f6;
 }
 
 .btn-outline-primary:hover {
-    background-color: #e6f0ff;
-    color: #0056b3;
+    background-color: #eff6ff;
+    color: #1e40af;
+}
+
+.btn-outline-danger {
+    border-color: #ef4444;
+    color: #ef4444;
 }
 
 .btn-outline-danger:hover {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #fef2f2;
+    color: #991b1b;
+}
+
+.btn-outline-warning {
+    border-color: #f59e0b;
+    color: #f59e0b;
 }
 
 .btn-outline-warning:hover {
-    background-color: #fff3cd;
-    color: #856404;
+    background-color: #fef3c7;
+    color: #92400e;
 }
 
-/* Return Modal */
+/* Modal Styling */
 .modal-content {
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.modal-header {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.form-select, .form-control {
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .tracking-timeline {
-        padding-left: 36px;
+        padding-left: 40px;
     }
 
     .timeline-item .status-icon {
-        left: -44px;
-        font-size: 1.125rem;
+        left: -48px;
+        font-size: 1.25rem;
     }
 
     .timeline-dot {
-        left: -23px;
-        width: 14px;
-        height: 14px;
+        left: -26px;
+        width: 16px;
+        height: 16px;
     }
 
     .tracking-timeline::before {
-        left: 13px;
+        left: 16px;
     }
 
     .timeline-content {
-        padding: 10px 14px;
+        padding: 0.75rem 1rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
     }
 }
 </style>
 
 <div class="container my-5">
-  <h2 class="section-title mb-4">Order Details</h2>
+  <h2 class="section-title mb-4 fw-bold" style="font-size: 1.875rem; color: #1e293b;">Order Details</h2>
   
   <% if (order) { %>
     <div class="card shadow-sm">
       <div class="card-header bg-light">
         <div class="d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Order ID: <%= order.orderId || 'N/A' %></h5>
+          <h5 class="mb-0 fw-semibold">Order ID: <%= order.orderId || 'N/A' %></h5>
           <span class="badge status-<%= order.status?.toLowerCase().replace(' ', '-') || 'pending' %>">
             <%= order.status || 'Pending' %>
           </span>
@@ -253,11 +357,11 @@
       </div>
       <div class="card-body">
         <!-- Tracking Information Section -->
-        <h5 class="mb-3">Tracking Information</h5>
+        <h5 class="mb-3 fw-semibold">Tracking Information</h5>
         <% 
           const trackingUpdates = [];
           trackingUpdates.push({ status: "Ordered", date: order.createdOn });
-          if (order.status === "Processing" || order.status === "Shipped" || order.status === "Delivered" || order.status === "Return Request" || order.status === "Returned" || order.status === "Partially Returned" || order.status === "Cancelled") {
+          if (order.status === "Processing" || order.status === "Shipped" || order.status === "Delivered" || order.status === "Return Request" || order.status === "Returned" || order.status === "Partially Returned" || order.status === "Cancelled" || order.status === "Partially Cancelled") {
             trackingUpdates.push({ status: "Processing", date: order.updatedAt || order.createdOn });
           }
           if (order.status === "Shipped" || order.status === "Delivered" || order.status === "Return Request" || order.status === "Returned" || order.status === "Partially Returned") {
@@ -272,8 +376,8 @@
           if (order.status === "Returned" || order.status === "Partially Returned") {
             trackingUpdates.push({ status: order.status, date: order.updatedAt });
           }
-          if (order.status === "Cancelled") {
-            trackingUpdates.push({ status: "Cancelled", date: order.updatedAt || order.createdOn });
+          if (order.status === "Cancelled" || order.status === "Partially Cancelled") {
+            trackingUpdates.push({ status: order.status, date: order.updatedAt || order.createdOn });
           }
           const rejectedItem = order.orderedItems.find(item => item.returnStatus === "Rejected");
           if (rejectedItem) {
@@ -293,12 +397,14 @@
                   update.status.toLowerCase() === 'returned' ? 'x-circle' : 
                   update.status.toLowerCase() === 'partially returned' ? 'x-circle' : 
                   update.status.toLowerCase() === 'cancelled' ? 'x-circle' : 
+                  update.status.toLowerCase() === 'partially cancelled' ? 'x-circle' : 
                   update.status.toLowerCase() === 'rejected return request' ? 'x-circle' : 'x-circle' 
                 %> status-icon <%= 
                   update.status.toLowerCase() === 'delivered' ? 'success' : 
                   update.status.toLowerCase() === 'returned' || 
                   update.status.toLowerCase() === 'partially returned' || 
                   update.status.toLowerCase() === 'cancelled' || 
+                  update.status.toLowerCase() === 'partially cancelled' || 
                   update.status.toLowerCase() === 'rejected return request' ? '' : '' 
                 %>"></i>
                 <div class="timeline-dot bg-<%= 
@@ -307,6 +413,7 @@
                   update.status.toLowerCase() === 'return requested' || 
                   update.status.toLowerCase() === 'partially returned' || 
                   update.status.toLowerCase() === 'cancelled' || 
+                  update.status.toLowerCase() === 'partially cancelled' || 
                   update.status.toLowerCase() === 'rejected return request' ? 'danger' : 'primary' 
                 %> me-3">
                   <i class="bi bi-check"></i>
@@ -333,9 +440,45 @@
         <% } else { %>
           <p class="text-muted">Tracking information not available yet.</p>
         <% } %>
-
+        
+        <% if (order.orderedItems.some(item => item.returnStatus === 'Rejected')) { %>
+          <div class="card mb-4">
+            <div class="card-header bg text-dark">
+              <h5 class="mb-0 fw-semibold">Rejected Returns</h5>
+            </div>
+            <div class="card-body">
+              <% order.orderedItems.forEach(item => { %>
+                <% if (item.returnStatus === 'Rejected') { %>
+                  <div class="alert alert-light mb-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <strong><%= item.product.productName %></strong> (Size: <%= item.size %>, Qty: <%= item.quantity %>)
+                        <div class="mt-2">
+                          <strong>Reason for rejection:</strong> <%= item.returnRejectionReason %>
+                        </div>
+                        <% if (item.returnRejectionDetails) { %>
+                          <div class="mt-1">
+                            <strong>Details:</strong> <%= item.returnRejectionDetails %>
+                          </div>
+                        <% } %>
+                      </div>
+                      <small class="text-muted">
+                        <% if (item.returnProcessedAt) { %>
+                          Rejected on: <%= new Date(item.returnProcessedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+                        <% } else { %>
+                          Rejected on: N/A
+                        <% } %>
+                      </small>
+                    </div>
+                  </div>
+                <% } %>
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
+        
         <!-- Ordered Items Section -->
-        <h5 class="mb-3">Ordered Items</h5>
+        <h5 class="mb-3 fw-semibold">Ordered Items</h5>
         <% if (order.orderedItems && order.orderedItems.length > 0) { %>
           <div class="table-responsive">
             <table class="table table-bordered">
@@ -347,6 +490,7 @@
                   <th>Unit Price</th>
                   <th>Total</th>
                   <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -371,22 +515,39 @@
                         const deliveredDate = trackingUpdates.find(update => update.status === "Delivered")?.date || order.updatedAt;
                         const daysSinceDelivery = deliveredDate ? Math.floor((new Date() - new Date(deliveredDate)) / (1000 * 60 * 60 * 24)) : Infinity;
                         const withinReturnWindow = daysSinceDelivery <= 7;
+                        const cancelledStatuses = ["Cancelled", "Partially Cancelled"];
+                        const isCancelled = cancelledStatuses.includes(order.status);
                       %>
                       <% if (item.returnStatus) { %>
                         <span class="badge status-<%= item.returnStatus.toLowerCase() %>">
                           <%= item.returnStatus %>
                         </span>
-                      <% } else if (isDeliveredForReturn && order.status !== "Cancelled") { %>
+                      <% } else if (item.status === 'Cancelled') { %>
+                        <span class="badge status-cancelled">Cancelled</span>
+                      <% } else if (isDeliveredForReturn && !isCancelled) { %>
                         <div class="d-flex align-items-center gap-2">
-                          <span class="text-muted">Delivered</span>
+                          <span class="badge status-delivered">Delivered</span>
                           <% if (withinReturnWindow) { %>
                             <button class="btn btn-outline-warning btn-sm btn-request-return" data-order-id="<%= order.orderId %>" data-item-id="<%= item._id %>">
                               <i class="bi bi-arrow-return-left"></i> Return Product
                             </button>
                           <% } %>
                         </div>
+                      <% } else if (!isCancelled) { %>
+                        <span class="badge status-<%= (item.status || order.status).toLowerCase().replace(' ', '-') %>">
+                          <%= item.status || order.status %>
+                        </span>
                       <% } else { %>
-                        <span class="text-muted"><%= order.status %></span>
+                        <span class="badge status-<%= item.status.toLowerCase() %>">
+                          <%= item.status %>
+                        </span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if ((order.status === 'Pending' || order.status === 'Processing') && item.status !== 'Cancelled') { %>
+                        <button class="btn btn-outline-danger btn-sm btn-cancel-item" data-order-id="<%= order.orderId %>" data-item-id="<%= item._id %>">
+                          <i class="bi bi-x-circle"></i> Cancel Item
+                        </button>
                       <% } %>
                     </td>
                   </tr>
@@ -404,7 +565,7 @@
       <div class="card-footer bg-light">
         <div class="row">
           <div class="col-md-6">
-            <h6>Shipping Address</h6>
+            <h6 class="fw-semibold">Shipping Address</h6>
             <% if (order.selectedAddress) { %>
               <p class="text-muted">
                 <%= order.selectedAddress.name || 'N/A' %><br>
@@ -418,7 +579,7 @@
             <% } %>
           </div>
           <div class="col-md-6">
-            <h6>Order Status</h6>
+            <h6 class="fw-semibold">Order Status</h6>
             <p class="text-muted">
               Current Status: <%= order.status || 'Pending' %><br>
               Last Updated:
@@ -427,7 +588,7 @@
               }) %>
             </p>
 
-            <h6>Payment Details</h6>
+            <h6 class="fw-semibold">Payment Details</h6>
             <p class="text-muted">
               Payment Method: <%= order.paymentMethod || 'N/A' %><br>
               Status: <%= order.isPaid ? 'Paid' : 'Not Paid' %><br>
@@ -467,7 +628,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="returnModalLabel">Request Return</h5>
+            <h5 class="modal-title fw-semibold" id="returnModalLabel">Request Return</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -475,8 +636,20 @@
               <input type="hidden" id="return-order-id">
               <input type="hidden" id="return-item-id">
               <div class="mb-3">
-                <label for="return-reason" class="form-label">Reason for Return</label>
-                <textarea class="form-control" id="return-reason" rows="3" required placeholder="Please specify the reason for returning this item"></textarea>
+                <label for="return-reason-type" class="form-label fw-medium">Reason for Return</label>
+                <select class="form-select" id="return-reason-type" required>
+                  <option value="" selected disabled>Select a reason</option>
+                  <option value="Wrong item received">Wrong item received</option>
+                  <option value="Item damaged or defective">Item damaged or defective</option>
+                  <option value="Not as described">Not as described</option>
+                  <option value="Changed my mind">Changed my mind</option>
+                  <option value="Wrong size ordered">Wrong size ordered</option>
+                  <option value="Other">Other (please specify)</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="return-reason-details" class="form-label fw-medium">Additional Details</label>
+                <textarea class="form-control" id="return-reason-details" rows="3" placeholder="Please provide additional details about your return"></textarea>
               </div>
               <button type="submit" class="btn btn-primary">Submit Return Request</button>
             </form>
@@ -486,7 +659,7 @@
     </div>
   <% } else { %>
     <div class="text-center py-4">
-      <p>No order found.</p>
+      <p class="text-muted">No order found.</p>
       <a href="/userProfile#orders" class="btn btn-outline-primary">Back to Orders</a>
     </div>
   <% } %>
@@ -512,29 +685,62 @@ document.querySelectorAll('.btn-cancel-order').forEach(button => {
   button.addEventListener('click', async function () {
     const orderId = this.getAttribute('data-order-id');
     
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to cancel this order?',
-      icon: 'warning',
+    const { value: cancelReason } = await Swal.fire({
+      title: 'Cancel Order',
+      html: `
+        <div class="text-start mb-3">
+          <p>Are you sure you want to cancel this order?</p>
+          <div class="mb-3">
+            <select id="cancel-reason" class="form-select">
+              <option value="" selected disabled>Select cancellation reason</option>
+              <option value="Changed my mind">Changed my mind</option>
+              <option value="Found better price elsewhere">Found better price elsewhere</option>
+              <option value="Ordered by mistake">Ordered by mistake</option>
+              <option value="Shipping takes too long">Shipping takes too long</option>
+              <option value="Other">Other reason</option>
+            </select>
+          </div>
+          <div id="cancel-details-container" style="display: none;">
+            <textarea id="cancel-details" class="form-control mt-2" rows="2" placeholder="Please specify your reason"></textarea>
+          </div>
+        </div>
+      `,
+      focusConfirm: false,
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#3b82f6',
       confirmButtonText: 'Yes, cancel',
-      cancelButtonText: 'No'
+      cancelButtonText: 'No',
+      preConfirm: () => {
+        const reason = document.getElementById('cancel-reason').value;
+        if (!reason) {
+          Swal.showValidationMessage('Please select a cancellation reason');
+          return false;
+        }
+        const details = document.getElementById('cancel-details').value;
+        return { reason, details };
+      },
+      didOpen: () => {
+        document.getElementById('cancel-reason').addEventListener('change', function() {
+          const detailsContainer = document.getElementById('cancel-details-container');
+          detailsContainer.style.display = this.value === 'Other' ? 'block' : 'none';
+        });
+      }
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!cancelReason) return;
 
     try {
       this.disabled = true;
-
       const response = await fetch(`/orders/cancel/${orderId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ 
+          reason: cancelReason.reason,
+          details: cancelReason.details 
+        }),
       });
 
       const result = await response.json();
@@ -587,16 +793,150 @@ document.querySelectorAll('.btn-cancel-order').forEach(button => {
   });
 });
 
+// Cancel item via AJAX
+document.querySelectorAll('.btn-cancel-item').forEach(button => {
+  button.addEventListener('click', async function () {
+    const orderId = this.getAttribute('data-order-id');
+    const itemId = this.getAttribute('data-item-id');
+
+    const { value: cancelReason } = await Swal.fire({
+      title: 'Cancel Item',
+      html: `
+        <div class="text-start mb-3">
+          <p>Are you sure you want to cancel this item?</p>
+          <div class="mb-3">
+            <select id="cancel-reason" class="form-select">
+              <option value="" selected disabled>Select cancellation reason</option>
+              <option value="Changed my mind">Changed my mind</option>
+              <option value="Found better price elsewhere">Found better price elsewhere</option>
+              <option value="Ordered by mistake">Ordered by mistake</option>
+              <option value="Shipping takes too long">Shipping takes too long</option>
+              <option value="Other">Other reason</option>
+            </select>
+          </div>
+          <div id="cancel-details-container" style="display: none;">
+            <textarea id="cancel-details" class="form-control mt-2" rows="2" placeholder="Please specify your reason"></textarea>
+          </div>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#3b82f6',
+      confirmButtonText: 'Yes, cancel',
+      cancelButtonText: 'No',
+      preConfirm: () => {
+        const reason = document.getElementById('cancel-reason').value;
+        if (!reason) {
+          Swal.showValidationMessage('Please select a cancellation reason');
+          return false;
+        }
+        const details = document.getElementById('cancel-details').value;
+        return { reason, details };
+      },
+      didOpen: () => {
+        document.getElementById('cancel-reason').addEventListener('change', function() {
+          const detailsContainer = document.getElementById('cancel-details-container');
+          detailsContainer.style.display = this.value === 'Other' ? 'block' : 'none';
+        });
+      }
+    });
+
+    if (!cancelReason) return;
+
+    try {
+      this.disabled = true;
+      const response = await fetch(`/orders/cancel-item/${orderId}/${itemId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          reason: cancelReason.reason,
+          details: cancelReason.details 
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        Toast.fire({
+          icon: 'success',
+          title: 'Item cancelled successfully!'
+        });
+
+        // Update item status in the table
+        const itemRow = this.closest('tr');
+        const statusCell = itemRow.querySelector('td:nth-child(6)');
+        statusCell.innerHTML = `<span class="badge status-cancelled">Cancelled</span>`;
+
+        // Remove the cancel item button
+        this.remove();
+
+        // Update order status badge
+        const statusBadge = document.querySelector('.badge');
+        statusBadge.className = `badge status-${result.orderStatus.toLowerCase().replace(' ', '-')}`;
+        statusBadge.textContent = result.orderStatus;
+
+        // Update order status text
+        const statusText = document.querySelector('.col-md-6 p.text-muted');
+        statusText.innerHTML = `Current Status: ${result.orderStatus}<br>Last Updated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`;
+
+        // Add to tracking timeline
+        const trackingTimeline = document.querySelector('.tracking-timeline');
+        const newTimelineItem = document.createElement('div');
+        newTimelineItem.className = 'timeline-item';
+        newTimelineItem.innerHTML = `
+          <i class="bi bi-x-circle status-icon"></i>
+          <div class="timeline-dot bg-danger me-3">
+            <i class="bi bi-check"></i>
+          </div>
+          <div class="timeline-content">
+            <div class="fw-bold">Item Cancelled</div>
+            <div class="text-muted small">
+              ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
+            </div>
+          </div>
+        `;
+        trackingTimeline.appendChild(newTimelineItem);
+
+        // If order is fully cancelled, remove the cancel order button
+        if (result.orderStatus === 'Cancelled') {
+          const cancelOrderButton = document.querySelector('.btn-cancel-order');
+          if (cancelOrderButton) cancelOrderButton.remove();
+        }
+      } else {
+        Toast.fire({
+          icon: 'error',
+          title: result.message || 'Failed to cancel item.'
+        });
+        this.disabled = false;
+      }
+    } catch (error) {
+      console.error('Error cancelling item:', error);
+      Toast.fire({
+        icon: 'error',
+        title: 'An error occurred while cancelling the item.'
+      });
+      this.disabled = false;
+    }
+  });
+});
+
 // Request return via AJAX
+let returnModal = null;
+
 document.querySelectorAll('.btn-request-return').forEach(button => {
-  button.addEventListener('click', function () {
+  button.addEventListener('click', function() {
     const orderId = this.getAttribute('data-order-id');
     const itemId = this.getAttribute('data-item-id');
 
     document.getElementById('return-order-id').value = orderId;
     document.getElementById('return-item-id').value = itemId;
 
-    const returnModal = new bootstrap.Modal(document.getElementById('returnModal'));
+    if (!returnModal) {
+      returnModal = new bootstrap.Modal(document.getElementById('returnModal'));
+    }
+    
     returnModal.show();
   });
 });
@@ -606,12 +946,13 @@ document.getElementById('return-form').addEventListener('submit', async function
 
   const orderId = document.getElementById('return-order-id').value;
   const itemId = document.getElementById('return-item-id').value;
-  const reason = document.getElementById('return-reason').value;
+  const reasonType = document.getElementById('return-reason-type').value;
+  const reasonDetails = document.getElementById('return-reason-details').value;
 
-  if (!reason.trim()) {
+  if (!reasonType) {
     Toast.fire({
       icon: 'error',
-      title: 'Please provide a reason for the return.'
+      title: 'Please select a reason for the return.'
     });
     return;
   }
@@ -622,7 +963,11 @@ document.getElementById('return-form').addEventListener('submit', async function
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ itemId, reason }),
+      body: JSON.stringify({ 
+        itemId, 
+        reason: reasonType,
+        details: reasonDetails 
+      }),
     });
 
     const result = await response.json();
@@ -632,16 +977,13 @@ document.getElementById('return-form').addEventListener('submit', async function
         title: 'Return request submitted successfully!'
       });
       
-      // Update order status
       const statusBadge = document.querySelector('.badge');
       statusBadge.className = 'badge status-return-request';
       statusBadge.textContent = 'Return Request';
 
-      // Update status in Order Status section
       const statusText = document.querySelector('.col-md-6 p.text-muted');
       statusText.innerHTML = `Current Status: Return Request<br>Last Updated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`;
 
-      // Update tracking timeline
       const trackingTimeline = document.querySelector('.tracking-timeline');
       const newTimelineItem = document.createElement('div');
       newTimelineItem.className = 'timeline-item';
@@ -659,12 +1001,10 @@ document.getElementById('return-form').addEventListener('submit', async function
       `;
       trackingTimeline.appendChild(newTimelineItem);
 
-      // Update item row to show return status
       const itemRow = document.querySelector(`button[data-item-id="${itemId}"]`).closest('tr');
       const actionCell = itemRow.querySelector('td:last-child');
       actionCell.innerHTML = `<span class="badge status-requested">Requested</span>`;
 
-      // Hide modal
       bootstrap.Modal.getInstance(document.getElementById('returnModal')).hide();
       document.getElementById('return-form').reset();
     } else {

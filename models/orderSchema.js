@@ -27,9 +27,18 @@ const orderSchema = new Schema(
         size: {
           type: String,
           required: true,
-          enum: ['S', 'M', 'L', 'XL', 'XXL'],
+          enum: ["S", "M", "L", "XL", "XXL"],
+        },
+        status: {
+          type: String,
+          default: "Pending",
+          enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Return Requested", "Returned"],
         },
         returnReason: {
+          type: String,
+          default: null,
+        },
+        returnRejectionReason: {
           type: String,
           default: null,
         },
@@ -42,18 +51,18 @@ const orderSchema = new Schema(
           enum: [null, "Requested", "Returned", "Rejected"],
           default: null,
         },
-      isRefunded: {
-      type: Boolean,
-      default: false,
-    },
-    refundedAt: {
-      type: Date,
-      default: null,
-    },
-    refundedAmount: {
-      type: Number,
-      default: 0,
-    },
+        isRefunded: {
+          type: Boolean,
+          default: false,
+        },
+        refundedAt: {
+          type: Date,
+          default: null,
+        },
+        refundedAmount: {
+          type: Number,
+          default: 0,
+        },
       },
     ],
     totalPrice: {
@@ -84,7 +93,18 @@ const orderSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: ["Initiated","Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Return Request", "Returned", "Partially Returned"],
+      enum: [
+        "Initiated",
+        "Pending",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+        "Partially Cancelled",
+        "Return Request",
+        "Returned",
+        "Partially Returned",
+      ],
     },
     createdOn: {
       type: Date,
@@ -113,14 +133,13 @@ const orderSchema = new Schema(
       default: false,
     },
     refundedAmount: {
-    type: Number,
-    default: 0,
-   },
-  isFullyRefunded: {
-  type: Boolean,
-  default: false,
- },
-
+      type: Number,
+      default: 0,
+    },
+    isFullyRefunded: {
+      type: Boolean,
+      default: false,
+    },
     paidAt: {
       type: Date,
     },

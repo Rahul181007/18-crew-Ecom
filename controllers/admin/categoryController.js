@@ -7,7 +7,7 @@ const Product = require("../../models/productSchema");
 
 
 // categoryinfo
-const categoryInfo=async(req,res)=>{
+const categoryInfo=async(req,res,next)=>{
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 4;
@@ -36,13 +36,14 @@ const categoryInfo=async(req,res)=>{
             searchQuery: searchQuery
         });
     } catch (error) {
-        console.log(error);
-        res.render("pageError");
+        // console.log(error);
+        // res.render("pageError");
+        next(error);
     }
 }
 
 // addCategory
-const addCategory = async (req, res) => {
+const addCategory = async (req, res,next) => {
     try {
       const { name, description } = req.body;
       const image = req.file ? req.file.filename : "default-category.png";
@@ -62,13 +63,14 @@ const addCategory = async (req, res) => {
       return res.json({ message: "Category added successfully" });
   
     } catch (error) {
-      console.error(error);
-      return res.status(500).json("Internal server error");
+      // console.error(error);
+      // return res.status(500).json("Internal server error");
+      next(error)
     }
   };
 
 //  addCategory Offer
-const addCategoryOffer = async (req, res) => {
+const addCategoryOffer = async (req, res,next) => {
   try {
     const percentage = parseInt(req.body.percentage);
     const categoryId = req.body.categoryId;
@@ -99,13 +101,14 @@ const addCategoryOffer = async (req, res) => {
 
     return res.json({ status: true });
   } catch (error) {
-    console.error('Error in addCategoryOffer:', error);
-    res.status(500).json({ status: false, message: 'Internal server error' });
+    // console.error('Error in addCategoryOffer:', error);
+    // res.status(500).json({ status: false, message: 'Internal server error' });
+    next(error);
   }
 };
 
 //  removeCategory Offer
-const removeCategoryOffer=async(req,res)=>{
+const removeCategoryOffer=async(req,res,next)=>{
  try {
     const categoryId=req.body.categoryId;
     const category=await Category.findById(categoryId);
@@ -126,31 +129,34 @@ const removeCategoryOffer=async(req,res)=>{
     await category.save();
     res.json({status:true});
  } catch (error) {
-    console.error("Error in removeCategoryOffer:", error);
-    res.status(500).json({status:false,message:"Internal server error"})
+    // console.error("Error in removeCategoryOffer:", error);
+    // res.status(500).json({status:false,message:"Internal server error"})
+    next(error);
  }
 }
 //list category
 
-const getListCategory=async(req,res)=>{
+const getListCategory=async(req,res,next)=>{
 try {
    const id=req.query.id;
    await Category.updateOne({_id:id},{$set:{isListed:false}});
    res.redirect("/admin/category") 
 } catch (error) {
-    res.redirect("/pageError");
+    // res.redirect("/pageError");
+    next(error)
 }
 }
 
 
 // unlist Category
-const getunListCategory=async(req,res)=>{
+const getunListCategory=async(req,res,next)=>{
 try {
     const id=req.query.id;
     await Category.updateOne({_id:id},{$set:{isListed:true}});
     res.redirect("/admin/category") 
 } catch (error) {
-    res.redirect("/pageError");
+    // res.redirect("/pageError");
+    next(error);
 }
 }
 
@@ -158,20 +164,20 @@ try {
 // getedit category
 
 
-const geteditCategory=async(req,res)=>{
+const geteditCategory=async(req,res,next)=>{
     try {
         const id= req.query.id
         const category=await Category.findOne({_id:id});
         res.render("edit-category",{category:category,activePage:"category"})
     } catch (error) {
-        res.redirect("/pageError")
+        next(error)
     }
 
 }
 
 // edit category
 
-const editCategory=async(req,res)=>{
+const editCategory=async(req,res,next)=>{
 try {
     const id=req.params.id;
     const {categoryName,description}=req.body;
@@ -187,7 +193,7 @@ try {
         res.status(404).json({error:"Category not found"})
     }
 } catch (error) {
-    res.status(500).json({error:"internal server error"})
+   next(error)
 }
 }
 

@@ -4,7 +4,7 @@ const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
 
-const productDetails = async (req, res) => {
+const productDetails = async (req, res,next) => {
   try {
     const userId = req.session.user;
     const productId = req.query.id;
@@ -73,8 +73,7 @@ const productDetails = async (req, res) => {
       page: 'product-details',
     });
   } catch (error) {
-    console.error("Error in productDetails:", error.message, error.stack);
-    res.redirect("/page-error");
+    next(error)
   }
 };
 

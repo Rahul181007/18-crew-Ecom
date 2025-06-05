@@ -5,16 +5,15 @@ const exceljs = require('exceljs');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 
-const salesReportPage = async (req, res) => {
+const salesReportPage = async (req, res,next) => {
   try {
     res.render('admin/sales-report', { title: 'Sales Report' });
   } catch (error) {
-    console.error('Error loading sales report page:', error);
-    res.status(500).send('Internal Server Error');
+    next(error)
   }
 };
 
-const getSalesData = async (req, res) => {
+const getSalesData = async (req, res,next) => {
   try {
     const { period, specificDate, startDate, endDate } = req.body;
    console.log(req.body)
@@ -165,12 +164,11 @@ switch (period) {
 
     res.json(responseData);
   } catch (error) {
-    console.error('Error fetching sales data:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch sales data' });
+    next(error)
   }
 };
 
-const downloadReport = async (req, res) => {
+const downloadReport = async (req, res,next) => {
   try {
     const { format, includeDetails, includeSummary, includeCharts, period, specificDate, startDate, endDate } = req.query;
 
@@ -337,8 +335,7 @@ const getSalesDataInternal = async (params) => {
       })),
     };
   } catch (error) {
-    console.error('Error in getSalesDataInternal:', error);
-    return { success: false, message: 'Failed to fetch sales data' };
+    next(error)
   }
 };
 

@@ -442,7 +442,7 @@
                         <% } %>
                         <div class="d-flex gap-2">
                           <a href="/editAddress?id=<%= userAddress._id %>&index=<%= index %>" class="btn btn-sm btn-outline-primary" aria-label="Edit address <%= address.addressType %>">Edit</a>
-                          <a href="#" class="btn btn-sm btn-outline-danger" onclick="deleteAddressWithAlert('<%= address._id %>', '<%= index %>')" aria-label="Delete address <%= address.addressType %>">Remove</a>
+                          <a href="#" class="btn btn-sm btn-outline-danger" onclick="deleteAddressWithAlert('<%=address._id %>', '<%= index %>')" aria-label="Delete address <%=  address.addressType %>">Remove</a>
                         </div>
                       </div>
                     </div>
@@ -470,7 +470,7 @@
               <div class="stats-number">₹<%= user.wallet ? user.wallet.toFixed(2) : '0.00' %></div>
               <div class="stats-label">Current Wallet Balance</div>
             </div>
-            <% if (user.walletTransactions && user.walletTransactions.length > 0) { %>
+            <% if (walletTransactions && walletTransactions.length > 0) { %>
               <div class="table-responsive">
                 <table class="table">
                   <thead>
@@ -479,23 +479,38 @@
                       <th>Type</th>
                       <th>Amount</th>
                       <th>Source</th>
-                      
+                       <th>Reference/OrderId</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% user.walletTransactions.forEach(transaction => { %>
-                      <tr>
-                        <td><%= new Date(transaction.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
-                        <td><%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) %></td>
-                        <td>₹<%= transaction.amount.toFixed(2) %></td>
-                        <td>
-                      <span class="order-status status-<%= transaction.type ? transaction.type.toLowerCase() : 'unknown' %>">
-                  <%= transaction.source ? (transaction.source.charAt(0).toUpperCase() + transaction.source.slice(1)) : 'Unknown' %>
-                </span>
-                        </td>
-                       
-                      </tr>
-                    <% }) %>
+         <% walletTransactions.forEach(transaction => { %>
+    <tr>
+      <td><%= new Date(transaction.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+      <td><%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) %></td>
+      <td>₹<%= transaction.amount.toFixed(2) %></td>
+      <td>
+        <span class="order-status status-<%= transaction.type ? transaction.type.toLowerCase() : 'unknown' %>">
+          <%= transaction.source ? (transaction.source.charAt(0).toUpperCase() + transaction.source.slice(1)) : 'Unknown' %>
+        </span>
+      </td>
+      <td>
+  <% if (transaction.reference) { %>
+    <% if (transaction.reference.startsWith('OrderID:')) { %>
+      <strong>Order ID:</strong> <%= transaction.reference.replace('OrderID:', '') %>
+    <% } else if (transaction.reference.startsWith('Referred by')) { %>
+      <strong><%= transaction.reference %></strong>
+    <% } else if (transaction.reference.startsWith('Referral signup by')) { %>
+      <strong><%= transaction.reference %></strong>
+    <% } else { %>
+      <%= transaction.reference %>
+    <% } %>
+  <% } else { %>
+    -
+  <% } %>
+</td>
+
+    </tr>
+  <% }) %>
                   </tbody>
                 </table>
               </div>

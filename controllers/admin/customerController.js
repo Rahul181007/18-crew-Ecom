@@ -1,6 +1,6 @@
 const User = require("../../models/userSchema");
 
-const customerInfo = async (req, res) => {
+const customerInfo = async (req, res,next) => {
   try {
     let search = "";
     if (req.query.search) {
@@ -43,31 +43,32 @@ const customerInfo = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
-    res.status(500).send("Internal Server Error");
+    // console.log(error);
+    // res.status(500).send("Internal Server Error");
+    next(error)
   }
 };
 
 // ............customer blocked............
-const customerBlocked=async(req,res)=>{
+const customerBlocked=async(req,res,next)=>{
     try {
      let id= req.query.id;
      await User.updateOne({_id:id},{$set:{isBlocked:true}});  
      res.redirect("/admin/users")
      
     } catch (error) {
-        res.redirect("/pageError")
+       next(error)
     }
         
 }
 // .................customer-unblocked............
-const customerunBlocked=async(req,res)=>{
+const customerunBlocked=async(req,res,next)=>{
     try {
         let id=req.query.id;
         await User.updateOne({_id:id},{$set:{isBlocked:false}});
         res.redirect("/admin/users");
     } catch (error) {
-        res.redirect("/pageError")
+        next(error)
     }
 }
 

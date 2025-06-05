@@ -13,7 +13,7 @@ const pageError=async(req,res)=>{
 
 
 // ..........loadlogin page.................
-const loadLogin = async (req, res) => {
+const loadLogin = async (req, res,next) => {
     try {
         if (req.session.admin) {
             // If session exists, redirect to dashboard
@@ -24,32 +24,45 @@ const loadLogin = async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send("Internal Server Error");
+       next(error)
     }
 };
 // ...........admin login............
-const login=async(req,res)=>{
-    try {
-        const {email,password}=req.body;
-        const admin=await User.findOne({email,isAdmin:true});
-      if(admin){
-        const passwordMatch=await bcrypt.compare(password,admin.password);
-        if(passwordMatch){
-            req.session.admin=admin._id;
-          return res.redirect("/admin/dashboard")
-        }else{
-            return res.redirect("/admin/login")
-        }
-      }
+const login = async (req, res,next) => {
+  try {
+    const { email, password } = req.body;
+    
+    const admin = await User.findOne({ email, isAdmin: true });
+    if (admin) {
+      const passwordMatch = await bcrypt.compare(password, admin.password);
+      if (passwordMatch) {
+        req.session.admin = admin._id;
 
-    } catch (error) {
-        console.log("Login error",error);
-         return res.redirect("/pageError")
+        req.session.save((err) => {
+          if (err) {
+            console.error("Admin session save error:", err);
+            return res.redirect("/admin/login");
+          }
+          res.redirect("/admin/dashboard");
+        });
+
+      } else {
+        return res.redirect("/admin/login");
+      }
+    } else {
+      return res.redirect("/admin/login");
     }
+
+  } catch (error) {
+    console.log("Login error", error);
+    // return res.redirect("/pageError");
+    next(error)
+  }
 }
 
+
 // ..........loaddashboard............
-const loadDashboard=async(req,res)=>{
+const loadDashboard=async(req,res,next)=>{
     if(req.session.admin){
         try {
           res.render("dashboard",{
@@ -57,14 +70,15 @@ const loadDashboard=async(req,res)=>{
           })
         
         } catch (error) {
-            res.redirect("/pageError")
+           
+            next(error)
         }
     }
    
 }
 
 // ..............logout...........
-const logout=async(req,res)=>{
+const logout=async(req,res,next)=>{
   try {
     req.session.destroy(error=>{
         if(error){
@@ -75,7 +89,7 @@ const logout=async(req,res)=>{
     })
   } catch (error) {
     console.log("Unexpected error during logout",error);
-    res.redirect("/pageError")
+    next(error)
   }
 }
 

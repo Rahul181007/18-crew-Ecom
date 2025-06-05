@@ -1,14 +1,15 @@
 const Coupon = require("../../models/couponSchema");
 const { body, validationResult } = require('express-validator');
 
-const loadCouponPage = async (req, res) => {
+const loadCouponPage = async (req, res,next) => {
   try {
     res.render("coupon", {
       activePage: "coupon",
     });
   } catch (error) {
-    console.log("Coupon page error", error);
-    res.redirect("/admin/pageError");
+    // console.log("Coupon page error", error);
+    // res.redirect("/admin/pageError");
+    next(error)
   }
 };
 
@@ -97,18 +98,19 @@ const addCoupon = async (req, res) => {
   }
 };
 
-const getCoupons = async (req, res) => {
+const getCoupons = async (req, res,next) => {
   try {
     const coupons = await Coupon.find().select('name discountType offerPrice offerPercentage minimumPrice maxUsage expireOn isActive usedBy')
     .populate('usedBy.userId','name email')
     res.status(200).json(coupons);
   } catch (error) {
-    console.error('Error fetching coupons:', error);
-    res.status(500).json({ errors: [{ msg: 'Server error. Please try again.' }] });
+    // console.error('Error fetching coupons:', error);
+    // res.status(500).json({ errors: [{ msg: 'Server error. Please try again.' }] });
+    next(error);
   }
 };
 
-const deleteCoupon=async(req,res)=>{
+const deleteCoupon=async(req,res,next)=>{
     try {
     const {name}=req.params;
     const coupon=await Coupon.findOneAndDelete({name:name.toUpperCase()});
@@ -117,8 +119,9 @@ const deleteCoupon=async(req,res)=>{
     }
    res.status(200).json({message:"Coupon successfully deleted"})
     } catch (error) {
-        console.error('Error deleting coupon:', error);
-    res.status(500).json({ errors: [{ msg: 'Server error. Please try again.' }] });
+    //     console.error('Error deleting coupon:', error);
+    // res.status(500).json({ errors: [{ msg: 'Server error. Please try again.' }] });
+    next(error);
     }
 }
 const updateCoupon = async (req, res) => {
@@ -207,7 +210,7 @@ const updateCoupon = async (req, res) => {
     res.status(500).json({ errors: [{ msg: 'Server error. Please try again.' }] });
   }
 };
-const getCouponsUsers = async (req, res) => {
+const getCouponsUsers = async (req, res,next) => {
   try {
     const { name } = req.params;
     console.log(req.params)
@@ -239,8 +242,9 @@ const getCouponsUsers = async (req, res) => {
     res.status(200).json(users);
 
   } catch (error) {
-    console.error('Error fetching coupon users:', error.stack);
-    res.status(500).json({ errors: [{ msg: 'Server error. Please try again.' }] });
+    // console.error('Error fetching coupon users:', error.stack);
+    // res.status(500).json({ errors: [{ msg: 'Server error. Please try again.' }] });
+    next(error)
   }
 };
 

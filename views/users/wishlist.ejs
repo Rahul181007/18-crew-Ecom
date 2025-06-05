@@ -357,25 +357,25 @@
         <div class="col-12">
           <% if (wishlistCount > 0 && wishlist && wishlist.length > 0) { %>
             <% wishlist.forEach(product => { %>
-              <div class="wishlist-card" data-product-id="<%= product._id %>">
-                <img src="/Uploads/re-image/<%= product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg' %>" alt="<%= product.productName || 'Product Image' %>" />
-                <div class="product-info">
-                  <h5 class="product-name">
-                    <a href="/productDetails?id=<%= product._id %>" class="text-black text-decoration-none">
-                      <%= product.productName || 'Unnamed Product' %>
-                    </a>
-                  </h5>
-                  <p class="product-description">
-                    <%= product.category && product.category.name ? product.category.name : 'Unknown Category' %><br>
-                    <%= product.brand && product.brand.brandName ? product.brand.brandName : product.brand || 'Unknown Brand' %>
-                  </p>
-                </div>
-                <div class="price">₹<%= product.salePrice ? product.salePrice.toLocaleString('en-IN') : '0' %></div>
-                <a href="#" onclick="promptForSize('<%= product._id %>', <%= JSON.stringify(product.sizes || []) %>)" class="btn btn-primary" aria-label="Add <%= product.productName || 'product' %> to cart">Add to Cart</a>
-                <a href="#" onclick="removeFromWishlist('<%= product._id %>', this)" class="btn btn-danger" aria-label="Remove <%= product.productName || 'product' %> from wishlist">
-                  <i class="bi bi-trash"></i>
-                </a>
-              </div>
+              <div class="wishlist-card" data-product-id="<%= product.product._id %>">
+  <img src="/Uploads/re-image/<%= product.product.productImage && product.product.productImage[0] ? product.product.productImage[0] : 'default.jpg' %>" alt="<%= product.product.productName || 'Product Image' %>" />
+  <div class="product-info">
+    <h5 class="product-name">
+      <a href="/productDetails?id=<%= product.product._id %>" class="text-black text-decoration-none">
+        <%= product.product.productName || 'Unnamed Product' %>
+      </a>
+    </h5>
+    <p class="product-description">
+      <%= product.product.category && product.product.category.name ? product.product.category.name : 'Unknown Category' %><br>
+      <%= product.product.brand && product.product.brand.brandName ? product.product.brand.brandName : product.product.brand || 'Unknown Brand' %>
+    </p>
+  </div>
+  <div class="price">₹<%= product.product.salePrice ? product.product.salePrice.toLocaleString('en-IN') : '0' %></div>
+  <a href="#" onclick="promptForSize('<%= product.product._id %>', <%= JSON.stringify(product.product.sizes || []) %>)" class="btn btn-primary" aria-label="Add <%= product.product.productName || 'product' %> to cart">Add to Cart</a>
+  <a href="#" onclick="removeFromWishlist('<%= product.product._id %>', this)" class="btn btn-danger" aria-label="Remove <%= product.product.productName || 'product' %> from wishlist">
+    <i class="bi bi-trash"></i>
+  </a>
+</div>
             <% }) %>
           <% } else { %>
             <div class="empty-wishlist">

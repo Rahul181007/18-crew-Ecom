@@ -3,16 +3,16 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
 
 <style>
   :root {
     --primary: #7C3AED; /* Modern violet shade */
     --primary-light: #F5F3FF;
     --secondary: #3B82F6; /* Bright blue for accents */
-    --dark: #0F172A; /* Slate for text */
-    --gray: #6B7280; /* Neutral gray */
-    --light-gray: #F1F5F9; /* Softer background */
+    --dark: #0F172A;
+    --gray: #6B7280;
+    --light-gray: #F1F5F9;
     --border-radius: 10px;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     --transition: all 0.3s ease;
@@ -131,7 +131,7 @@
     color: #B91C1C;
   }
 
-  .status-return-request {
+  .status-return-requested {
     background: #FEF3C7;
     color: #D97706;
   }
@@ -139,6 +139,16 @@
   .status-returned {
     background: #F3E8FF;
     color: #6B21A8;
+  }
+
+  .status-partially-returned {
+    background: #F3E8FF;
+    color: #6B21A8;
+  }
+
+  .status-rejected {
+    background: #FEE2E2;
+    color: #B91C1C;
   }
 
   .btn-action {
@@ -213,17 +223,16 @@
               <p><strong>Paid At:</strong> <%= new Date(order.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
             <% } %>
             <% if (order.refundedAmount && order.refundedAmount > 0) { %>
-  <p>
-    <strong>Refund Amount:</strong>
-    ₹<%= order.refundedAmount.toFixed(2) %>
-  </p>
-  <% if (order.isFullyRefunded) { %>
-    <p><strong>Refund Status:</strong> <span class="badge bg-success">Fully Refunded</span></p>
-  <% } else { %>
-    <p><strong>Refund Status:</strong> <span class="badge bg-warning text-dark">Partially Refunded</span></p>
-  <% } %>
-<% } %>
-
+              <p>
+                <strong>Refund Amount:</strong>
+                ₹<%= order.refundedAmount.toFixed(2) %>
+              </p>
+              <% if (order.isFullyRefunded) { %>
+                <p><strong>Refund Status:</strong> <span class="badge bg-success">Fully Refunded</span></p>
+              <% } else { %>
+                <p><strong>Refund Status:</strong> <span class="badge bg-warning text-dark">Partially Refunded</span></p>
+              <% } %>
+            <% } %>
           </div>
           <div class="col-md-6">
             <p><strong>Total Price:</strong> ₹<%= order.totalPrice ? order.totalPrice.toFixed(2) : '0.00' %></p>
@@ -265,12 +274,21 @@
           <ul class="list-group">
             <% order.orderedItems.forEach(item => { %>
               <li class="list-group-item d-flex align-items-center">
-                <% if (item.product?.productImage) { %>
-                  <img src="/uploads/re-image/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>" class="product-image me-3">
-                <% } %>
+                <div class="d-flex align-items-center me-3">
+                  <% if (item.product?.productImage) { %>
+                    <img src="/Uploads/re-image/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>" class="product-image me-2">
+                  <% } %>
+                  <span class="order-status status-<%= item.returnStatus ? item.returnStatus.toLowerCase() : (item.status || 'pending').toLowerCase().replace(' ', '-') %>">
+                    <%= item.returnStatus ? 
+                        (item.returnStatus === 'Requested' ? 'Return Requested' : 
+                         item.returnStatus === 'Returned' ? 'Returned' : 
+                         `Rejected${item.returnRejectionReason ? ': ' + item.returnRejectionReason : ''}`) : 
+                        (item.status || 'Pending') %>
+                  </span>
+                </div>
                 <div>
                   <p class="mb-1"><strong><%= item.product?.productName || 'Unknown Product' %></strong></p>
-                  <p class="mb-0 text-muted">Quantity: <%= item.quantity || 0 %> | Price: ₹<%= item.price ? item.price.toFixed(2) : '0.00' %></p>
+                  <p class="mb-0 text-muted">Quantity: <%= item.quantity || 0 %> | Price: ₹<%= item.price ? item.price.toFixed(2) : '0.00' %> | Size: <%= item.size || 'N/A' %></p>
                 </div>
               </li>
             <% }) %>

@@ -77,7 +77,8 @@ user_route.get("/addAddress",userAuth,profileController.addAddress);
 user_route.post("/addAddress",userAuth,profileController.postAddAddress);
 user_route.get("/editAddress",userAuth,profileController.editAddress);
 user_route.post("/editAddress",userAuth,profileController.postEditAddress)
-user_route.get("/deleteAddress",userAuth,profileController.deleteAddress)
+user_route.get("/deleteAddress/:addressId/:index", userAuth, profileController.deleteAddress)
+
 
 // product details
 user_route.get("/productDetails",productController.productDetails);
@@ -100,6 +101,8 @@ user_route.get("/checkStock",userAuth,checkoutController.checkStock)
 user_route.get("/successPage",userAuth,checkoutController.successPage);
 user_route.get("/orders/:orderId",userAuth,checkoutController.orderDetails);
 user_route.post("/orders/cancel/:orderId",userAuth,checkoutController.cancelOrder);
+user_route.post('/orders/cancel-item/:orderId/:itemId',userAuth,checkoutController.cancelOrderItem);
+
 user_route.post("/orders/return/:orderId",userAuth,checkoutController.returnOrder);
 user_route.post('/verify-payment',userAuth,checkoutController.verifyPayment)
 user_route.get("/failedPage",userAuth,checkoutController.failedPage);

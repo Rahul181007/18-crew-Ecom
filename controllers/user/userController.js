@@ -10,8 +10,10 @@ const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const Cart=require("../../models/cartSchema");
 const Coupon=require("../../models/couponSchema")
- const crypto=require('crypto');
-
+const crypto=require('crypto');
+const SearchHistory=require("../../models/searchHistorySchema");
+const { logWalletTransaction } = require("../../utils/wallet");
+const { WalletSources, TransactionTypes } = require("../../constants/walletConstants");
 
 // generate unique referal code
 function generateRefferalcode(){
@@ -21,16 +23,15 @@ function generateRefferalcode(){
 
 
 // ...........loadRegister form...........
-const loadRegister=async(req,res)=>{
+const loadRegister=async(req,res,next)=>{
     try {
         res.render("registeration")
     } catch (error) {
-        console.log(error)
-        res.status(500).send("server error")
+        next(error)
     }
 }
 //............home page..................
-const loadhomepage = async (req, res) => {
+const loadhomepage = async (req, res,next) => {
     try {
       const user = req.session.user;
       const cartCount=0;
@@ -66,8 +67,7 @@ const loadhomepage = async (req, res) => {
         });
       }
     } catch (error) {
-      console.log(error);
-      res.status(500).send("server error");
+      next(error)
     }
   };
   
@@ -78,7 +78,7 @@ const securePassword=async(password)=>{
         const passwordHash=await bcrypt.hash(password,10);
         return passwordHash;
     } catch (error) {
-        console.log(error,message)
+        console.log(error.message)
     }
 }
 // ......generate Otp...........
@@ -118,7 +118,7 @@ async function sendVerificationEmail(email,otp){
 
 
 // ............insert User................
- const insertUser=async(req,res)=>{
+ const insertUser=async(req,res,next)=>{
    
     try{
         
@@ -148,13 +148,12 @@ async function sendVerificationEmail(email,otp){
        res.render("verify-otp");
        console.log("OTP sent")
     }catch(error){
-        console.log("error signup",error.message);
-        res.redirect("/pageNotFOUND")
+        next(error)
         
     }
  }
 // ..............verify otp...............
-const verifyOtp = async (req, res) => {
+const verifyOtp = async (req, res,next) => {
   try {
     const { otp } = req.body;
     if (otp === req.session.userOtp) {
@@ -187,27 +186,31 @@ const verifyOtp = async (req, res) => {
       await saveUserData.save();
 
       if (user.referralCode) {
-        const referrer = await User.findOne({ referalCode: user.referralCode });
-        console.log(referrer)
-        if (referrer) {
-          referrer.wallet = (referrer.wallet || 0) + 100;
-          referrer.walletTransactions.push({
-            type: "credit",
-            amount: 100,
-            source: "Referral bonus",
-            reference: `Referred user: ${saveUserData.email}`,
-          });
-          await referrer.save();
+  const referrer = await User.findOne({ referalCode: user.referralCode });
+  if (referrer) {
+    // Referrer: add ₹100 referral bonus
+    referrer.wallet = (referrer.wallet || 0) + 100;
+    await logWalletTransaction(
+      referrer._id,
+      TransactionTypes.CREDIT,
+      100,
+      WalletSources.REFERRAL_BONUS,
+      `Referral signup by ${saveUserData.email}`
+    );
+    await referrer.save();
 
-          saveUserData.walletTransactions.push({
-            type: "credit",
-            amount: 50,
-            source: "Referral signup bonus",
-            reference: `Referred by: ${referrer.email}`,
-          });
-          await saveUserData.save();
-        }
-      }
+    // Referred User: add ₹50 signup bonus
+    saveUserData.wallet = 50;
+    await logWalletTransaction(
+      saveUserData._id,
+      TransactionTypes.CREDIT,
+      50,
+      WalletSources.REFERRAL_SIGNUP,
+      `Referred by ${referrer.email}`
+    );
+  }
+}
+
 
       req.session.user = saveUserData.id;
       res.json({ success: true, redirectUrl: "/" });
@@ -217,13 +220,12 @@ const verifyOtp = async (req, res) => {
     }
 
   } catch (error) {
-    console.error("Error verifying OTP", error);
-    res.status(500).json({ success: false, message: "An error occurred" });
+    next(error);
   }
 };
 
 // ...............resend OTP..............
-const resendOTP=async(req,res)=>{
+const resendOTP=async(req,res,next)=>{
     try {
         const {email}=req.session.userData;
         if(!email){
@@ -241,22 +243,20 @@ const resendOTP=async(req,res)=>{
             res.status(500).json({success:false,message:"Failed to recent otp. please try again"})
         }
     } catch (error) {
-        console.error("Error resending Otp",error)
-        res.status(500).json({success:false,message:"Internal server error please try again"})
+        next(error)
     }
 }
 
 // ...........pagenot found...............
-const pageNotFound=async (req,res)=>{
+const pageNotFound=async (req,res,next)=>{
     try {
         res.render("page-404");
     } catch (error) {
-        console.log(error);
-        res.redirect("/pageNotFound")
+        next(error)
     }
 }
 
-const loadLogin=async(req,res)=>{
+const loadLogin=async(req,res,next)=>{
     try {
         if(!req.session.user){
             return res.render("signin")
@@ -264,42 +264,45 @@ const loadLogin=async(req,res)=>{
             res.redirect("/")
         }
     } catch (error) {
-        res.redirect("/pageNotFOUND")
+        next(error)
     }
 }
 
-const login=async(req,res)=>{
-    try {
-        const {email,password}=req.body;
-        const findUser=await User.findOne({isAdmin:0,email:email});
-       
-        if(!findUser){
-            return res.render("signin",{message:"User not Found"})
-        }
-        if(findUser.isBlocked){
-            return res.render("signin",{message:"User is blocked by admin"})
-        }
-        
-        const passwordMatch=await bcrypt.compare(password,findUser.password)
-        if(!passwordMatch){
-            return res.render("signin",{message:"Incorrect credentials"})
-        }
-        
-        req.session.user=findUser._id;
-        
-        
-        res.redirect("/")
+const login = async (req, res,next) => {
+  try {
+    const { email, password } = req.body;
+    const findUser = await User.findOne({ isAdmin: 0, email: email });
 
-
-
-    } catch (error) {
-        console.error("signin error",error);
-        res.render("signin",{message:"signin failed. Please try again later"})
+    if (!findUser) {
+      return res.render("signin", { message: "User not Found" });
     }
-}
+    if (findUser.isBlocked) {
+      return res.render("signin", { message: "User is blocked by admin" });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, findUser.password);
+    if (!passwordMatch) {
+      return res.render("signin", { message: "Incorrect credentials" });
+    }
+
+    req.session.user = findUser._id;
+
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error:", err);
+        return res.render("signin", { message: "Session error. Please try again." });
+      }
+      res.redirect("/");
+    });
+
+  } catch (error) {
+    next(error)
+  }
+};
+
 
 // ..........logout.................
-const logout=async(req,res)=>{
+const logout=async(req,res,next)=>{
     try {
         req.session.destroy((err)=>{
             if(err){
@@ -311,13 +314,12 @@ const logout=async(req,res)=>{
         })
     
     } catch (error) {
-        console.log("Logout error",error)
-         res.redirect("/pageNotFound")
+        next(error)
     }
 
 }
 
-const loadShoppingPage = async (req, res) => {
+const loadShoppingPage = async (req, res,next) => {
   try {
     const user = req.session.user;
     
@@ -378,65 +380,55 @@ const loadShoppingPage = async (req, res) => {
       activeBrand: '',
     });
   } catch (error) {
-    console.error('Error in loadShoppingPage:', error);
-    res.redirect('/pageNotFound');
+    next(error)
   }
 };
 
-const filterProduct = async (req, res) => {
+const filterProduct = async (req, res,next) => {
   try {
     const user = req.session.user;
     const categoryId = req.query.category || '';
     const brandId = req.query.brand || '';
     const currentPage = parseInt(req.query.page) || 1;
     const itemsPerPage = 10;
-   const cart = await Cart.findOne({ userId: user });
-    let cartCount=0
-    cartCount = cart && cart.items ? cart.items.length : 0;
-
+    const cart = await Cart.findOne({ userId: user });
+    let cartCount = cart?.items?.length || 0;
 
     const query = { isBlocked: false };
 
+    // Find category and brand
     const findCategory = categoryId ? await Category.findOne({ _id: categoryId }) : null;
-    if (findCategory) {
-      query.category = findCategory._id;
-    }
-
     const findBrand = brandId ? await Brand.findOne({ _id: brandId }) : null;
-    if (findBrand) {
-      query.brand = findBrand.brandName;
-    }
 
-    let products = await Product.find(query)
+    if (findCategory) query.category = findCategory._id;
+    if (findBrand) query.brand = findBrand.brandName;
+
+    // Get products with pagination
+    const totalProducts = await Product.countDocuments(query);
+    const products = await Product.find(query)
       .sort({ createdAt: -1 })
+      .skip((currentPage - 1) * itemsPerPage)
+      .limit(itemsPerPage)
       .lean();
 
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const totalPages = Math.ceil(products.length / itemsPerPage);
-    const currentProducts = products.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
-    let userData = null;
-    if (user) {
-      userData = await User.findOne({ _id: user });
-      if (userData) {
-        const searchEntry = {
-          category: findCategory ? findCategory._id : null,
-          brand: findBrand ? findBrand._id : null,
-          searchedOn: new Date(),
-        };
-        userData.searchHistory.push(searchEntry);
-        await userData.save();
-      }
+    // Save search history if user is logged in
+    if (user && (findCategory || findBrand)) {
+      await SearchHistory.create({
+        userId: user,
+        categories: findCategory ? [findCategory._id] : [],
+        brand: findBrand ? findBrand._id : null,
+        searchOn: new Date()
+      });
     }
 
     const categories = await Category.find({ isListed: true });
     const brands = await Brand.find({ isBlocked: false });
-    console.log('Brands fetched in filterProduct:', brands);
 
     res.render('collection', {
-      user: userData,
-      products: currentProducts,
+      user: user ? await User.findById(user) : null,
+      products,
       category: categories,
       brand: brands,
       currentPage,
@@ -444,124 +436,115 @@ const filterProduct = async (req, res) => {
       selectedCategory: categoryId || null,
       selectedBrand: brandId || null,
       cartCount,
-      wishlistCount: userData?.wishlist?.length ?? 0,
+      wishlistCount: user ? (await User.findById(user))?.wishlist?.length || 0 : 0,
       page: "shop"
     });
   } catch (error) {
-    console.error('Error in filterProducts:', error);
-    res.status(500).render('error', { 
-      message: 'Error filtering products',
-      error: process.env.NODE_ENV === 'development' ? error : null 
-    });
+    next(error)
   }
 };
 
-const filterPrice = async (req, res) => {
+const filterPrice = async (req, res,next) => {
   try {
     const user = req.session.user;
-    const userData = await User.findOne({ _id: user });
     const page = parseInt(req.query.page) || 1;
     const limit = 12;
-    const skip = (page - 1) * limit;
     const sort = req.query.sort || '';
     const cart = await Cart.findOne({ userId: user });
-    let cartCount=0
-    cartCount = cart && cart.items ? cart.items.length : 0;
-
-
+    let cartCount = cart?.items?.length || 0;
 
     let query = { isBlocked: false };
     const categories = await Category.find({ isListed: true });
-    const categoryIds = categories.map((category) => category._id.toString());
-    query.category = { $in: categoryIds };
+    query.category = { $in: categories.map(c => c._id) };
 
-    let sortOption = { createdAt: -1 };
-    if (sort === 'Low-to-High') {
-      sortOption = { salePrice: 1 };
-    } else if (sort === 'High-to-Low') {
-      sortOption = { salePrice: -1 };
-    } else if (sort === 'name-asc') {
-      sortOption = { productName: 1 };
-    } else if (sort === 'name-desc') {
-      sortOption = { productName: -1 };
-    }
+    // Sorting options
+    const sortOptions = {
+      'Low-to-High': { salePrice: 1 },
+      'High-to-Low': { salePrice: -1 },
+      'name-asc': { productName: 1 },
+      'name-desc': { productName: -1 },
+      'default': { createdAt: -1 }
+    };
+    const sortOption = sortOptions[sort] || sortOptions['default'];
 
-    console.log('Sort Query:', query, 'Sort Option:', sortOption, 'Page:', page);
+    const [products, totalProducts, brands] = await Promise.all([
+      Product.find(query)
+        .sort(sortOption)
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      Product.countDocuments(query),
+      Brand.find({ isBlocked: false })
+    ]);
 
-    const products = await Product.find(query)
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limit)
-      .lean();
-    const totalProducts = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalProducts / limit) || 1;
 
-    console.log('Sorted Products:', products.length, 'Total:', totalProducts);
-
-    const brands = await Brand.find({ isBlocked: false });
-    console.log('Brands fetched in filterPrice:', brands);
-
-    const categoriesWithIds = categories.map((category) => ({
-      _id: category._id,
-      name: category.name,
-    }));
-
     res.render('collection', {
-      user: userData || null,
+      user: user ? await User.findById(user) : null,
       products,
-      category: categoriesWithIds,
+      category: categories.map(c => ({ _id: c._id, name: c.name })),
       brand: brands,
       totalProducts,
       currentPage: page,
       totalPages,
       cartCount,
-      wishlistCount: userData?.wishlist?.length ?? 0,
+      wishlistCount: user ? (await User.findById(user))?.wishlist?.length || 0 : 0,
       page: 'shop',
       sort,
     });
   } catch (error) {
-    console.error('Error in filterPrice:', error);
-    res.redirect('/pageNotFound');
+    next(error)
   }
 };
 
-const searchProduct = async (req, res) => {
+const searchProduct = async (req, res,next) => {
   try {
     const user = req.session.user;
-    const userData = await User.findById(user);
-    let search = req.body.query;
+    const search = req.body.query?.trim();
+    if (!search) return res.redirect('/collection');
+
     const cart = await Cart.findOne({ userId: user });
-    let cartCount=0
-    cartCount = cart && cart.items ? cart.items.length : 0;
+    let cartCount = cart?.items?.length || 0;
 
+    // Get categories and brands in parallel
+    const [categories, brands] = await Promise.all([
+      Category.find({ isListed: true }),
+      Brand.find({ isBlocked: false }).lean()
+    ]);
 
-    const brands = await Brand.find({ isBlocked: false }).lean();
-    console.log('Brands fetched in searchProduct:', brands);
+    // Search products
+    let searchResult = req.session.filteredProducts?.length > 0
+      ? req.session.filteredProducts.filter(p => 
+          p.productName.toLowerCase().includes(search.toLowerCase()))
+      : await Product.find({
+          productName: { $regex: search, $options: "i" },
+          isBlocked: false,
+          category: { $in: categories.map(c => c._id) }
+        });
 
-    const categories = await Category.find({ isListed: true });
-    const categoryIds = categories.map(category => category._id);
-    let searchResult = [];
-    if (req.session.filteredProducts && req.session.filteredProducts.length > 0) {
-      searchResult = req.session.filteredProducts.filter(product =>
-        product.productName.toLowerCase().includes(search.toLowerCase())
-      );
-    } else {
-      searchResult = await Product.find({
-        productName: { $regex: ".*" + search + ".*", $options: "i" },
-        isBlocked: false,
-        category: { $in: categoryIds }
+    // Sort by newest first
+    searchResult.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Save search history if user is logged in
+    if (user) {
+      await SearchHistory.create({
+        userId: user,
+        keywords: [search],
+        searchOn: new Date()
       });
     }
-    searchResult.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    let itemsPerPage = 6;
-    let currentPage = parseInt(req.query.page) || 1;
-    let startIndex = (currentPage - 1) * itemsPerPage;
-    let endIndex = startIndex + itemsPerPage;
-    let totalPages = Math.ceil(searchResult.length / itemsPerPage);
-    const currentProduct = searchResult.slice(startIndex, endIndex);
+
+    // Pagination
+    const itemsPerPage = 6;
+    const currentPage = parseInt(req.query.page) || 1;
+    const totalPages = Math.ceil(searchResult.length / itemsPerPage);
+    const currentProduct = searchResult.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
 
     res.render("collection", {
-      user: userData,
+      user: user ? await User.findById(user) : null,
       products: currentProduct,
       category: categories,
       brand: brands,
@@ -569,16 +552,15 @@ const searchProduct = async (req, res) => {
       currentPage,
       count: searchResult.length,
       cartCount,
-      wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
+      wishlistCount: user ? (await User.findById(user))?.wishlist?.length || 0 : 0,
       page: "shop"
     });
   } catch (error) {
-    console.log(error);
-    res.redirect("/pageNotFound");
+    next(error)
   }
 };
  
-const copyReferralCode=async(req,res)=>{
+const copyReferralCode=async(req,res,next)=>{
   try {
     const user=await User.findById(req.session.user||req.session.user._id);
     if(!user){
@@ -586,8 +568,7 @@ const copyReferralCode=async(req,res)=>{
     }
     res.json({success:true,referalCode:user.referalCode})
   } catch (error) {
-        console.error('Copy referral code error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+        next(error)
   }
 }
   

@@ -744,7 +744,6 @@ async function initWishlistIcons() {
   }
 }
 
-// Toggle Wishlist functionality
 async function toggleWishlist(productId, element) {
   try {
     const isInWishlist = element.classList.contains('wishlist-active');
@@ -755,7 +754,8 @@ async function toggleWishlist(productId, element) {
       body: JSON.stringify({ productId }),
     });
     const data = await response.json();
-    if (response.ok && data.status) {
+    
+    if (response.ok && data.status) {  // Now this will match the server response
       if (isInWishlist) {
         element.classList.remove('wishlist-active');
         element.querySelector('i').classList.replace('bi-heart-fill', 'bi-heart');
@@ -773,6 +773,8 @@ async function toggleWishlist(productId, element) {
           icon: '✓',
         });
       }
+      // You could also update a wishlist counter if you have one
+      // updateWishlistCount(data.wishlistCount);
     } else {
       showToast({
         message: data.message || 'Failed to update wishlist',

@@ -4,7 +4,7 @@ const Product=require("../../models/productSchema");
 
 
 
-const getBrandPage=async(req,res)=>{
+const getBrandPage=async(req,res,next)=>{
 try {
     const page= parseInt(req.query.page)||1;
     const limit=4;
@@ -21,11 +21,12 @@ try {
         activePage: "brands",
     })
 } catch (error) {
-    res.redirect("/pageError")
+    // res.redirect("/pageError");
+    next(error);
 }
 }
 
-const addBrand = async (req, res) => {
+const addBrand = async (req, res,next) => {
     try {
       const brandName = req.body.name;
   
@@ -59,36 +60,40 @@ const addBrand = async (req, res) => {
       await newBrand.save();
       res.redirect("/admin/brands");
     } catch (error) {
-      console.log(error)
-      res.redirect("/admin/pageError");
+      // console.log(error)
+      // res.redirect("/admin/pageError");
+      next(error);
+
     }
   };
   
 // ....block brand
-const blockBrand=async(req,res)=>{
+const blockBrand=async(req,res,next)=>{
     try {
         const id=req.query.id;
         await Brand.updateOne({_id:id},{$set:{isBlocked:true}});
         res.redirect("/admin/brands")
     } catch (error) {
-        res.redirect("/admin/pageError")
+        // res.redirect("/admin/pageError")
+        next(error)
     }
 }
 
 // ......unblock brand
-const unblockBrand=async(req,res)=>{
+const unblockBrand=async(req,res,next)=>{
 try {
     const id=req.query.id;
     await Brand.updateOne({_id:id},{$set:{isBlocked:false}})
     res.redirect("/admin/brands")
 } catch (error) {
-    res.redirect("/admin/pageError")
+    // res.redirect("/admin/pageError")
+    next(error)
 }
 }
 
 // delete brand
 
-const deleteBrand=async(req,res)=>{
+const deleteBrand=async(req,res,next)=>{
   try {
     const id=req.query.id;
   if(!id){
@@ -98,8 +103,9 @@ const deleteBrand=async(req,res)=>{
     await Brand.deleteOne({_id:id});
     res.redirect("/admin/brands")
   } catch (error) {
-    console.log("Error occured",error);
-    res.status(500).redirect("/admin/pageError")
+    // console.log("Error occured",error);
+    // res.status(500).redirect("/admin/pageError")
+    next(eeror)
   }
 }
 

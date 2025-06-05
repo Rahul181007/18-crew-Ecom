@@ -5,7 +5,7 @@ const fs=require("fs");
 const path=require("path");
 const sharp=require("sharp"); // it is used for image resizing and image setting
 
-const getProductAddPage=async(req,res)=>{
+const getProductAddPage=async(req,res,next)=>{
     try {
         const category=await Category.find({isListed:true});
         const brand=await Brand.find({isBlocked:false});
@@ -15,12 +15,11 @@ const getProductAddPage=async(req,res)=>{
             activePage:"addProduct",
         })
     } catch (error) {
-      console.log(error);
-        res.redirect("/admin/pageError")
+     next(error)
     }
 }
 
-const addProducts = async (req, res) => {
+const addProducts = async (req, res,next) => {
   try {
     const products = req.body;
 
@@ -97,13 +96,12 @@ const addProducts = async (req, res) => {
       return res.status(400).json("Product already exists, try another name.");
     }
   } catch (error) {
-    console.log(error);
-    return res.redirect("/admin/pageError");
+    next(error)
   }
 };
 
   
-const getAllProduct = async (req, res) => {
+const getAllProduct = async (req, res,next) => {
   try {
     const search = req.query.search || "";
     const page = parseInt(req.query.page) || 1;
@@ -157,12 +155,11 @@ const getAllProduct = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error in getAllProduct:", error);
-    res.redirect("/admin/pageError");
+   next(error)
   }
 };
 // adding product oofer
-const addProductOffer = async (req, res) => {
+const addProductOffer = async (req, res,next) => {
   try {
     const percentage = parseInt(req.body.percentage);
     const productId = req.body.productId;
@@ -201,12 +198,11 @@ const addProductOffer = async (req, res) => {
 
     return res.json({ status: true });
   } catch (error) {
-    console.error('Error in addProductOffer:', error);
-    return res.status(500).json({ status: false, message: 'Internal server error' });
+   next(error)
   }
 };
 // removeProductOffer
-const removeProductOffer=async(req,res)=>{
+const removeProductOffer=async(req,res,next)=>{
   try {
     const productId=req.body.productId;
     const findProduct=await Product.findOne({_id:productId});
@@ -217,32 +213,31 @@ const removeProductOffer=async(req,res)=>{
     res.json({status:true});
 
   } catch (error) {
-    res.redirect("/admin/pageError")
-    res.status(500).json({status:false,message:"Internal server error"})
+    next(error)
   }
 }
 
-const blockProduct=async(req,res)=>{
+const blockProduct=async(req,res,next)=>{
 try {
   const productId=req.query.id;
   await Product.updateOne({_id:productId},{$set:{isBlocked:true}});
   res.redirect("/admin/products");
 } catch (error) {
-  res.redirect("/admin/pageError")
+  next(error)
 }
 }
-const unblockProduct=async(req,res)=>{
+const unblockProduct=async(req,res,next)=>{
  try {
   const productId=req.query.id;
   await Product.updateOne({_id:productId},{$set:{isBlocked:false}});
   res.redirect("/admin/products");
  } catch (error) {
-  res.redirect("/admin/pageError")
+  next(error)
  }
 }
 
 // getedit product
-const geteditProduct=async(req,res)=>{
+const geteditProduct=async(req,res,next)=>{
 try {
   const id=req.query.id;
   const findProduct=await Product.findOne({_id:id}).populate("category");
@@ -252,13 +247,12 @@ try {
   console.log(category)
   res.render("edit-product",{product:findProduct,activePage:"products",brand:brand,cat:category})
 } catch (error) {
-  console.log(error)
-  res.redirect("/admin/pageError")
+  next(error)
 }
 }
 
 // edit product
-const editProduct = async (req, res) => {
+const editProduct = async (req, res,next) => {
   try {
     const id = req.params.id;
     const product = await Product.findOne({ _id: id });
@@ -331,15 +325,14 @@ const editProduct = async (req, res) => {
     await Product.findByIdAndUpdate(id, updatedFields, { new: true });
     res.redirect("/admin/products");
   } catch (error) {
-    console.log(error);
-    res.redirect("/admin/pageError");
+    next(error)
   }
 };
 
 
 
 
-const updateProductImage = async (req, res) => {
+const updateProductImage = async (req, res,next) => {
   try {
     const { productId, imageIndex } = req.body;
 
@@ -360,8 +353,7 @@ const updateProductImage = async (req, res) => {
     return res.status(200).json({ status: true, message: 'Image updated successfully' });
 
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: false, message: 'Server error' });
+    next(error)
   }
 };
 

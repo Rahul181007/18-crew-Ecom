@@ -1,6 +1,6 @@
 const Coupon = require("../../models/couponSchema");
 const Order=require("../../models/orderSchema")
-const applyCoupon = async (req, res) => {
+const applyCoupon = async (req, res,next) => {
   try {
     const { couponCode, cartTotal } = req.body;
     console.log(couponCode)
@@ -60,12 +60,11 @@ const applyCoupon = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Coupon validation error:", error);
-    return res.status(500).json({ status: false, message: "Server error" });
+    next(error)
   }
 };
 
-const removeCoupon = async (req, res) => {
+const removeCoupon = async (req, res,next) => {
     try {
         if (!req.session.appliedCoupon) {
             return res.status(400).json({
@@ -80,11 +79,7 @@ const removeCoupon = async (req, res) => {
             message: "Coupon removed successfully"
         });
     } catch (error) {
-        console.error('Coupon remove error:', error);
-        return res.status(500).json({
-            status: false,
-            message: "Internal server error"
-        });
+     next(error)
     }
 };
 

@@ -7,7 +7,7 @@ const Address=require("../../models/addressSchema");
 const { name } = require("ejs");
 const Order=require("../../models/orderSchema");
 const Cart=require("../../models/cartSchema");
-
+const WalletTransaction=require("../../models/walletSchema")
 function generateOtp(){
     const digits='1234567890';
     let otp="";
@@ -62,7 +62,7 @@ const getForgotPassPage=async(req,res)=>{
     }
 }
 
-const forgotEmailValid=async(req,res)=>{
+const forgotEmailValid=async(req,res,next)=>{
 try {
     const {email}=req.body
    
@@ -86,12 +86,11 @@ try {
         
     }
 } catch (error) {
-    console.log(error);
-    res.redirect("/pageNotFound")
+    next(error)
 }
 }
 
-const verifyForgotPassOtp = async (req, res) => {
+const verifyForgotPassOtp = async (req, res,next) => {
     try {
       const otp = req.body.otp;
         console.log(otp)
@@ -101,25 +100,20 @@ const verifyForgotPassOtp = async (req, res) => {
         return res.json({ status: false, message: "OTP not matching" });
       }
     } catch (error) {
-      console.error("OTP verification error:", error);
-      return res.status(500).json({
-        success: false,
-        message: "An error occurred. Please try again.",
-      });
+   next(error)
     }
   };
   
-const getresetPassword=async(req,res)=>{
+const getresetPassword=async(req,res,next)=>{
     try {
         res.render("reset-password");
     } catch (error) {
-        console.log(error);
-        res.redirect("/pageNotFound")
+        next(error)
     }
 }
 
 
-const resendOTP=async(req,res)=>{
+const resendOTP=async(req,res,next)=>{
     try {
         const otp=generateOtp();
         req.session.userOtp=otp;
@@ -131,13 +125,12 @@ const resendOTP=async(req,res)=>{
 
         }
     } catch (error) {
-        console.error("Error resending OTP:", err);
-    res.status(500).json({ status: false, message: "Failed to resend OTP." });
+        next(error)
     }
 }
 
 
-const postResetPassword = async (req, res) => {
+const postResetPassword = async (req, res,next) => {
     try {
       const { newPass1, newPass2 } = req.body;
       const email = req.session.email;
@@ -150,24 +143,26 @@ const postResetPassword = async (req, res) => {
       }
      
     } catch (error) {
-      console.error("Error resetting password:", error);
-      res.redirect("/pageNotFound");
+      next(error)
     }
   };
   // profile
 
-const userProfile = async (req, res) => {
+const userProfile = async (req, res,next) => {
   try {
     const userId = req.session.user;
     const userData = await User.findById(userId);
     const addressData = await Address.findOne({ userId: userId });
     const orderData = await Order.find({ userId: userId });
     const cart = await Cart.findOne({ userId });
+    const walletTransactions=await WalletTransaction.find({userId})
+    console.log("1",walletTransactions)
     let cartCount = 0;
+
     cartCount = cart && cart.items ? cart.items.length : 0;
 
     // Derive referrals for EJS compatibility
-    const referrals = await User.find({ redeemedUser: userId })
+    const referrals = await User.find({ redeemed: true })
       .select('name createdOn')
       .lean()
       .then(users => users.map(ref => ({
@@ -175,6 +170,7 @@ const userProfile = async (req, res) => {
         date: ref.createdOn,
         status: 'completed' // Assuming successful signup means completed
       })));
+      console.log(referrals)
 
     // No coupons generated, so return empty referralCoupons
     const referralCoupons = [];
@@ -190,26 +186,25 @@ const userProfile = async (req, res) => {
       order: orderData,
       cartCount,
       wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
-      page: 'profile'
+      page: 'profile',
+      walletTransactions,
     });
   } catch (error) {
-    console.error("Error for retrieve profile data", error);
-    res.redirect("/pageNotFound");
+    next(error)
   }
 };
 
 // change - email
 
-const changeEmail=async(req,res)=>{
+const changeEmail=async(req,res,next)=>{
     try {
        res.render("change-email") ;
     } catch (error) {
-        console.log(error);
-        res.redirect("/pageNotFound")
+       next(error)
     }
 
 }
-const changeEmailValid=async(req,res)=>{
+const changeEmailValid=async(req,res,next)=>{
  try {
     const {email}=req.body
     const findUser=await User.findOne({email:email});
@@ -234,12 +229,11 @@ const changeEmailValid=async(req,res)=>{
     }
 
  } catch (error) {
-    console.log(error);
-    res.redirect("/pageNotFound")
+   next(error)
  }
 }
 
-const verifyChangeEmailOtp = async (req, res) => {
+const verifyChangeEmailOtp = async (req, res,next) => {
     try {
       const otpInput = req.body.otp;
       const sessionOtp = req.session.userOtp;
@@ -256,26 +250,21 @@ const verifyChangeEmailOtp = async (req, res) => {
         res.json({ status: false, message: 'OTP does not match.' });
       }
     } catch (error) {
-      console.error('Error in verifyChangeEmailOtp:', error);
-      return res.status(500).json({
-        status: false,
-        message: 'An error occurred. Please try again.',
-      });
+      next(error)
     }
   };
   
-  const getResetEmailPage=async(req,res)=>{
+  const getResetEmailPage=async(req,res,next)=>{
     try {
       res.render("new-email",{
         userData:req.session.userData
       })  
     } catch (error) {
-        console.log(error);
-        res.redirect("/pageNotFound")
+        next(error)
     }
   }
 // update email
-const updateEmail=async(req,res)=>{
+const updateEmail=async(req,res,next)=>{
     try {
         const {email}=req.body;
         const userId=req.session.user
@@ -290,8 +279,7 @@ const updateEmail=async(req,res)=>{
             res.redirect("/userProfile"); 
         }
     } catch (error) {
-        console.log(error);
-        res.redirect("/pageNotFound")
+        next(error)
     }
 }
 
@@ -300,16 +288,15 @@ const updateEmail=async(req,res)=>{
 
 
 // change-password
-const changePassword=async(req,res)=>{
+const changePassword=async(req,res,next)=>{
   try {
     res.render("change-password")
   } catch (error) {
-    console.log(error);
-    res.redirect("/pageNotFound")
+    next(error)
   }
 }
 
-const changePassValid=async(req,res)=>{
+const changePassValid=async(req,res,next)=>{
     try {
        const {email}=req.body;
        const findUser=await User.findOne({email:email});
@@ -332,12 +319,11 @@ const changePassValid=async(req,res)=>{
         }
        }
     } catch (error) {
-        console.log(error);
-        res.redirect("/pageNotFound");
+        next(error)
     }
 }
 
-const verifyChangePassOtp=async(req,res)=>{
+const verifyChangePassOtp=async(req,res,next)=>{
  try {
     const otpInput=req.body.otp;
     const sessionOtp=req.session.userOtp;
@@ -353,27 +339,23 @@ const verifyChangePassOtp=async(req,res)=>{
       res.json({status:false,message:"Otp doesnot match"})
     }
  } catch (error) {
-    console.error('Error in verifyChangePassOtp:', error);
-    return res.status(500).json({
-      status: false,
-      message: 'An error occurred. Please try again.',
-    });
+    next(error)
+    
  }
 }
 
 
-const getResetPassPage=async(req,res)=>{
+const getResetPassPage=async(req,res,next)=>{
     try {
         res.render("new-pass",{
             userData:req.session.userData
         })
     } catch (error) {
-        console.log(error);
-        res.redirect("/pageNotFound")
+        next(error)
     }
 }
 
-const updatePass=async(req,res)=>{
+const updatePass=async(req,res,next)=>{
 try {
     const {newPass1,newPass2}=req.body;
     const email = req.session.email;
@@ -385,13 +367,12 @@ try {
       res.render("Update-pass",{message:"Password donot match"})
     }
 } catch (error) {
-    console.log(error);
-    res.redirect("/pageNotFound")
+    next(error)
 }
 }
 
 //  update profile
-const updateProfile = async (req, res) => {
+const updateProfile = async (req, res,next) => {
   try {
     
     const { name,  mobile } = req.body;
@@ -417,14 +398,13 @@ const updateProfile = async (req, res) => {
       res.redirect("/pageNotFound");
     }
   } catch (error) {
-    console.log(error);
-    res.redirect("/pageNotFound");
+   next(error)
   }
 }
 
 // address Mangement
  
-const addAddress = async (req, res) => {
+const addAddress = async (req, res,next) => {
   try {
     const userId = req.session.user;
     const cart = await Cart.findOne({ userId });
@@ -445,12 +425,11 @@ const addAddress = async (req, res) => {
       wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
     });
   } catch (error) {
-    console.error("Error in addAddress:", error);
-    res.redirect("/pageNotFound");
+    next(error)
   }
 };
 
-const postAddAddress = async (req, res) => {
+const postAddAddress = async (req, res,next) => {
   try {
     const userId = req.session.user;
     if (!userId) {
@@ -488,12 +467,11 @@ const postAddAddress = async (req, res) => {
     await userAddress.save();
     res.redirect("/userProfile");
   } catch (error) {
-    console.error("Error in postAddAddress:", error);
-    res.redirect("/pageNotFound");
+    next(error)
   }
 };
 
-const editAddress = async (req, res) => {
+const editAddress = async (req, res,next) => {
   try {
     const userId = req.session.user;
     if (!userId) {
@@ -539,12 +517,11 @@ const editAddress = async (req, res) => {
       source, // Pass the source to the form
     });
   } catch (error) {
-    console.error("Error in editAddress:", error);
-    res.redirect("/pageNotFound");
+   next(error)
   }
 };
 
-const postEditAddress = async (req, res) => {
+const postEditAddress = async (req, res,next) => {
   try {
     const userId = req.session.user;
     if (!userId) {
@@ -607,35 +584,41 @@ const postEditAddress = async (req, res) => {
       return res.redirect("/userProfile");
     }
   } catch (error) {
-    console.error("Error in postEditAddress:", error);
-    if (!res.headersSent) {
-      return res.redirect("/pageNotFound");
-    }
+    next(error)
   }
 };
 
 
-const deleteAddress=async(req,res)=>{
+const mongoose = require("mongoose");
+
+const deleteAddress = async (req, res, next) => {
   try {
-    const addressId=req.query.id;
+    const { addressId, index } = req.params;
+    console.log(req.params);
     console.log("Address ID:", addressId);
-    const findAddress=await Address.findOne({"address._id":addressId});
-    if(!findAddress){
-      return res.status(404).send("Address not found")
+
+    const objectId = new mongoose.Types.ObjectId(addressId);
+
+    // Check if address exists
+    const findAddress = await Address.findOne({ "address._id": objectId });
+    if (!findAddress) {
+      console.log("No address found with that ID.");
+      return res.status(404).send("Address not found");
     }
-    await Address.updateOne({
-      "address._id":addressId
-    },{$pull:{
-      address:{_id:addressId}
-    }}
-  )
-  res.redirect("/userProfile")
+
+    // Perform delete
+    await Address.updateOne(
+      { "address._id": objectId },
+      { $pull: { address: { _id: objectId } } }
+    );
+
+    res.redirect("/userProfile");
   } catch (error) {
-    console.log(error);
-    res.redirect("/pageNotFound")
+    next(error);
   }
-}
- const deleteAccn=async(req,res)=>{
+};
+
+ const deleteAccn=async(req,res,next)=>{
  
 
 
@@ -681,12 +664,11 @@ const deleteAddress=async(req,res)=>{
       return res.status(200).json({ success: true });
     });
   } catch (error) {
-    console.error('Error deleting account:', error);
-    return res.status(500).json({ success: false, message: 'Server error.' });
+    next(error)
   }
 }
 
- const copyReferralCode = async (req, res) => {
+ const copyReferralCode = async (req, res,next) => {
   try {
     console.log("hi")
     const user = await User.findById(req.session.user);
@@ -696,10 +678,9 @@ const deleteAddress=async(req,res)=>{
     }
     res.json({ success: true, referralCode: user.referalCode });
   } catch (error) {
-    console.error('Copy referral code error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    next(error)
   }
-  
+
 };
 
 

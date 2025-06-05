@@ -7,7 +7,8 @@ const path=require("path");
 const nocache=require("nocache")
 const passport=require("./config/passport");
 const cron = require('node-cron');
-const Order=require("./models/orderSchema")
+const Order=require("./models/orderSchema");
+const errorHandler=require("./middlewares/eroorHandler")
 
 db();
 
@@ -41,7 +42,7 @@ const user_route=require("./routes/userRoutes");
 const admin_route=require("./routes/adminRoutes")
 app.use("/",user_route);
 app.use("/admin",admin_route)
-
+app.use(errorHandler);
 app.listen(process.env.PORT,()=>{
     console.log("server is started")
 });
