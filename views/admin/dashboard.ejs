@@ -176,7 +176,39 @@
       </div>
     </div>
   </div>
-
+<!-- Add this after the Sales Trend chart section -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Top Selling Products</h5>
+        <div class="chart-container" style="height: 300px;">
+          <canvas id="topProductsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Top Selling Categories</h5>
+        <div class="chart-container" style="height: 300px;">
+          <canvas id="topCategoriesChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Top Selling Brands</h5>
+        <div class="chart-container" style="height: 300px;">
+          <canvas id="topBrandsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   <!-- Sales Report Table -->
   <div class="card">
     <div class="card-body">
@@ -331,97 +363,122 @@
   }
 
   function loadSalesData() {
-    const period = document.getElementById('reportPeriod').value;
-    const specificDate = document.getElementById('specificDate').value;
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
+  const period = document.getElementById('reportPeriod').value;
+  const specificDate = document.getElementById('specificDate').value;
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
 
-    // Validate inputs
-    if (period === 'custom' && (!startDate || !endDate)) {
-      showAlert('Please select both start and end dates for custom range.');
-      return;
-    }
-    if (period === 'custom' && new Date(endDate) < new Date(startDate)) {
-      showAlert('End date cannot be before start date.');
-      return;
-    }
-    if (period !== 'custom' && !specificDate) {
-      showAlert('Please select a date for the selected period.');
-      return;
-    }
-
-    const tableBody = document.querySelector('#salesReportTable tbody');
-    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>';
-
-    fetch('/admin/dashboard/reports/data', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ period, specificDate, startDate, endDate }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (!data.success) {
-          throw new Error(data.message || 'Failed to load data');
-        }
-
-        // Update summary cards
-        document.getElementById('totalSales').textContent = data.summary.totalSales.toFixed(2);
-        document.getElementById('totalOrders').textContent = data.summary.totalOrders;
-        document.getElementById('totalDiscounts').textContent = data.summary.totalDiscounts.toFixed(2);
-        document.getElementById('avgOrderValue').textContent = data.summary.avgOrderValue.toFixed(2);
-
-        // Update pie chart
-        salesPieChart.data.datasets[0].data = [
-          data.summary.totalSales + data.summary.totalDiscounts,
-          data.summary.totalDiscounts,
-          data.summary.totalSales,
-        ];
-        salesPieChart.update();
-
-        // Update line chart
-        if (data.dailyData && data.dailyData.length > 0) {
-          salesLineChart.data.labels = data.dailyData.map((item) =>
-            new Date(item.date).toLocaleDateString()
-          );
-          salesLineChart.data.datasets[0].data = data.dailyData.map((item) => item.amount);
-        } else {
-          salesLineChart.data.labels = ['No Data'];
-          salesLineChart.data.datasets[0].data = [0];
-        }
-        salesLineChart.update();
-
-        // Update table
-        let tableHtml = '';
-        if (data.data.length === 0) {
-          tableHtml = '<tr><td colspan="8" class="text-center py-4">No orders found for the selected period.</td></tr>';
-        } else {
-          data.data.forEach((order) => {
-            tableHtml += `
-              <tr>
-                <td>${new Date(order.date).toLocaleDateString()}</td>
-                <td>#${order.orderId}</td>
-                <td>${order.customer}</td>
-                <td>₹${order.amount.toFixed(2)}</td>
-                <td>₹${order.discount.toFixed(2)}</td>
-                <td>${order.couponUsed || 'None'}</td>
-                <td>₹${order.netAmount.toFixed(2)}</td>
-                <td><span class="badge ${getStatusClass(order.status)}">${order.status}</span></td>
-              </tr>
-            `;
-          });
-        }
-        tableBody.innerHTML = tableHtml;
-      })
-      .catch((error) => {
-        tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Error: ${error.message}. Please try again.</td></tr>`;
-        console.error('Error loading sales data:', error);
-      });
+  // Validate inputs
+  if (period === 'custom' && (!startDate || !endDate)) {
+    showAlert('Please select both start and end dates for custom range.');
+    return;
   }
+  if (period === 'custom' && new Date(endDate) < new Date(startDate)) {
+    showAlert('End date cannot be before start date.');
+    return;
+  }
+  if (period !== 'custom' && !specificDate) {
+    showAlert('Please select a date for the selected period.');
+    return;
+  }
+
+  const tableBody = document.querySelector('#salesReportTable tbody');
+  tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>';
+
+  fetch('/admin/dashboard/reports/data', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ period, specificDate, startDate, endDate }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to load data');
+      }
+
+      // Update summary cards
+      document.getElementById('totalSales').textContent = data.summary.totalSales.toFixed(2);
+      document.getElementById('totalOrders').textContent = data.summary.totalOrders;
+      document.getElementById('totalDiscounts').textContent = data.summary.totalDiscounts.toFixed(2);
+      document.getElementById('avgOrderValue').textContent = data.summary.avgOrderValue.toFixed(2);
+
+      // Update pie chart
+      salesPieChart.data.datasets[0].data = [
+        data.summary.totalSales + data.summary.totalDiscounts,
+        data.summary.totalDiscounts,
+        data.summary.totalSales,
+      ];
+      salesPieChart.update();
+
+      // Update line chart
+      if (data.dailyData && data.dailyData.length > 0) {
+        salesLineChart.data.labels = data.dailyData.map((item) =>
+          period === 'yearly'
+            ? new Date(item.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            : new Date(item.date).toLocaleDateString()
+        );
+        salesLineChart.data.datasets[0].data = data.dailyData.map((item) => item.amount);
+
+        // Adjust x-axis for daily period
+        if (period === 'daily') {
+          salesLineChart.options.scales.x.title = {
+            display: true,
+            text: 'Date',
+          };
+          salesLineChart.options.scales.x.ticks.maxRotation = 0;
+          salesLineChart.options.scales.x.ticks.minRotation = 0;
+        } else {
+          salesLineChart.options.scales.x.title = {
+            display: true,
+            text: period === 'yearly' ? 'Month' : 'Date',
+          };
+          salesLineChart.options.scales.x.ticks.maxRotation = 45;
+          salesLineChart.options.scales.x.ticks.minRotation = 45;
+        }
+      } else {
+        salesLineChart.data.labels = [new Date(specificDate).toLocaleDateString()];
+        salesLineChart.data.datasets[0].data = [0];
+        salesLineChart.options.scales.x.title = {
+          display: true,
+          text: 'Date',
+        };
+        salesLineChart.options.scales.x.ticks.maxRotation = 0;
+        salesLineChart.options.scales.x.ticks.minRotation = 0;
+      }
+      salesLineChart.update();
+
+      // Update table
+      let tableHtml = '';
+      if (data.data.length === 0) {
+        tableHtml = '<tr><td colspan="8" class="text-center py-4">No orders found for the selected period.</td></tr>';
+      } else {
+        data.data.forEach((order) => {
+          tableHtml += `
+            <tr>
+              <td>${new Date(order.date).toLocaleDateString()}</td>
+              <td>#${order.orderId}</td>
+              <td>${order.customer}</td>
+              <td>₹${order.amount.toFixed(2)}</td>
+              <td>₹${order.discount.toFixed(2)}</td>
+              <td>${order.couponUsed || 'None'}</td>
+              <td>₹${order.netAmount.toFixed(2)}</td>
+              <td><span class="badge ${getStatusClass(order.status)}">${order.status}</span></td>
+            </tr>
+          `;
+        });
+      }
+      tableBody.innerHTML = tableHtml;
+    })
+    .catch((error) => {
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Error: ${error.message}. Please try again.</td></tr>`;
+      console.error('Error loading sales data:', error);
+    });
+}
 
   function getStatusClass(status) {
     const statusClasses = {
@@ -440,7 +497,9 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     initCharts();
+    initTopCharts();
     loadSalesData();
+    loadTopSellingData();
 
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('specificDate').value = today;
@@ -531,6 +590,94 @@
   setTimeout(() => alertBox.classList.add('d-none'), 5000);
 }
 
+
+
+let topProductsChart, topCategoriesChart, topBrandsChart;
+
+function initTopCharts() {
+  const productCtx = document.getElementById('topProductsChart').getContext('2d');
+  const categoryCtx = document.getElementById('topCategoriesChart').getContext('2d');
+  const brandCtx = document.getElementById('topBrandsChart').getContext('2d');
+
+  topProductsChart = new Chart(productCtx, {
+    type: 'bar',
+    data: { labels: [], datasets: [{ label: 'Quantity Sold', data: [] }] },
+    options: getTopChartOptions('Products')
+  });
+
+  topCategoriesChart = new Chart(categoryCtx, {
+    type: 'bar',
+    data: { labels: [], datasets: [{ label: 'Revenue', data: [] }] },
+    options: getTopChartOptions('Categories')
+  });
+
+  topBrandsChart = new Chart(brandCtx, {
+    type: 'bar',
+    data: { labels: [], datasets: [{ label: 'Revenue', data: [] }] },
+    options: getTopChartOptions('Brands')
+  });
+}
+
+function getTopChartOptions(title) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: { display: true, text: `Top ${title} by Revenue` },
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `₹${context.raw.toFixed(2)}`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return `₹${value.toFixed(2)}`;
+          }
+        }
+      }
+    }
+  };
+}
+
+async function loadTopSellingData() {
+  try {
+    // Load top products
+    const productsRes = await fetch('/admin/dashboard/reports/best-products');
+    const productsData = await productsRes.json();
+    if (productsData.success) {
+      topProductsChart.data.labels = productsData.data.map(p => p.productName);
+      topProductsChart.data.datasets[0].data = productsData.data.map(p => p.totalRevenue);
+      topProductsChart.update();
+    }
+
+    // Load top categories
+    const categoriesRes = await fetch('/admin/dashboard/reports/best-categories');
+    const categoriesData = await categoriesRes.json();
+    if (categoriesData.success) {
+      topCategoriesChart.data.labels = categoriesData.data.map(c => c.category);
+      topCategoriesChart.data.datasets[0].data = categoriesData.data.map(c => c.totalRevenue);
+      topCategoriesChart.update();
+    }
+
+    // Load top brands
+    const brandsRes = await fetch('/admin/dashboard/reports/best-brands');
+    const brandsData = await brandsRes.json();
+    if (brandsData.success) {
+      topBrandsChart.data.labels = brandsData.data.map(b => b.brand);
+      topBrandsChart.data.datasets[0].data = brandsData.data.map(b => b.totalRevenue);
+      topBrandsChart.update();
+    }
+  } catch (error) {
+    console.error('Error loading top selling data:', error);
+  }
+}
 </script>
 
 <%- include("../layouts/admin/footer.ejs") %>

@@ -538,7 +538,7 @@ body {
                           <%= item.status || order.status %>
                         </span>
                       <% } else { %>
-                        <span class="badge status-<%= item.status.toLowerCase() %>">
+                        <span class="badge status-<%= item.status %>">
                           <%= item.status %>
                         </span>
                       <% } %>
@@ -600,7 +600,7 @@ body {
                 }) %><br>
               <% } %>
               <% if (order.isFullyRefunded) { %>
-                <strong class="text-success">Refunded: ₹<%= order.refundedAmount.toFixed(2) %></strong><br>
+                <strong class="text-success">Refunded: ₹<%= order.refundedAmount %></strong><br>
                 Refund Status: <span class="badge bg-success">Fully Refunded</span><br>
               <% } else if (order.refundedAmount > 0) { %>
                 <strong class="text-warning">Partially Refunded: ₹<%= order.refundedAmount.toFixed(2) %></strong><br>

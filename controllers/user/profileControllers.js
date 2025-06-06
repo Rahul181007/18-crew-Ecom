@@ -178,7 +178,7 @@ const userProfile = async (req, res,next) => {
     res.render('profile', {
       user: {
         ...userData._doc,
-        referralCode: userData.referalCode, // Map referalCode to referralCode for EJS
+        referralCode: userData.referralCode, // Map referalCode to referralCode for EJS
         referrals, // Derived referrals
         referralCoupons // Empty coupons
       },
@@ -668,19 +668,23 @@ const deleteAddress = async (req, res, next) => {
   }
 }
 
- const copyReferralCode = async (req, res,next) => {
-  try {
-    console.log("hi")
-    const user = await User.findById(req.session.user);
-    console.log(user)
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+const copyReferralCode = async (req, res, next) => {
+    try {
+        console.log("Fetching referral code");
+        console.log(req.session.user)
+        const user = await User.findById(req.session.user);
+        console.log("User:", user);
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        if (!user.referralCode) {
+            return res.status(400).json({ success: false, message: 'No referral code found' });
+        }
+        res.json({ success: true, referralCode: user.referralCode });
+    } catch (error) {
+        console.error("Error in copyReferralCode:", error);
+        next(error);
     }
-    res.json({ success: true, referralCode: user.referalCode });
-  } catch (error) {
-    next(error)
-  }
-
 };
 
 

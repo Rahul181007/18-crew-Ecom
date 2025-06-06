@@ -6,10 +6,8 @@ const session=require("express-session");
 const path=require("path");
 const nocache=require("nocache")
 const passport=require("./config/passport");
-const cron = require('node-cron');
-const Order=require("./models/orderSchema");
 const errorHandler=require("./middlewares/eroorHandler")
-
+const cookieParser = require("cookie-parser");
 db();
 
 app.use(express.json());
@@ -17,6 +15,8 @@ app.use(express.urlencoded({extended:true}))
 
 app.use(express.static(path.join(__dirname,"public")))
 app.use(nocache());
+
+app.use(cookieParser()); 
 app.use(session({
     secret:process.env.SESSION_SECRET,
     resave:false,
@@ -30,6 +30,10 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session())
+app.use((req, res, next) => {
+  console.log("Session at", req.originalUrl, ":", req.session);
+  next();
+});
 app.use((req, res, next) => {
     res.locals.user = req.user;  
     

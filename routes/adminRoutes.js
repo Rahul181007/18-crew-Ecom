@@ -27,8 +27,9 @@ admin_route.get("/dashboard",adminAuth,adminController.loadDashboard);
 admin_route.get('/dashboard/reports', adminAuth, reportController.salesReportPage);
 admin_route.post('/dashboard/reports/data', adminAuth, reportController.getSalesData);
 admin_route.get('/dashboard/reports/download',adminAuth, reportController.downloadReport);
-
-
+admin_route.get('/dashboard/reports/best-products',adminAuth,reportController.getBestSellingProducts);
+admin_route.get('/dashboard/reports/best-categories',adminAuth,reportController.getBestSellingCategories);
+admin_route.get('/dashboard/reports/best-brands',adminAuth,reportController.getBestSellingBrands);
 
 admin_route.get("/logout",adminController.logout)
 // customer management

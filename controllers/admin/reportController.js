@@ -32,8 +32,9 @@ const getSalesData = async (req, res,next) => {
     }
 
     // Determine date range
+   // Determine date range
     let dateFilter = {};
-    let groupBy = null;
+    let groupByFormat = '%Y-%m-%d'; // Default format for daily, weekly, monthly, custom
 
     if (period === 'custom') {
       dateFilter = {
@@ -42,46 +43,43 @@ const getSalesData = async (req, res,next) => {
           $lte: new Date(endDate + 'T23:59:59.999Z'),
         },
       };
-      groupBy = '$dayOfMonth';
     } else {
       const date = new Date(specificDate);
-let start, end;
+      let start, end;
 
-switch (period) {
-  case 'daily':
-    start = new Date(date);
-    start.setHours(0, 0, 0, 0);
+      switch (period) {
+        case 'daily':
+          start = new Date(date);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(date);
+          end.setHours(23, 59, 59, 999);
+          break;
 
-    end = new Date(date);
-    end.setHours(23, 59, 59, 999);
-    break;
+        case 'weekly':
+          start = new Date(date);
+          start.setDate(start.getDate() - start.getDay());
+          start.setHours(0, 0, 0, 0);
+          end = new Date(start);
+          end.setDate(start.getDate() + 6);
+          end.setHours(23, 59, 59, 999);
+          break;
 
-  case 'weekly':
-    start = new Date(date);
-    start.setDate(start.getDate() - start.getDay());
-    start.setHours(0, 0, 0, 0);
+        case 'monthly':
+          start = new Date(date.getFullYear(), date.getMonth(), 1);
+          end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+          end.setHours(23, 59, 59, 999);
+          break;
 
-    end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
-    break;
+        case 'yearly':
+          start = new Date(date.getFullYear(), 0, 1);
+          end = new Date(date.getFullYear(), 11, 31);
+          end.setHours(23, 59, 59, 999);
+          groupByFormat = '%Y-%m'; // Use month format for yearly
+          break;
 
-  case 'monthly':
-    start = new Date(date.getFullYear(), date.getMonth(), 1);
-    end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    end.setHours(23, 59, 59, 999);
-    break;
-
-  case 'yearly':
-    start = new Date(date.getFullYear(), 0, 1);
-    end = new Date(date.getFullYear(), 11, 31);
-    end.setHours(23, 59, 59, 999);
-    break;
-
-  default:
-    throw new Error('Invalid period');
-}
-
+        default:
+          throw new Error('Invalid period');
+      }
 
       dateFilter = {
         createdAt: {
@@ -89,12 +87,6 @@ switch (period) {
           $lte: end,
         },
       };
-
-      if (period === 'weekly' || period === 'monthly') {
-        groupBy = '$dayOfMonth';
-      } else if (period === 'yearly') {
-        groupBy = '$month';
-      }
     }
 
     // Fetch orders
@@ -117,27 +109,33 @@ switch (period) {
     });
 
     // Prepare daily data for charts
-    let dailyData = [];
-    if (groupBy) {
-      const dailyAggregation = await Order.aggregate([
-        { $match: dateFilter },
-        {
-          $group: {
-            _id: {
-              $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
-            },
-            totalAmount: { $sum: '$finalAmount' },
-            count: { $sum: 1 },
+    const dailyAggregation = await Order.aggregate([
+      { $match: dateFilter },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: groupByFormat, date: '$createdAt' },
           },
+          totalAmount: { $sum: '$finalAmount' },
+          count: { $sum: 1 },
         },
-        { $sort: { _id: 1 } },
-      ]);
+      },
+      { $sort: { _id: 1 } },
+    ]);
 
-      dailyData = dailyAggregation.map((item) => ({
-        date: item._id,
-        amount: item.totalAmount,
-        count: item.count,
-      }));
+    const dailyData = dailyAggregation.map((item) => ({
+      date: item._id,
+      amount: item.totalAmount,
+      count: item.count,
+    }));
+
+    // For daily period, ensure at least one data point
+    if (period === 'daily' && dailyData.length === 0) {
+      dailyData.push({
+        date: specificDate,
+        amount: 0,
+        count: 0,
+      });
     }
 
     // Prepare response data
@@ -164,7 +162,7 @@ switch (period) {
 
     res.json(responseData);
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
@@ -517,8 +515,146 @@ async function generateCSVReport(res, { summary, dailyData, data, includeDetails
   res.send(csvContent);
 }
 
+
+
+// Add these functions to your reportController.js
+
+const getBestSellingProducts = async (req, res, next) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    const result = await Order.aggregate([
+      { $unwind: "$orderedItems" },
+      {
+        $group: {
+          _id: "$orderedItems.product",
+          totalQuantity: { $sum: "$orderedItems.quantity" },
+          totalRevenue: { $sum: { $multiply: ["$orderedItems.quantity", "$orderedItems.price"] } }
+        }
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: parseInt(limit) },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" },
+      {
+        $project: {
+          productId: "$_id",
+          productName: "$productDetails.productName",
+          productImage: "$productDetails.productImage",
+          totalQuantity: 1,
+          totalRevenue: 1,
+          _id: 0
+        }
+      }
+    ]);
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getBestSellingCategories = async (req, res, next) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    const result = await Order.aggregate([
+      { $unwind: "$orderedItems" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderedItems.product",
+          foreignField: "_id",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" },
+      // Add this additional lookup to get category names
+      {
+        $lookup: {
+          from: "categories", // Make sure this matches your categories collection name
+          localField: "productDetails.category",
+          foreignField: "_id",
+          as: "categoryDetails"
+        }
+      },
+      { $unwind: "$categoryDetails" },
+      {
+        $group: {
+          _id: "$categoryDetails.name", // Now using the category name from the lookup
+          totalQuantity: { $sum: "$orderedItems.quantity" },
+          totalRevenue: { $sum: { $multiply: ["$orderedItems.quantity", "$orderedItems.price"] } }
+        }
+      },
+      { $sort: { totalRevenue: -1 } },
+      { $limit: parseInt(limit) },
+      {
+        $project: {
+          category: "$_id",
+          totalQuantity: 1,
+          totalRevenue: 1,
+          _id: 0
+        }
+      }
+    ]);
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getBestSellingBrands = async (req, res, next) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    const result = await Order.aggregate([
+      { $unwind: "$orderedItems" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderedItems.product",
+          foreignField: "_id",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" },
+      {
+        $group: {
+          _id: "$productDetails.brand",
+          totalQuantity: { $sum: "$orderedItems.quantity" },
+          totalRevenue: { $sum: { $multiply: ["$orderedItems.quantity", "$orderedItems.price"] } }
+        }
+      },
+      { $sort: { totalRevenue: -1 } },
+      { $limit: parseInt(limit) },
+      {
+        $project: {
+          brand: "$_id",
+          totalQuantity: 1,
+          totalRevenue: 1,
+          _id: 0
+        }
+      }
+    ]);
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
 module.exports = {
   salesReportPage,
   getSalesData,
   downloadReport,
+  getBestSellingBrands,
+  getBestSellingCategories,
+  getBestSellingProducts
 };

@@ -6,13 +6,17 @@ const mongodb=require('mongodb');
 const WishList=require("../../models/wishlistSchema")
 
 
-const getCartPage = async (req, res,next) => {
+const getCartPage = async (req, res, next) => {
   try {
     const userId = req.session.user?._id || req.session.user;
     if (!userId) return res.redirect("/signin");
-const user = await User.findById(userId).select('name email'); 
+
+    const user = await User.findById(userId).select('name email');
     if (!user) return res.redirect("/signin");
-   
+
+    const wishlist = await WishList.findOne({ userId });
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
+
     const cart = await Cart.findOne({ userId }).populate({
       path: 'items.productId',
       populate: {
@@ -21,6 +25,8 @@ const user = await User.findById(userId).select('name email');
       }
     });
 
+    const cartCount = cart?.items?.length || 0;
+
     if (!cart || cart.items.length === 0) {
       return res.render("cart", {
         user: req.session.user,
@@ -28,7 +34,9 @@ const user = await User.findById(userId).select('name email');
         data: [],
         grandTotal: 0,
         page: 'cart',
-        pageTitle: 'Your Cart'
+        pageTitle: 'Your Cart',
+        wishlistCount,
+        cartCount
       });
     }
 
@@ -40,7 +48,6 @@ const user = await User.findById(userId).select('name email');
       const itemTotal = item.price * item.quantity;
       grandTotal += itemTotal;
 
-      
       return {
         _id: item._id,
         productId: item.productId._id,
@@ -58,13 +65,16 @@ const user = await User.findById(userId).select('name email');
       data: cartItems,
       grandTotal,
       page: 'cart',
-      pageTitle: 'Your Cart'
+      pageTitle: 'Your Cart',
+      wishlistCount,
+      cartCount
     });
 
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
+
 
 
 const addToCart = async (req, res,next) => {

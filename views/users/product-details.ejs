@@ -9,76 +9,88 @@
   :root {
     --primary-color: #C586A5;
     --secondary-color: #1a1517;
-    --accent-color: #FF6B6B;
+    --accent-color: #e60039;
     --light-bg: #f8f9fa;
     --dark-text: #212529;
     --muted-text: #6c757d;
+    --transition-speed: 0.3s;
   }
   
   body {
     font-family: 'Poppins', sans-serif;
-    color: var(--dark-text);
-    background-color: #fff;
-    font-size: 0.95rem;
+    overflow-x: hidden;
+  }
+  
+  /* Navigation */
+  .navbar {
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    transition: all var(--transition-speed) ease;
+  }
+  
+  .navbar.scrolled {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   }
   
   .navbar-brand {
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     color: var(--secondary-color);
     letter-spacing: 0.5px;
-  }
-
-  .brand-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--primary-color);
-    border-radius: 50%;
-    display: inline-block;
-  }
-
-  .navbar-nav {
-    gap: 1.2rem;
-  }
-
-  .navbar-nav .nav-link {
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: var(--dark-text);
-    transition: all 0.3s ease;
     position: relative;
   }
-
-  .navbar-nav .nav-link:hover,
-  .navbar-nav .nav-link.active {
-    color: var(--primary-color);
-  }
-
-  .navbar-nav .nav-link:after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: 0;
-    left: 0;
-    background-color: var(--primary-color);
-    transition: width 0.3s ease;
-  }
-
-  .navbar-nav .nav-link:hover:after,
-  .navbar-nav .nav-link.active:after {
-    width: 100%;
-  }
-
- .badge-dot {
-    position: absolute;
-    top: -2px;
-    right: -2px;
+  
+  .brand-dot {
     width: 10px;
     height: 10px;
     background: var(--primary-color);
     border-radius: 50%;
-    border: 2px solid var(--card-bg);
+    display: inline-block;
+    margin-left: 4px;
+  }
+  
+  .navbar-nav {
+    gap: 1.5rem;
+  }
+  
+  .navbar-nav .nav-link {
+    font-weight: 500;
+    color: var(--dark-text);
+    transition: color var(--transition-speed);
+    position: relative;
+    padding: 0.5rem 0;
+  }
+  
+  .navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: width var(--transition-speed);
+  }
+  
+  .navbar-nav .nav-link:hover::after,
+  .navbar-nav .nav-link.active::after {
+    width: 100%;
+  }
+  
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    color: var(--primary-color);
+  }
+  
+  /* Badge */
+  .badge-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    border: 1px solid white;
   }
 
   /* Product Gallery Styles */
@@ -580,10 +592,10 @@
   }
 </style>
 
-<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2">
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
   <div class="container">
-    <a href="/" class="navbar-brand d-flex align-items-center gap-2">
-      18-CREW <span class="brand-dot"></span>
+    <a href="/" class="navbar-brand d-flex align-items-center">
+      18-CREW<span class="brand-dot"></span>
     </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
@@ -599,10 +611,10 @@
           <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="#">ABOUT</a>
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="/about">ABOUT</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="#">CONTACT</a>
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="/contact">CONTACT</a>
         </li>
 
         <% if (locals?.user || user) { %>
@@ -611,6 +623,8 @@
               <%= user.name %>
             </a>
             <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
             </ul>
           </li>
@@ -621,10 +635,11 @@
         <% } %>
       </ul>
 
-      <div class="d-none d-lg-flex align-items-center gap-3">
+      <div class="d-none d-lg-flex align-items-center gap-4">
         <% if (locals?.user || user) { %>
           <div class="dropdown">
-            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle me-2"></i>
               <%= user.name %>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
@@ -634,17 +649,17 @@
             </ul>
           </div>
         <% } else { %>
-          <a href="/signin" class="text-dark" style="font-size: 1.3rem;">
+          <a href="/signin" class="text-dark fs-5" title="Account">
             <i class="bi bi-person"></i>
           </a>
         <% } %>
-        <a href="/wishlist" class="text-dark position-relative" style="font-size: 1rem;" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
+        <a href="/wishlist" class="text-dark position-relative fs-5" title="Wishlist" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
           <i class="bi bi-heart"></i>
           <% if (wishlistCount > 0) { %>
             <span class="badge-dot"></span>
           <% } %>
         </a>
-        <a href="/getCartPage" class="nav-link position-relative" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
+        <a href="/getCartPage" class="text-dark position-relative fs-5" title="Cart" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
           <i class="bi bi-bag"></i>
           <% if (cartCount > 0) { %>
             <span class="badge-dot"></span>
@@ -654,6 +669,7 @@
     </div>
   </div>
 </nav>
+
 
 <div class="container my-4">
   <div class="row g-3">

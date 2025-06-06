@@ -8,118 +8,200 @@
 
 <style>
   :root {
-    --primary: #C586A5;
-    --primary-light: #F9F5FF;
-    --dark: #101828;
-    --gray: #667085;
-    --light-gray: #F2F4F7;
+    --primary-color: #C586A5;
+    --secondary-color: #000000;
+    --white: #FFFFFF;
+    --light-bg: #F9FAFB;
+    --dark-text: #1F2A44;
+    --muted-text: #6B7280;
     --border-radius: 12px;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --transition-speed: 0.3s;
   }
 
   body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f8f9fa;
-    color: var(--dark);
-    padding-bottom: 70px;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--dark-text);
+    line-height: 1.6;
   }
 
+  /* Navigation */
+  .navbar {
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    transition: all var(--transition-speed) ease;
+  }
+  
+  .navbar.scrolled {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  }
+  
+  .navbar-brand {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--secondary-color);
+    letter-spacing: 0.5px;
+    position: relative;
+  }
+  
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 4px;
+  }
+  
+  .navbar-nav {
+    gap: 1.5rem;
+  }
+  
+  .navbar-nav .nav-link {
+    font-weight: 500;
+    color: var(--dark-text);
+    transition: color var(--transition-speed);
+    position: relative;
+    padding: 0.5rem 0;
+  }
+  
+  .navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: width var(--transition-speed);
+  }
+  
+  .navbar-nav .nav-link:hover::after,
+  .navbar-nav .nav-link.active::after {
+    width: 100%;
+  }
+  
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    color: var(--primary-color);
+  }
+  
+  /* Badge */
+  .badge-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    border: 1px solid white;
+  }
+
+  /* Profile Layout */
   .profile-container {
     max-width: 1200px;
-    margin: 40px auto;
-    padding-top: 20px;
+    margin: 3rem auto;
+    padding: 0 1rem;
   }
 
   .profile-sidebar {
-    background: white;
+    background: var(--white);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
-    padding: 30px;
-    height: 100%;
+    padding: 2rem;
   }
 
   .profile-content {
-    background: white;
+    background: var(--white);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
-    padding: 30px;
+    padding: 2rem;
   }
 
   .profile-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 2rem;
   }
 
   .profile-avatar {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid var(--primary-light);
-    margin: 0 auto 15px;
+    border: 3px solid var(--primary-color);
+    margin-bottom: 1rem;
   }
 
   .profile-name {
     font-size: 1.5rem;
     font-weight: 600;
-    margin-bottom: 5px;
+    color: var(--dark-text);
   }
 
   .profile-email {
-    color: var(--gray);
-    margin-bottom: 20px;
+    color: var(--muted-text);
+    font-size: 0.9rem;
   }
 
   .nav-pills .nav-link {
-    color: var(--gray);
+    color: var(--muted-text);
     font-weight: 500;
-    padding: 12px 20px;
-    margin-bottom: 8px;
+    padding: 0.75rem 1.25rem;
     border-radius: 8px;
     display: flex;
     align-items: center;
+    margin-bottom: 0.5rem;
+    transition: all var(--transition-speed) ease;
   }
 
   .nav-pills .nav-link.active {
-    background-color: var(--primary-light);
-    color: var(--primary);
+    background-color: var(--primary-color);
+    color: var(--white);
+  }
+
+  .nav-pills .nav-link:hover {
+    background-color: rgba(197, 134, 165, 0.1);
+    color: var(--primary-color);
   }
 
   .nav-pills .nav-link i {
-    margin-right: 10px;
-    font-size: 1.1rem;
+    margin-right: 0.75rem;
+    font-size: 1rem;
   }
 
   .section-title {
     font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--light-gray);
+    color: var(--dark-text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
 
   .info-item {
-    margin-bottom: 20px;
+    margin-bottom: 1.5rem;
   }
 
   .info-label {
-    font-size: 0.875rem;
-    color: var(--gray);
-    margin-bottom: 5px;
+    font-size: 0.85rem;
+    color: var(--muted-text);
+    margin-bottom: 0.25rem;
   }
 
   .info-value {
     font-weight: 500;
+    color: var(--dark-text);
   }
 
   .btn-edit {
-    background-color: var(--primary);
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--white);
     border: none;
     border-radius: 8px;
-    padding: 10px 20px;
+    padding: 0.75rem 1.5rem;
     font-weight: 500;
-    transition: all 0.3s;
+    transition: all var(--transition-speed) ease;
   }
 
   .btn-edit:hover {
@@ -128,101 +210,70 @@
   }
 
   .stats-card {
-    background: var(--primary-light);
+    background: rgba(197, 134, 165, 0.1);
     border-radius: var(--border-radius);
-    padding: 20px;
+    padding: 1.5rem;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 1.5rem;
   }
 
   .stats-number {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 5px;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
   }
 
   .stats-label {
-    font-size: 0.875rem;
-    color: var(--gray);
+    font-size: 0.85rem;
+    color: var(--muted-text);
   }
 
   .order-card {
-    border: 1px solid var(--light-gray);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: var(--border-radius);
-    padding: 15px;
-    margin-bottom: 15px;
-    transition: all 0.3s;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all var(--transition-speed) ease;
   }
 
   .order-card:hover {
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(126, 86, 217, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow);
   }
 
   .order-status {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 16px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 500;
   }
 
   .status-pending {
-    background: #FEF0C7;
-    color: #B54708;
+    background: rgba(197, 134, 165, 0.2);
+    color: var(--primary-color);
   }
 
   .status-completed {
-    background: #ECFDF3;
-    color: #027A48;
+    background: rgba(0, 128, 0, 0.1);
+    color: #008000;
   }
 
   .status-credit {
-    background: #ECFDF3;
-    color: #027A48;
+    background: rgba(0, 128, 0, 0.1);
+    color: #008000;
   }
 
   .status-debit {
-    background: #FEE4E2;
+    background: rgba(255, 0, 0, 0.1);
     color: #B42318;
-  }
-
-  /* Mobile Navigation */
-  .mobile-nav {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-  }
-
-  .mobile-nav-item {
-    padding: 12px 0;
-    text-align: center;
-    color: var(--gray);
-    text-decoration: none;
-    font-size: 0.8rem;
-  }
-
-  .mobile-nav-item.active {
-    color: var(--primary);
-  }
-
-  .mobile-nav-item i {
-    display: block;
-    font-size: 1.4rem;
-    margin-bottom: 4px;
   }
 
   @media (max-width: 768px) {
     .profile-sidebar {
-      margin-bottom: 30px;
+      margin-bottom: 2rem;
     }
-    
+
     .profile-avatar {
       width: 80px;
       height: 80px;
@@ -231,39 +282,99 @@
     .mobile-nav {
       display: flex;
       justify-content: space-around;
+      background: var(--white);
+      padding: 1rem;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
     }
 
     body {
-      padding-bottom: 70px;
+      padding-bottom: 80px;
     }
-  }
-
-  /* Quick access buttons */
-  .quick-access {
-    margin-bottom: 30px;
   }
 </style>
 
-<!-- Main Content -->
-<div class="profile-container">
-  <!-- Quick Access Buttons (Desktop only) -->
-  <div class="quick-access d-none d-lg-block">
-    <div class="d-flex justify-content-center gap-2">
-      <a href="/" class="btn btn-sm btn-outline-primary" aria-label="Go to Home">
-        <i class="bi bi-house-door me-1"></i> Home
-      </a>
-      <a href="/shop" class="btn btn-sm btn-outline-primary" aria-label="Go to Shop">
-        <i class="bi bi-collection me-1"></i> Shop
-      </a>
-      <a href="/about" class="btn btn-sm btn-outline-primary" aria-label="Go to About">
-        <i class="bi bi-info-circle me-1"></i> About
-      </a>
-      <a href="/contact" class="btn btn-sm btn-outline-primary" aria-label="Go to Contact">
-        <i class="bi bi-envelope me-1"></i> Contact
-      </a>
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+  <div class="container">
+    <a href="/" class="navbar-brand d-flex align-items-center">
+      18-CREW<span class="brand-dot"></span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>" href="/">HOME</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="/about">ABOUT</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="/contact">CONTACT</a>
+        </li>
+
+        <% if (locals?.user || user) { %>
+          <li class="nav-item dropdown d-lg-none">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+        <% } else { %>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
+          </li>
+        <% } %>
+      </ul>
+
+      <div class="d-none d-lg-flex align-items-center gap-4">
+        <% if (locals?.user || user) { %>
+          <div class="dropdown">
+            <a class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle me-2"></i>
+              <%= user.name %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            </ul>
+          </div>
+        <% } else { %>
+          <a href="/signin" class="text-dark fs-5" title="Account">
+            <i class="bi bi-person"></i>
+          </a>
+        <% } %>
+        <a href="/wishlist" class="text-dark position-relative fs-5" title="Wishlist" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
+          <i class="bi bi-heart"></i>
+          <% if (wishlistCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
+        </a>
+        <a href="/getCartPage" class="text-dark position-relative fs-5" title="Cart" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
+          <i class="bi bi-bag"></i>
+          <% if (cartCount > 0) { %>
+            <span class="badge-dot"></span>
+          <% } %>
+        </a>
+      </div>
     </div>
   </div>
+</nav>
 
+<div class="profile-container">
   <div class="row">
     <!-- Sidebar -->
     <div class="col-lg-4">
@@ -442,12 +553,12 @@
                         <% } %>
                         <div class="d-flex gap-2">
                           <a href="/editAddress?id=<%= userAddress._id %>&index=<%= index %>" class="btn btn-sm btn-outline-primary" aria-label="Edit address <%= address.addressType %>">Edit</a>
-                          <a href="#" class="btn btn-sm btn-outline-danger" onclick="deleteAddressWithAlert('<%=address._id %>', '<%= index %>')" aria-label="Delete address <%=  address.addressType %>">Remove</a>
+                          <a href="#" class="btn btn-sm btn-outline-danger" onclick="deleteAddressWithAlert('<%=address._id %>', '<%= index %>')" aria-label="Delete address <%= address.addressType %>">Remove</a>
                         </div>
                       </div>
                     </div>
                   </div>
-                <% }); %>
+                <% }) %>
               <% } else { %>
                 <div class="col-md-6">
                   <div class="card border-0 shadow-sm mb-3">
@@ -479,38 +590,37 @@
                       <th>Type</th>
                       <th>Amount</th>
                       <th>Source</th>
-                       <th>Reference/OrderId</th>
+                      <th>Reference/OrderId</th>
                     </tr>
                   </thead>
                   <tbody>
-         <% walletTransactions.forEach(transaction => { %>
-    <tr>
-      <td><%= new Date(transaction.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
-      <td><%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) %></td>
-      <td>₹<%= transaction.amount.toFixed(2) %></td>
-      <td>
-        <span class="order-status status-<%= transaction.type ? transaction.type.toLowerCase() : 'unknown' %>">
-          <%= transaction.source ? (transaction.source.charAt(0).toUpperCase() + transaction.source.slice(1)) : 'Unknown' %>
-        </span>
-      </td>
-      <td>
-  <% if (transaction.reference) { %>
-    <% if (transaction.reference.startsWith('OrderID:')) { %>
-      <strong>Order ID:</strong> <%= transaction.reference.replace('OrderID:', '') %>
-    <% } else if (transaction.reference.startsWith('Referred by')) { %>
-      <strong><%= transaction.reference %></strong>
-    <% } else if (transaction.reference.startsWith('Referral signup by')) { %>
-      <strong><%= transaction.reference %></strong>
-    <% } else { %>
-      <%= transaction.reference %>
-    <% } %>
-  <% } else { %>
-    -
-  <% } %>
-</td>
-
-    </tr>
-  <% }) %>
+                    <% walletTransactions.forEach(transaction => { %>
+                      <tr>
+                        <td><%= new Date(transaction.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                        <td><%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) %></td>
+                        <td>₹<%= transaction.amount.toFixed(2) %></td>
+                        <td>
+                          <span class="order-status status-<%= transaction.type ? transaction.type.toLowerCase() : 'unknown' %>">
+                            <%= transaction.source ? (transaction.source.charAt(0).toUpperCase() + transaction.source.slice(1)) : 'Unknown' %>
+                          </span>
+                        </td>
+                        <td>
+                          <% if (transaction.reference) { %>
+                            <% if (transaction.reference.startsWith('OrderID:')) { %>
+                              <strong>Order ID:</strong> <%= transaction.reference.replace('OrderID:', '') %>
+                            <% } else if (transaction.reference.startsWith('Referred by')) { %>
+                              <strong><%= transaction.reference %></strong>
+                            <% } else if (transaction.reference.startsWith('Referral signup by')) { %>
+                              <strong><%= transaction.reference %></strong>
+                            <% } else { %>
+                              <%= transaction.reference %>
+                            <% } %>
+                          <% } else { %>
+                            -
+                          <% } %>
+                        </td>
+                      </tr>
+                    <% }) %>
                   </tbody>
                 </table>
               </div>
@@ -744,26 +854,6 @@
   </div>
 </div>
 
-<!-- Mobile Navigation -->
-<div class="mobile-nav">
-  <a href="/" class="mobile-nav-item" aria-label="Go to Home">
-    <i class="bi bi-house"></i>
-    Home
-  </a>
-  <a href="/shop" class="mobile-nav-item" aria-label="Go to Shop">
-    <i class="bi bi-shop"></i>
-    Shop
-  </a>
-  <a href="/profile" class="mobile-nav-item active" aria-label="Go to Profile">
-    <i class="bi bi-person"></i>
-    Profile
-  </a>
-  <a href="/contact" class="mobile-nav-item" aria-label="Go to Contact">
-    <i class="bi bi-headset"></i>
-    Contact
-  </a>
-</div>
-
 <script>
 // Activate tab based on URL hash
 document.addEventListener('DOMContentLoaded', function () {
@@ -771,10 +861,8 @@ document.addEventListener('DOMContentLoaded', function () {
   if (hash) {
     const targetTab = document.querySelector(`.nav-link[href="${hash}"]`);
     if (targetTab) {
-      // Remove active class from all tabs and panes
       document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
-      // Activate the target tab and pane
       targetTab.classList.add('active');
       document.querySelector(hash).classList.add('show', 'active');
     }
@@ -809,9 +897,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     try {
-      // Submit the form via AJAX to delete the account
       const response = await fetch('/delete-account', {
-        method :'POST',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -821,10 +908,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // Account deleted successfully, redirect to sign-in page
         window.location.href = '/signin';
       } else {
-        // Show error message
         passwordError.textContent = result.message || 'Failed to delete account';
         passwordError.style.display = 'block';
       }
@@ -834,7 +919,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Clear error message when modal is closed
   document.getElementById('passwordConfirmModal').addEventListener('hidden.bs.modal', function () {
     passwordInput.value = '';
     passwordError.style.display = 'none';

@@ -16,7 +16,8 @@ const cartController=require("../controllers/user/cartController");
 const wishListController=require("../controllers/user/wishListController");
 const checkoutController=require("../controllers/user/checkoutController")
 const couponController=require("../controllers/user/couponController")
-
+const User=require("../models/userSchema");
+const shortid = require("shortid");
 // ..storage area for image
 const storage=multer.diskStorage({
     destination: function(req,file,cb){
@@ -27,20 +28,67 @@ const storage=multer.diskStorage({
         cb(null,name)
     }
 })
-const upload=multer({storage:storage})
+const upload=multer({storage:storage});
+
+
+
+
+
+async function generateUniqueReferralCode() {
+  let referralCode;
+  let isUnique = false;
+  while (!isUnique) {
+    referralCode = shortid.generate();
+    const existingUser = await User.findOne({ referralCode });
+    if (!existingUser) isUnique = true;
+  }
+  return referralCode;
+}
+
 // signup management
 user_route.get("/register",userContoller.loadRegister);
 user_route.post("/register",userContoller.insertUser);
 user_route.post("/verify-otp",userContoller.verifyOtp) 
 user_route.post("/resend-otp",userContoller.resendOTP)
-user_route.get("/auth/google",passport.authenticate("google",{scope:["profile","email"]}))
-user_route.get("/auth/google/callback",passport.authenticate("google",{failureRedirect:"/register"}),(req,res)=>{
-  
-    req.session.user=req.user
-    console.log(req.user)
-    res.redirect("/");
-    
-})
+user_route.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+user_route.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/register" }),
+  async (req, res) => {
+    try {
+      req.session.user = req.user;
+
+      // Check if user is new or existing
+      let user = await User.findOne({ googleId: req.user.googleId });
+      if (!user) {
+        // New user: Create user and generate referral code
+        user = new User({
+          name: req.user.name,
+          email: req.user.email,
+          googleId: req.user.googleId,
+          referralCode: await generateUniqueReferralCode(),
+          redeemed: false,
+          wallet: 0,
+        });
+        await user.save();
+      }
+      req.session.user = user;
+      // Redirect to referral code submission page
+      res.redirect("/referral");
+    } catch (error) {
+      console.error("Error in Google callback:", error);
+      res.redirect("/register");
+    }
+  }
+);
+
+
+user_route.get("/referral",userContoller.referralPage);
+user_route.post("/referral/submit",userAuth,userContoller.postRefferal)
+user_route.get("/referral/skip",userAuth,userContoller.skipReferral)
 // sign in Management
 user_route.get("/signin",userContoller.loadLogin)
 user_route.post("/signin",userContoller.login)
@@ -50,7 +98,12 @@ user_route.get("/logout",userAuth,userContoller.logout);
 user_route.get("/shop",userContoller.loadShoppingPage);
 user_route.get("/filter",userContoller.filterProduct)
 user_route.get("/filterPrice",userContoller.filterPrice);
-user_route.post("/search",userContoller.searchProduct);
+user_route.post("/search", userContoller.searchProduct);
+user_route.get("/search", userContoller.searchProduct); 
+user_route.get("/search/suggestions", userContoller.getSearchSuggestions);
+user_route.get("/about",userContoller.loadAboutPage);
+user_route.get("/contact",userContoller.loadContactpage);
+user_route.post("/sendMessage",userContoller.recieveMessage);
 // profileMangement
 user_route.get("/forgot-password",profileController.getForgotPassPage)
 user_route.post("/forgotEmailValid",profileController.forgotEmailValid);
