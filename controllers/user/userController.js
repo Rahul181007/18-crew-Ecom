@@ -14,7 +14,8 @@ const crypto=require('crypto');
 const SearchHistory=require("../../models/searchHistorySchema");
 const { logWalletTransaction } = require("../../utils/wallet");
 const { WalletSources, TransactionTypes } = require("../../constants/walletConstants");
-const WishList=require("../../models/wishlistSchema")
+const WishList=require("../../models/wishlistSchema");
+const Banner=require("../../models/bannerSchema")
 // generate unique referal code
 function generateRefferalcode(){
   return 'REF'+crypto.randomBytes(4).toString('hex').toUpperCase();
@@ -46,6 +47,11 @@ const loadhomepage = async (req, res,next) => {
       const category = await Category.find({ isListed: true });
       const cart = await Cart.findOne({ userId: user });
       const wishlist = await WishList.findOne({ userId:user })
+      const banners = await Banner.find({
+              startDate: { $lte: new Date() },
+              endDate: { $gte: new Date() },
+              }).sort({ createdAt: -1 }).limit(1);
+
       let productData = await Product.find({
         isBlocked: false,
         category: { $in: category.map((cat) => cat._id) },
@@ -64,14 +70,16 @@ const loadhomepage = async (req, res,next) => {
           products: productData,
           category: category ,
            cartCount,
-           wishlistCount 
+           wishlistCount ,
+           banner: banners[0]
         });
       } else {
         res.render("homepage", {
           products: productData,
           category: category,
           cartCount,
-          wishlistCount 
+          wishlistCount ,
+          banner: banners[0]
         });
       }
     } catch (error) {
@@ -277,25 +285,32 @@ const loadLogin=async(req,res,next)=>{
     }
 }
 
-const login = async (req, res,next) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const findUser = await User.findOne({ isAdmin: 0, email: email });
 
     if (!findUser) {
-      return res.render("signin", { message: "User not Found" });
+      return res.render("signin", { message: "User not found" });
     }
+
     if (findUser.isBlocked) {
       return res.render("signin", { message: "User is blocked by admin" });
     }
 
+    // Check if user registered via Google Auth
+    if (!findUser.password) {
+      return res.render("signin", { message: "Please login using Google" });
+    }
+
+    // Password validation
     const passwordMatch = await bcrypt.compare(password, findUser.password);
     if (!passwordMatch) {
       return res.render("signin", { message: "Incorrect credentials" });
     }
 
+    // Session and redirect
     req.session.user = findUser._id;
-
     req.session.save((err) => {
       if (err) {
         console.error("Session save error:", err);
@@ -305,9 +320,10 @@ const login = async (req, res,next) => {
     });
 
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
+
 
 
 // ..........logout.................

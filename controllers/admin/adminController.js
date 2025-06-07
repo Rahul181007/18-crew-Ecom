@@ -28,11 +28,11 @@ const loadLogin = async (req, res,next) => {
     }
 };
 // ...........admin login............
-const login = async (req, res,next) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    
     const admin = await User.findOne({ email, isAdmin: true });
+
     if (admin) {
       const passwordMatch = await bcrypt.compare(password, admin.password);
       if (passwordMatch) {
@@ -47,18 +47,20 @@ const login = async (req, res,next) => {
         });
 
       } else {
-        return res.redirect("/admin/login");
+        // Password incorrect - render login with error message
+        return res.render("admin-login", { message: "Invalid credentials, please try again." });
       }
     } else {
-      return res.redirect("/admin/login");
+      // No admin found with that email - render login with error message
+      return res.render("admin-login", { message: "Invalid credentials, please try again." });
     }
 
   } catch (error) {
     console.log("Login error", error);
-    // return res.redirect("/pageError");
-    next(error)
+    next(error);
   }
-}
+};
+
 
 
 // ..........loaddashboard............

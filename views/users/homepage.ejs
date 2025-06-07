@@ -587,13 +587,21 @@
   </div>
 </nav>
 
+
 <!-- Hero Section -->
-<section class="hero-section">
+<section class="hero-section" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+ url('/uploads/banner/<%= banner ? banner.image : 'default.png' %>') no-repeat center center; background-size: cover;">
   <div class="container">
     <div class="hero-content text-center text-white">
-      <h5 class="hero-subtitle text-uppercase mb-3">Our Bestseller</h5>
-      <h1 class="hero-title mb-4">Latest Arrivals</h1>
-      <a href="/shop" class="btn btn-outline-light btn-lg px-4 py-2">Shop Now</a>
+      <% if (banner) { %>
+        <h5 class="hero-subtitle text-uppercase mb-3"><%= banner.title %></h5>
+        <h1 class="hero-title mb-4"><%= banner.description %></h1>
+       <a href="/shop" class="btn btn-outline-light btn-lg px-4 py-2">Shop Now</a>
+      <% } else { %>
+        <h5 class="hero-subtitle text-uppercase mb-3">Our Bestseller</h5>
+        <h1 class="hero-title mb-4">Latest Arrivals</h1>
+        <a href="/shop" class="btn btn-outline-light btn-lg px-4 py-2">Shop Now</a>
+      <% } %>
     </div>
   </div>
 </section>

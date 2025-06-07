@@ -11,8 +11,24 @@ const upload=multer({storage:storage})
 const brandController=require("../controllers/admin/brandController");
 const productController=require("../controllers/admin/productContoller");
 const orderController=require("../controllers/admin/orderController");
-const couponController=require("../controllers/admin/couponController")
-const reportController=require("../controllers/admin/reportController")
+const couponController=require("../controllers/admin/couponController");
+const reportController=require("../controllers/admin/reportController");
+const bannerControlleer=require("../controllers/admin/bannerController");
+
+
+const path = require("path");
+
+const storage1 = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../public/uploads/banner"));
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const bannerUpload = multer({ storage:storage1 });
+
 
 admin_route.set("view engine","ejs");
 admin_route.set("views","./views/admin");
@@ -76,6 +92,12 @@ admin_route.post("/coupons",adminAuth,couponController.addCoupon);
 admin_route.get('/coupons/list',adminAuth, couponController.getCoupons);
 admin_route.delete('/coupons/:name',adminAuth,couponController.deleteCoupon)
 admin_route.put('/coupons/:name',adminAuth,couponController.updateCoupon);
-admin_route.get('/coupon/users/:name',adminAuth,couponController.getCouponsUsers)
+admin_route.get('/coupon/users/:name',adminAuth,couponController.getCouponsUsers);
+
+// banner mangement
+admin_route.get("/banners",adminAuth,bannerControlleer.getBanners);
+admin_route.get("/banners/add",adminAuth,bannerControlleer.addBannerPage)
+admin_route.post("/banners/add",adminAuth, bannerUpload.single("image"),adminAuth,bannerControlleer.addBanner);
+admin_route.get("/banners/delete/:id",adminAuth,bannerControlleer.deleteBanner);
 module.exports = admin_route;
 
