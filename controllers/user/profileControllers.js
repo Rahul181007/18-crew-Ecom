@@ -7,7 +7,8 @@ const Address=require("../../models/addressSchema");
 const { name } = require("ejs");
 const Order=require("../../models/orderSchema");
 const Cart=require("../../models/cartSchema");
-const WalletTransaction=require("../../models/walletSchema")
+const WalletTransaction=require("../../models/walletSchema");
+const WishList=require("../../models/wishlistSchema")
 function generateOtp(){
     const digits='1234567890';
     let otp="";
@@ -158,7 +159,8 @@ const userProfile = async (req, res,next) => {
     const walletTransactions=await WalletTransaction.find({userId})
     console.log("1",walletTransactions)
     let cartCount = 0;
-
+    const wishlist = await WishList.findOne({ userId })
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
     cartCount = cart && cart.items ? cart.items.length : 0;
 
     // Derive referrals for EJS compatibility
@@ -185,7 +187,7 @@ const userProfile = async (req, res,next) => {
       userAddress: addressData || { address: [] },
       order: orderData,
       cartCount,
-      wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
+      wishlistCount,
       page: 'profile',
       walletTransactions,
     });

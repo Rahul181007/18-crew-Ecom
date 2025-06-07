@@ -3,47 +3,51 @@ const GoogleStrategy=require("passport-google-oauth20").Strategy;
 const User=require("../models/userSchema");
 const { access } = require("fs");
 const env=require("dotenv").config();
-
+const crypto=require('crypto');
+async function generateReferralCode(){
+  return 'REF'+crypto.randomBytes(4).toString('hex').toUpperCase();
+};
 
 passport.use(new GoogleStrategy({
-   clientID:process.env.GOOGLE_CLIENT_ID,
-   clientSecret:process.env.GOOGLE_CLIENT_SECRET,
-   callbackURL:"/auth/google/callback",
-   passReqToCallback:true,
-   state:true
-
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "/auth/google/callback",
+  passReqToCallback: true,
 },
 async (req, accessToken, refreshToken, profile, done) => {
-    try {
-        if (!profile || !profile.id || !profile.emails || !profile.emails[0]) {
-            return done(null, false, { message: "Invalid profile data from Google" });
-        }
+  let user = await User.findOne({ googleId: profile.id });
 
-        let user = await User.findOne({ googleId: profile.id });
+  if (!user) {
+    const referralCode = await generateReferralCode();
 
-        if (!user) {            
-            user = new User({
-                name: profile.displayName,
-                email: profile.emails[0].value,
-                googleId: profile.id,
-               
-            });
-            
-            const savedUser = await user.save();
-         
-            
-        }
+    user = new User({
+      name: profile.displayName,
+      email: profile.emails[0].value,
+      googleId: profile.id,
+      referralCode: referralCode,
+      wallet: 0,
+    });
 
-        req.session.user = user; 
-        return done(null, user);
-    } catch (error) {
-        console.error("Google signup error:", error);
-        return done(error, null);
+    if (req.session.referralCode) {
+      const referrer = await User.findOne({ referralCode: req.session.referralCode });
+      if (referrer) {
+        user.redeemed = true;
+        user.redeemedUser = referrer._id;
+
+        // optionally credit wallet both sides
+        referrer.wallet += 100;
+        await referrer.save();
+      }
     }
-}
+
+    await user.save();
+  }
+
+  return done(null, user);
+}));
 
 
-))
+
 
 
 

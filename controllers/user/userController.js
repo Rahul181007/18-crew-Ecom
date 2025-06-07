@@ -40,11 +40,12 @@ const loadRegister=async(req,res,next)=>{
 const loadhomepage = async (req, res,next) => {
     try {
       const user = req.session.user;
-      const cartCount=0;
+      let cartCount=0;
       
       const userData = await User.findOne({ _id: user });
       const category = await Category.find({ isListed: true });
       const cart = await Cart.findOne({ userId: user });
+      const wishlist = await WishList.findOne({ userId:user })
       let productData = await Product.find({
         isBlocked: false,
         category: { $in: category.map((cat) => cat._id) },
@@ -55,21 +56,22 @@ const loadhomepage = async (req, res,next) => {
       productData = productData.slice(0, 5);
       console.log(user)
       
-    
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
+    cartCount = cart && cart.items ? cart.items.length : 0;
       if (user) {
         res.render("homepage", {
           user: userData,
           products: productData,
           category: category ,
-           cartCount: cart && cart.items ? cart.items.length : 0,
-           wishlistCount : userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0
+           cartCount,
+           wishlistCount 
         });
       } else {
         res.render("homepage", {
           products: productData,
           category: category,
-          cartCount: cart && cart.items ? cart.items.length : 0,
-          wishlistCount : userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0
+          cartCount,
+          wishlistCount 
         });
       }
     } catch (error) {
@@ -193,7 +195,7 @@ const verifyOtp = async (req, res,next) => {
       await saveUserData.save();
 
       if (user.referralCode) {
-  const referrer = await User.findOne({ referalCode: user.referralCode });
+  const referrer = await User.findOne({ referralCode: user.referralCode });
   if (referrer) {
     // Referrer: add ₹100 referral bonus
     referrer.wallet = (referrer.wallet || 0) + 100;
@@ -332,7 +334,9 @@ const loadShoppingPage = async (req, res, next) => {
     const userData = await User.findOne({ _id: user });
     const categories = await Category.find({ isListed: true });
     const cart = await Cart.findOne({ userId: user });
+    const wishlist = await WishList.findOne({ userId:user })
     let cartCount = cart && cart.items ? cart.items.length : 0;
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
     const categoryIds = categories.map((category) => category._id.toString());
     const page = parseInt(req.query.page) || 1;
     const limit = 8;
@@ -364,7 +368,7 @@ const loadShoppingPage = async (req, res, next) => {
       currentPage: page,
       totalPages,
       cartCount,
-      wishlistCount: userData?.wishlist?.length ?? 0,
+      wishlistCount,
       page: 'shop',
       selectedCategories: [], // Add this
       selectedBrands: [],    // Add this
@@ -387,7 +391,8 @@ const filterProduct = async (req, res, next) => {
 
     const cart = await Cart.findOne({ userId: user });
     let cartCount = cart?.items?.length || 0;
-
+    const wishlist = await WishList.findOne({ userId:user })
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
     let query = { isBlocked: false };
 
     // Category filter
@@ -439,7 +444,7 @@ const filterProduct = async (req, res, next) => {
       selectedBrands: brandIds,
       selectedSort: sort,
       cartCount,
-      wishlistCount: user ? (await User.findById(user))?.wishlist?.length || 0 : 0,
+      wishlistCount,
       page: "shop"
     });
   } catch (error) {
@@ -455,6 +460,8 @@ const filterPrice = async (req, res, next) => {
     const sort = req.query.sort || '';
     const cart = await Cart.findOne({ userId: user });
     let cartCount = cart?.items?.length || 0;
+    const wishlist = await WishList.findOne({ userId:user })
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
 
     let query = { isBlocked: false };
     const categories = await Category.find({ isListed: true });
@@ -490,7 +497,7 @@ const filterPrice = async (req, res, next) => {
       currentPage: page,
       totalPages,
       cartCount,
-      wishlistCount: user ? (await User.findById(user))?.wishlist?.length || 0 : 0,
+      wishlistCount,
       page: 'shop',
       selectedSort: sort,
       selectedCategories: [], // Add this
@@ -510,7 +517,8 @@ const searchProduct = async (req, res, next) => {
 
     const cart = await Cart.findOne({ userId: user });
     let cartCount = cart?.items?.length || 0;
-
+    const wishlist = await WishList.findOne({ userId:user })
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
     // Get categories and brands in parallel
     const [categories, brands] = await Promise.all([
       Category.find({ isListed: true }),
@@ -573,7 +581,7 @@ const searchProduct = async (req, res, next) => {
       selectedCategories, // Pass to view
       selectedBrands: req.query.brand ? req.query.brand.split(',') : [], // Also initialize brands
       selectedSort: req.query.sort || '', // And sort
-      wishlistCount: user ? (await User.findById(user))?.wishlist?.length || 0 : 0,
+      wishlistCount,
       page: "shop"
     });
   } catch (error) {
@@ -634,38 +642,63 @@ try {
 }
 
 
-const postRefferal=async (req, res) => {
+const postReferral = async (req, res) => {
   if (!req.session.user) {
     return res.redirect("/register");
   }
+
+
   const { referralCode } = req.body;
+  console.log(referralCode);
+
   try {
     const user = await User.findById(req.session.user._id);
     if (!user) {
       return res.redirect("/register");
     }
 
+    if (user.redeemed) {
+      // prevent double redeem
+      return res.redirect("/");
+    }
+
     if (referralCode) {
       // Validate referral code
       const referrer = await User.findOne({ referralCode });
+      console.log(referrer);
+
       if (referrer && referrer._id.toString() !== user._id.toString()) {
-        // Update referrer's wallet
-        referrer.wallet += 100;
-        await referrer.save();
-        // Update new user's wallet and mark as redeemed
-        user.wallet += 50;
+        // Credit 100 to referrer
+        await logWalletTransaction(
+          referrer._id,
+          "credit",
+          100,
+          "Referral Bonus",
+          user._id
+        );
+
+        // Credit 50 to new user
+        await logWalletTransaction(
+          user._id,
+          "credit",
+          50,
+          "Referral Reward",
+          referrer._id
+        );
+
+        // Mark new user as redeemed
         user.redeemed = true;
         user.redeemedUser = referrer._id;
         await user.save();
       }
     }
-    // Redirect to homepage
+
     res.redirect("/");
   } catch (error) {
     console.error("Error processing referral:", error);
     res.redirect("/referral");
   }
-}
+};
 
 const skipReferral=async (req, res) => {
   if (!req.session.user) {
@@ -702,7 +735,6 @@ const loadContactpage=async(req,res)=>{
    const cart = await Cart.findOne({ userId });
   const wishlistCount = wishlist ? wishlist.products.length : 0;
     let cartCount = 0;
-
     cartCount = cart && cart.items ? cart.items.length : 0;
         res.render("contact",{page: 'contact',
       wishlistCount,
@@ -762,7 +794,7 @@ module.exports={
     searchProduct, 
     getSearchSuggestions,
     referralPage,
-    postRefferal,
+    postReferral,
     skipReferral,
     loadAboutPage,
     loadContactpage,

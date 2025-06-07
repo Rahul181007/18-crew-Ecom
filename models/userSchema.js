@@ -20,7 +20,7 @@ const userSchema = new Schema({
         required: false,
         unique: true,
         sparse: true,
-        default: null
+        
     },
     gender: {
         type: String,

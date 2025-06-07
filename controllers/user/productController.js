@@ -3,7 +3,7 @@ const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
-
+const WishList=require("../../models/wishlistSchema")
 const productDetails = async (req, res,next) => {
   try {
     const userId = req.session.user;
@@ -16,6 +16,9 @@ const productDetails = async (req, res,next) => {
     const userData = userId ? await User.findById(userId) : null;
     const cart = await Cart.findOne({ userId });
     const cartCount = cart && cart.items ? cart.items.length : 0;
+
+    const wishlist = await WishList.findOne({ userId })
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
 
     const product = await Product.findById(productId)
       .populate("category")
@@ -68,7 +71,7 @@ const productDetails = async (req, res,next) => {
       relatedProducts,
       availableSizes,
       cartCount,
-      wishlistCount: userData?.wishlist?.length ?? 0,
+      wishlistCount,
       isInWishlist,
       page: 'product-details',
     });

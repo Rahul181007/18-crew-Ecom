@@ -17,7 +17,8 @@ const wishListController=require("../controllers/user/wishListController");
 const checkoutController=require("../controllers/user/checkoutController")
 const couponController=require("../controllers/user/couponController")
 const User=require("../models/userSchema");
-const shortid = require("shortid");
+
+
 // ..storage area for image
 const storage=multer.diskStorage({
     destination: function(req,file,cb){
@@ -34,60 +35,50 @@ const upload=multer({storage:storage});
 
 
 
-async function generateUniqueReferralCode() {
-  let referralCode;
-  let isUnique = false;
-  while (!isUnique) {
-    referralCode = shortid.generate();
-    const existingUser = await User.findOne({ referralCode });
-    if (!existingUser) isUnique = true;
-  }
-  return referralCode;
-}
+async function generateRefferalcode(){
+  return 'REF'+crypto.randomBytes(4).toString('hex').toUpperCase();
+};
 
 // signup management
 user_route.get("/register",userContoller.loadRegister);
 user_route.post("/register",userContoller.insertUser);
 user_route.post("/verify-otp",userContoller.verifyOtp) 
 user_route.post("/resend-otp",userContoller.resendOTP)
-user_route.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+user_route.get('/auth/google', (req, res, next) => {
+  if (req.query.ref) {
+    req.session.referralCode = req.query.ref;
+  }
+  next();
+}, passport.authenticate('google', { scope: ['profile', 'email'] }));
+
 user_route.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/register" }),
   async (req, res) => {
     try {
       req.session.user = req.user;
+      console.log("Authenticated User:", req.user);
 
-      // Check if user is new or existing
-      let user = await User.findOne({ googleId: req.user.googleId });
-      if (!user) {
-        // New user: Create user and generate referral code
-        user = new User({
-          name: req.user.name,
-          email: req.user.email,
-          googleId: req.user.googleId,
-          referralCode: await generateUniqueReferralCode(),
-          redeemed: false,
-          wallet: 0,
-        });
-        await user.save();
+      // Check if user already redeemed referral
+      if (!req.user.redeemed) {
+        return res.redirect("/referral");
       }
-      req.session.user = user;
-      // Redirect to referral code submission page
-      res.redirect("/referral");
-    } catch (error) {
-      console.error("Error in Google callback:", error);
+
+      res.redirect("/");
+    } catch (err) {
+      console.error("Google callback error:", err);
       res.redirect("/register");
     }
   }
 );
 
 
+
+
+
+
 user_route.get("/referral",userContoller.referralPage);
-user_route.post("/referral/submit",userAuth,userContoller.postRefferal)
+user_route.post("/referral/submit",userAuth,userContoller.postReferral)
 user_route.get("/referral/skip",userAuth,userContoller.skipReferral)
 // sign in Management
 user_route.get("/signin",userContoller.loadLogin)
