@@ -1,65 +1,270 @@
 <%- include("../layouts/header.ejs") %>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --primary-color: #C586A5;
+    --secondary-color: #1a1517;
+    --accent-color: #e60039;
+    --light-bg: #f8f9fa;
+    --dark-text: #212529;
+    --muted-text: #6c757d;
+    --transition-speed: 0.3s;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--dark-text);
+  }
+  
+  .auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  
+  .auth-header {
+    padding: 1.5rem;
+    background-color: white;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  
+  .auth-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+    text-align: center;
+    margin-bottom: 0;
+    position: relative;
+  }
+  
+  .auth-title::after {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 3px;
+    background: var(--primary-color);
+    margin: 0.5rem auto 0;
+  }
+  
+  .auth-body {
+    padding: 1.5rem;
+    background-color: white;
+  }
+  
+  .form-control {
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 0.5rem 1rem;
+  }
+  
+  .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(197, 134, 165, 0.1);
+  }
+  
+  .btn-auth {
+    height: 48px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all var(--transition-speed);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-auth .btn-text {
+    display: block;
+    transition: all var(--transition-speed);
+  }
+  
+  .btn-auth .hover-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: all var(--transition-speed);
+  }
+  
+  .btn-auth:hover .btn-text {
+    opacity: 0;
+  }
+  
+  .btn-auth:hover .hover-text {
+    opacity: 1;
+  }
+  
+  .btn-primary-auth {
+    background-color: var(--secondary-color);
+    border: none;
+    color: white;
+  }
+  
+  .btn-primary-auth:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+  }
+  
+  .btn-google {
+    border: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  
+  .btn-google:hover {
+    background-color: #f8f9fa;
+    border-color: #d0d0d0;
+  }
+  
+  .divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: var(--muted-text);
+    font-size: 0.875rem;
+  }
+  
+  .divider::before,
+  .divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .divider::before {
+    margin-right: 1rem;
+  }
+  
+  .divider::after {
+    margin-left: 1rem;
+  }
+  
+  .auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .auth-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
+  .auth-link:hover {
+    text-decoration: underline;
+  }
+  
+  .error-message {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    margin-top: 0.25rem;
+    display: block;
+  }
+  
+  .flash-message {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 50px;
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    animation: fadeInOut 3s ease-in-out forwards;
+  }
+  
+  @keyframes fadeInOut {
+    0% { opacity: 0; top: 0; }
+    10% { opacity: 1; top: 1rem; }
+    90% { opacity: 1; top: 1rem; }
+    100% { opacity: 0; top: 0; }
+  }
+</style>
 
 <!-- Sign In Form -->
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-  <div class="card p-4 shadow-sm border-0 rounded-4" style="width: 100%; max-width: 400px;">
-    
-    <h1 class="text-center mb-4">Sign In —</h1>
+<div class="auth-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="auth-card mx-auto">
+          <div class="auth-header">
+            <h1 class="auth-title">Sign In</h1>
+          </div>
+          
+          <div class="auth-body">
+            <% if (locals.message && message.length > 0) { %>
+              <div class="flash-message"><%= message %></div>
+            <% } %>
 
-    <% if (locals.message && message.length > 0) { %>
-      <div id="message" class="text-danger text-center small mb-2"><%= message %></div>
-      <script>
-        setTimeout(() => document.getElementById('message')?.remove(), 3000);
-      </script>
-    <% } %>
+            <form action="/signin" method="post" id="signform">
+              <div class="mb-3">
+                <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required>
+                <div id="error2" class="error-message"></div>
+              </div>
 
-    <form action="/signin" method="post" id="signform">
+              <div class="mb-3">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                <div id="error3" class="error-message"></div>
+              </div>
 
-      <div class="mb-3">
-        <input type="email" class="form-control rounded-3" id="email" name="email" placeholder="Email" required>
-        <div id="error2" class="text-danger small"></div>
+              <div class="text-end mb-4">
+                <a href="/forgot-Password" class="small text-decoration-none">Forgot password?</a>
+              </div>
+
+              <button type="submit" class="btn btn-primary-auth btn-auth w-100 mb-3">
+                <span class="btn-text">Sign In</span>
+                <span class="hover-text">Welcome Back!</span>
+              </button>
+
+              <div class="divider">OR</div>
+
+              <a href="/auth/google" class="btn btn-google btn-auth w-100 mb-4">
+                <img src="/images/googlesignup.png" alt="Google Logo" width="20" height="20">
+                <span>Continue with Google</span>
+              </a>
+
+              <div class="auth-footer">
+                Don't have an account? <a href="/register" class="auth-link">Sign up</a>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-
-      <div class="mb-2">
-        <input type="password" class="form-control rounded-3" id="password" name="password" placeholder="Password" required>
-        <div id="error3" class="text-danger small"></div>
-      </div>
-
-      <div class="text-end mb-3">
-        <a href="/forgot-Password" class="text-decoration-none small text-muted">Forgot Password?</a>
-      </div>
-
-      <div class="d-grid mb-3">
-        <button type="submit" class="btn btn-dark rounded-3">Sign In</button>
-      </div>
-
-      <div class="text-center text-muted my-2">— OR —</div>
-
-      <div class="d-grid mb-3">
-        <a href="/auth/google" class="btn btn-outline-dark rounded-3 d-flex align-items-center justify-content-center gap-2">
-          <img src="/images/googlesignup.png" alt="Google Logo" width="24" height="24">
-          <span>Sign in with Google</span>
-        </a>
-      </div>
-
-      <div class="text-center small mt-3">
-        Don't have an account? <a href="/register" class="fw-semibold text-dark">Sign Up</a>
-      </div>
-
-    </form>
+    </div>
   </div>
 </div>
 
 <script>
-      const emailId = document.getElementById("email");
-      const passwordId = document.getElementById("password");
-      const signform = document.getElementById("signform");
-      const error2 = document.getElementById("error2");
-      const error3 = document.getElementById("error3");
+  const emailId = document.getElementById("email");
+  const passwordId = document.getElementById("password");
+  const signform = document.getElementById("signform");
+  const error2 = document.getElementById("error2");
+  const error3 = document.getElementById("error3");
 
-      function emailValidateChecking() {
+  function emailValidateChecking() {
     const emailVal = emailId.value.trim();
     const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
   
@@ -74,26 +279,24 @@
   
   function passwordValidateChecking() {
     const passval = passwordId.value;
-    const alpha = /[a-zA-Z]/;
-    const digit = /\d/;
-  
-    if (passval.length < 8) {
-      error3.style.display = "block";
-      error3.innerHTML = "Password must be at least 8 characters long";
-    } else if (!alpha.test(passval) || !digit.test(passval)) {
-      error3.style.display = "block";
-      error3.innerHTML = "Password should contain both alphabets and numbers";
-    } else {
-      error3.style.display = "none";
-      error3.innerHTML = "";
-    }
+    error3.style.display = "none";
+    error3.innerHTML = "";
   }
+
+  // Add event listeners
+  emailId.addEventListener('blur', emailValidateChecking);
+  passwordId.addEventListener('blur', passwordValidateChecking);
+  
+  signform.addEventListener('submit', function(e) {
+    emailValidateChecking();
+    passwordValidateChecking();
+    
+    if (error2.innerHTML) {
+      e.preventDefault();
+    }
+  });
 </script>
 
-
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 
 <%- include("../layouts/footer.ejs") %>

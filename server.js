@@ -8,6 +8,7 @@ const nocache=require("nocache")
 const passport=require("./config/passport");
 const errorHandler=require("./middlewares/eroorHandler")
 const cookieParser = require("cookie-parser");
+const MongoStore = require("connect-mongo");
 db();
 
 app.use(express.json());
@@ -20,7 +21,11 @@ app.use(cookieParser());
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false,   
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,   
+    ttl: 72 * 60 * 60 
+  }),
   cookie: {
     secure: false,
     httpOnly: true,
@@ -31,7 +36,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session())
 app.use((req, res, next) => {
-  console.log("Session at", req.originalUrl, ":", req.session);
+ 
   next();
 });
 app.use((req, res, next) => {

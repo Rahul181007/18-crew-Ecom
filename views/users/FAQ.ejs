@@ -1,0 +1,688 @@
+<%- include("../layouts/header.ejs") %>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+<style>
+  :root {
+    --primary-color: #C586A5;
+    --secondary-color: #1a1517;
+    --accent-color: #e60039;
+    --light-bg: #f8f9fa;
+    --dark-text: #212529;
+    --muted-text: #6c757d;
+    --transition-speed: 0.3s;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--dark-text);
+    overflow-x: hidden;
+  }
+ /* Navigation */
+  .navbar {
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    transition: all var(--transition-speed) ease;
+  }
+  
+  .navbar.scrolled {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  }
+  
+  .navbar-brand {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--secondary-color);
+    letter-spacing: 0.5px;
+    position: relative;
+  }
+  
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 4px;
+  }
+  
+  .navbar-nav {
+    gap: 1.5rem;
+  }
+  
+  .navbar-nav .nav-link {
+    font-weight: 500;
+    color: var(--dark-text);
+    transition: color var(--transition-speed);
+    position: relative;
+    padding: 0.5rem 0;
+  }
+  
+  .navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: width var(--transition-speed);
+  }
+  
+  .navbar-nav .nav-link:hover::after,
+  .navbar-nav .nav-link.active::after {
+    width: 100%;
+  }
+  
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    color: var(--primary-color);
+  }
+  
+  /* Badge */
+  .badge-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    border: 1px solid white;
+  }
+  /* FAQ Hero Section */
+  .faq-hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/faq-hero.jpg') no-repeat center center;
+    background-size: cover;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    color: white;
+  }
+
+  .faq-hero-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .faq-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  /* FAQ Section */
+  .faq-section {
+    padding: 5rem 0;
+  }
+
+  .section-title {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-weight: 700;
+  }
+
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: var(--primary-color);
+  }
+
+  /* Accordion Styling */
+  .accordion-item {
+    border: none;
+    border-radius: 8px !important;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .accordion-button {
+    background-color: white;
+    color: var(--dark-text);
+    font-weight: 600;
+    padding: 1.5rem;
+    border: none;
+    box-shadow: none !important;
+  }
+
+  .accordion-button:not(.collapsed) {
+    background-color: white;
+    color: var(--primary-color);
+  }
+
+  .accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23C586A5'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+  }
+
+  .accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23C586A5'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+  }
+
+  .accordion-body {
+    padding: 1.5rem;
+    background-color: white;
+    color: var(--muted-text);
+    line-height: 1.8;
+  }
+
+  /* FAQ Categories */
+  .faq-categories {
+    margin-bottom: 3rem;
+  }
+
+  .category-btn {
+    background: white;
+    color: var(--dark-text);
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem 1.5rem;
+    margin-right: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+  }
+
+  .category-btn:hover,
+  .category-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  /* Contact Card */
+  .contact-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    margin-top: 3rem;
+  }
+
+  .contact-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(197, 134, 165, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: var(--primary-color);
+    font-size: 2rem;
+  }
+  /* Footer */
+  .footer {
+    background: var(--secondary-color);
+    color: white;
+  }
+  
+  .footer-logo {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+  
+  .footer-logo-dot {
+    color: var(--primary-color);
+  }
+  
+  .footer-about {
+    color: rgba(255,255,255,0.7);
+  }
+  
+  .footer-title {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .footer-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: var(--primary-color);
+  }
+  
+  .footer-links li {
+    margin-bottom: 0.75rem;
+  }
+  
+  .footer-link {
+    color: rgba(255,255,255,0.7);
+    transition: all var(--transition-speed);
+    text-decoration: none;
+  }
+  
+  .footer-link:hover {
+    color: white;
+    padding-left: 5px;
+  }
+  
+  .footer-contact-item {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .footer-contact-icon {
+    margin-right: 1rem;
+    color: var(--primary-color);
+  }
+  
+  .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 1.5rem;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 992px) {
+    .faq-hero h1 {
+      font-size: 2.5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .faq-hero {
+      min-height: 350px;
+    }
+    
+    .faq-hero h1 {
+      font-size: 2rem;
+    }
+    
+    .section-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .faq-hero {
+      min-height: 300px;
+      text-align: center;
+    }
+    
+    .category-btn {
+      width: 100%;
+      margin-right: 0;
+    }
+  }
+</style>
+
+<!-- Navigation (same as about page) -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3 sticky-top">
+    <div class="container">
+      <a href="/" class="navbar-brand d-flex align-items-center">
+        18-CREW<span class="brand-dot"></span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>" href="/">HOME</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="/about">ABOUT</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="/contact">CONTACT</a>
+          </li>
+
+          <% if (locals?.user || user) { %>
+            <li class="nav-item dropdown d-lg-none">
+              <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <%= user.name %>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+              </ul>
+            </li>
+          <% } else { %>
+            <li class="nav-item d-lg-none">
+              <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
+            </li>
+          <% } %>
+        </ul>
+
+        <div class="d-none d-lg-flex align-items-center gap-3">
+          <% if (locals?.user || user) { %>
+            <div class="dropdown">
+              <a class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-2"></i>
+                <%= user.name %>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+              </ul>
+            </div>
+          <% } else { %>
+            <a href="/signin" class="text-dark fs-5" title="Account" aria-label="Account">
+              <i class="bi bi-person"></i>
+            </a>
+          <% } %>
+          <a href="/wishlist" class="text-dark position-relative fs-5" title="Wishlist" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
+            <i class="bi bi-heart"></i>
+            <% if (wishlistCount > 0) { %>
+              <span class="badge-dot"></span>
+            <% } %>
+          </a>
+          <a href="/getCartPage" class="text-dark position-relative fs-5" title="Cart" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
+            <i class="bi bi-bag"></i>
+            <% if (cartCount > 0) { %>
+              <span class="badge-dot"></span>
+            <% } %>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+<!-- Hero Section -->
+<section class="faq-hero">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="faq-hero-content">
+          <h1>Frequently Asked Questions</h1>
+          <p class="lead">Find answers to common questions about our products, services, and policies</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="section-title">How Can We Help?</h2>
+      <p class="text-muted">Browse through our most frequently asked questions</p>
+    </div>
+
+    <!-- FAQ Categories -->
+    <div class="faq-categories text-center">
+      <button class="category-btn active" data-category="all">All Questions</button>
+      <button class="category-btn" data-category="orders">Orders & Shipping</button>
+      <button class="category-btn" data-category="returns">Returns & Exchanges</button>
+      <button class="category-btn" data-category="products">Products</button>
+      <button class="category-btn" data-category="account">Account</button>
+    </div>
+
+    <!-- FAQ Accordion -->
+    <div class="accordion" id="faqAccordion">
+      <!-- Orders & Shipping -->
+      <div class="accordion-item" data-category="orders">
+        <h2 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+            How long does shipping take?
+          </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p>Standard shipping typically takes 3-5 business days within the continental US. For international orders, delivery times vary by destination but generally take 7-14 business days. You'll receive a tracking number once your order ships so you can monitor its progress.</p>
+            <p>During peak seasons or promotions, delivery times may be slightly longer. We also offer expedited shipping options at checkout for faster delivery.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item" data-category="orders">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+            Do you offer international shipping?
+          </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p>Yes, we ship to most countries worldwide. International shipping rates and delivery times vary depending on your location. All customs fees and import duties are the responsibility of the customer and will be calculated at checkout or upon delivery.</p>
+            <p>Please note that some restrictions may apply to certain products based on international shipping regulations.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Returns & Exchanges -->
+      <div class="accordion-item" data-category="returns">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+            What is your return policy?
+          </button>
+        </h2>
+        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p>We offer a 30-day return policy from the date of delivery. Items must be unworn, unwashed, and in their original condition with all tags attached. To initiate a return:</p>
+            <ol>
+              <li>Log in to your account and go to "Order History"</li>
+              <li>Select the item(s) you wish to return</li>
+              <li>Print the prepaid return label</li>
+              <li>Package your return and drop it off at any UPS location</li>
+            </ol>
+            <p>Refunds will be processed within 3-5 business days after we receive your return.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item" data-category="returns">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+            How do I exchange an item?
+          </button>
+        </h2>
+        <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p>We currently don't offer direct exchanges, but you can easily return your item for a refund and place a new order for the item you want. This process is often faster than a traditional exchange.</p>
+            <p>For size exchanges, we recommend returning the original item and purchasing the new size separately to ensure availability. If the new size is out of stock when you're ready to order, we'll be happy to notify you when it's back in stock.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products -->
+      <div class="accordion-item" data-category="products">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
+            How do I care for my 18-CREW garments?
+          </button>
+        </h2>
+        <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p>To ensure your 18-CREW pieces maintain their quality:</p>
+            <ul>
+              <li>Wash similar colors together in cold water</li>
+              <li>Use mild detergent and avoid bleach</li>
+              <li>Turn garments inside out before washing</li>
+              <li>Line dry or tumble dry on low heat</li>
+              <li>Iron on low heat if needed, using a pressing cloth for delicate fabrics</li>
+            </ul>
+            <p>Each product comes with specific care instructions on the tag. Following these guidelines will help preserve the color, shape, and fabric quality of your items.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item" data-category="products">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix">
+            Are your products sustainable?
+          </button>
+        </h2>
+        <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p>Yes, sustainability is at the core of our brand. We're committed to:</p>
+            <ul>
+              <li>Using organic and recycled materials whenever possible</li>
+              <li>Partnering with ethical factories that provide fair wages and safe working conditions</li>
+              <li>Minimizing waste through efficient production processes</li>
+              <li>Using eco-friendly packaging made from recycled materials</li>
+              <li>Offering a recycling program for worn-out garments</li>
+            </ul>
+            <p>Look for our "Sustainable Choice" badge on product pages to identify our most eco-friendly options.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account -->
+      <div class="accordion-item" data-category="account">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven">
+            How do I reset my password?
+          </button>
+        </h2>
+        <div id="collapseSeven" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p>To reset your password:</p>
+            <ol>
+              <li>Go to the login page and click "Forgot password"</li>
+              <li>Enter the email address associated with your account</li>
+              <li>Check your email for a password reset link (check spam folder if you don't see it)</li>
+              <li>Click the link and follow the instructions to create a new password</li>
+            </ol>
+            <p>If you're still having trouble, please contact our customer service team for assistance.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item" data-category="account">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight">
+            How do I update my account information?
+          </button>
+        </h2>
+        <div id="collapseEight" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p>You can update your account information at any time:</p>
+            <ol>
+              <li>Log in to your account</li>
+              <li>Click on "Account Settings" in the top menu</li>
+              <li>Update your personal information, shipping addresses, or payment methods</li>
+              <li>Click "Save Changes" to update your profile</li>
+            </ol>
+            <p>For security reasons, some changes (like email address) may require verification.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Card -->
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="contact-card">
+          <div class="contact-icon">
+            <i class="bi bi-headset"></i>
+          </div>
+          <h3>Still have questions?</h3>
+          <p class="mb-4">Our customer service team is happy to help with any additional questions you may have.</p>
+          <a href="/contact" class="btn btn-outline-primary">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Footer -->
+<footer class="footer py-5">
+  <div class="container">
+    <div class="row gy-4">
+      <div class="col-lg-5">
+        <a href="/" class="footer-logo text-white">18-CREW<span class="footer-logo-dot">.</span></a>
+        <p class="footer-about">
+          We're dedicated to providing you with the very best fashion experience, with an emphasis on quality, style, and exceptional service.
+        </p>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <h6 class="footer-title">COMPANY</h6>
+        <ul class="footer-links list-unstyled">
+          <li><a href="/home" class="footer-link">Home</a></li>
+          <li><a href="/about" class="footer-link">About us</a></li>
+          <li><a href="/shop" class="footer-link">Shop</a></li>
+          <li><a href="/contact" class="footer-link">Contact</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <h6 class="footer-title">HELP</h6>
+        <ul class="footer-links list-unstyled">
+          <li><a href="/faq" class="footer-link">FAQs</a></li>
+          <li><a href="/shipping" class="footer-link">Shipping</a></li>
+          <li><a href="/returns" class="footer-link">Returns</a></li>
+          <li><a href="/privacy" class="footer-link">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3 col-md-4">
+        <h6 class="footer-title">CONTACT</h6>
+        <div class="footer-contact-item">
+          <i class="bi bi-geo-alt footer-contact-icon"></i>
+          <div>
+            <p class="mb-0">123 Fashion Street, Mumbai</p>
+            <p class="mb-0">India 400001</p>
+          </div>
+        </div>
+        <div class="footer-contact-item">
+          <i class="bi bi-envelope footer-contact-icon"></i>
+          <div>
+            <p class="mb-0">18CREW@gmail.com</p>
+          </div>
+        </div>
+        <div class="footer-contact-item">
+          <i class="bi bi-telephone footer-contact-icon"></i>
+          <div>
+            <p class="mb-0">+1-212-456-7890</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom text-center mt-5 pt-4">
+      <p class="text-muted mb-0">Copyright © 2024 18-CREW. All Rights Reserved.</p>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // FAQ Category Filtering
+  document.addEventListener('DOMContentLoaded', function() {
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    const faqItems = document.querySelectorAll('.accordion-item');
+
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Update active button
+        categoryBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        // Filter FAQs
+        const category = this.dataset.category;
+        faqItems.forEach(item => {
+          if (category === 'all' || item.dataset.category === category) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<%- include("../layouts/footer.ejs") %>

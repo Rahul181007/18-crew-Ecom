@@ -45,13 +45,13 @@ const updateOrderStatus = async (req, res, next) => {
 
     // Validate status
     const validStatuses = [
-      "Initiated", // Added to match schema
+      "Initiated", 
       "Pending",
       "Processing",
       "Shipped",
       "Delivered",
       "Cancelled",
-      "Partially Cancelled", // Added to match schema
+      "Partially Cancelled", 
       "Return Request",
       "Returned",
       "Partially Returned",

@@ -47,8 +47,8 @@ const addCategory = async (req, res,next) => {
     try {
       const { name, description } = req.body;
       const image = req.file ? req.file.filename : "default-category.png";
-  
-      const existingCategory = await Category.findOne({ name });
+      
+      const existingCategory = await Category.findOne({ name:{$regex:`^${name}$`,$options:'i'} });
       if (existingCategory) {
         return res.status(400).json({ error: "Category already exists" });
       }
@@ -63,8 +63,6 @@ const addCategory = async (req, res,next) => {
       return res.json({ message: "Category added successfully" });
   
     } catch (error) {
-      // console.error(error);
-      // return res.status(500).json("Internal server error");
       next(error)
     }
   };
@@ -181,7 +179,7 @@ const editCategory=async(req,res,next)=>{
 try {
     const id=req.params.id;
     const {categoryName,description}=req.body;
-    const existingCategory=await Category.findOne({name:categoryName});
+    const existingCategory=await Category.findOne({name:{$regex:`^${categoryName}$`,$options:'i'}});
     if(existingCategory){
         return res.status(400).json({error:"Category already exist,please choose another name"})
     }

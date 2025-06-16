@@ -84,7 +84,7 @@ const addCoupon = async (req, res) => {
     });
 
     await coupon.save();
-    res.status(200).json({ message: 'Coupon created successfully' });
+    res.status(200).json({success:true ,message: 'Coupon created successfully' });
   } catch (error) {
     console.error("Error creating a coupon:", error);
     if (error.code === 11000) {

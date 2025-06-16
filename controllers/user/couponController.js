@@ -1,5 +1,7 @@
 const Coupon = require("../../models/couponSchema");
-const Order=require("../../models/orderSchema")
+const Order=require("../../models/orderSchema");
+
+
 const applyCoupon = async (req, res,next) => {
   try {
     const { couponCode, cartTotal } = req.body;

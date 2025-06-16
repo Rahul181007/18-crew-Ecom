@@ -32,11 +32,16 @@
             <td><%= data[i].email %></td>
             <td><%= data[i].mobile %></td>
             <td>
-              <% if(!data[i].isBlocked) { %>
-                <a href="/admin/blockCustomer?id=<%= data[i]._id %>" class="btn btn-danger btn-sm">Block</a>
-              <% } else { %>
-                <a href="/admin/unblockCustomer?id=<%= data[i]._id %>" class="btn btn-success btn-sm">Unblock</a>
-              <% } %>
+  <% if(!data[i].isBlocked) { %>
+    <a href="javascript:void(0)" 
+       class="btn btn-danger btn-sm"
+       onclick="confirmAction('<%= data[i]._id %>', 'block')">Block</a>
+  <% } else { %>
+    <a href="javascript:void(0)" 
+       class="btn btn-success btn-sm"
+       onclick="confirmAction('<%= data[i]._id %>', 'unblock')">Unblock</a>
+  <% } %>
+
             </td>
           </tr>
         <% } %>
@@ -63,4 +68,30 @@
   </nav>
 </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmAction(id, actionType) {
+  const actionText = actionType === 'block' ? 'block' : 'unblock';
+  const buttonColor = actionType === 'block' ? '#d33' : '#28a745';
+  const confirmUrl = actionType === 'block' 
+                      ? `/admin/blockCustomer?id=${id}`
+                      : `/admin/unblockCustomer?id=${id}`;
+
+  Swal.fire({
+    title: `Are you sure?`,
+    text: `You are about to ${actionText} this customer.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: buttonColor,
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: `Yes, ${actionText} them!`
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = confirmUrl;
+    }
+  });
+}
+</script>
+
+
 <%- include("../layouts/admin/footer.ejs") %>

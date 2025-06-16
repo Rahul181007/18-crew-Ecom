@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
 <style>
-  :root {
+   :root {
     --primary-color: #C586A5;
     --secondary-color: #1a1517;
     --accent-color: #e60039;
@@ -24,6 +24,7 @@
     color: var(--dark-text);
     overflow-x: hidden;
   }
+/* Navigation */
   .navbar {
     box-shadow: 0 2px 15px rgba(0,0,0,0.05);
     transition: all var(--transition-speed) ease;
@@ -94,9 +95,8 @@
     border-radius: 50%;
     border: 1px solid white;
   }
-  /* Hero Section */
-  .contact-hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/contact-hero.jpg') no-repeat center center;
+  .returns-hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/returns-hero.jpg') no-repeat center center;
     background-size: cover;
     min-height: 400px;
     display: flex;
@@ -105,154 +105,44 @@
     color: white;
   }
 
-  .contact-hero-content {
-    position: relative;
-    z-index: 2;
-  }
-
-  .contact-hero h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-  }
-
-  /* Section Titles */
-  .section-title {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 2rem;
-    font-weight: 700;
-  }
-
-  .section-title::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    width: 60px;
-    height: 3px;
-    background: var(--primary-color);
-  }
-
-  /* Contact Content */
-  .contact-content {
-    padding: 5rem 0;
-  }
-
-  /* Contact Cards */
-  .contact-card {
+  .policy-card {
     background: white;
     border-radius: 12px;
     padding: 2rem;
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-speed);
-    height: 100%;
-    text-align: center;
     margin-bottom: 2rem;
+    transition: all var(--transition-speed);
   }
 
-  .contact-card:hover {
+  .policy-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
   }
 
-  .contact-icon {
-    width: 80px;
-    height: 80px;
+  .policy-icon {
+    width: 60px;
+    height: 60px;
     background: rgba(197, 134, 165, 0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1.5rem;
-    color: var(--primary-color);
-    font-size: 2rem;
-    transition: all var(--transition-speed);
-  }
-
-  .contact-card:hover .contact-icon {
-    background: var(--primary-color);
-    color: white;
-  }
-
-  /* Contact Form */
-  .contact-form {
-    background: white;
-    border-radius: 12px;
-    padding: 3rem;
-    box-shadow: var(--shadow-md);
-  }
-
-  .form-control {
-    height: 50px;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
     margin-bottom: 1.5rem;
-    transition: all var(--transition-speed);
+    color: var(--primary-color);
+    font-size: 1.5rem;
   }
 
-  .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(197, 134, 165, 0.25);
-  }
-
-  textarea.form-control {
-    height: auto;
-    min-height: 150px;
-  }
-
-  .submit-btn {
+  .step-number {
+    width: 30px;
+    height: 30px;
     background: var(--primary-color);
     color: white;
-    border: none;
-    padding: 0.75rem 2rem;
-    font-weight: 600;
-    border-radius: 50px;
-    transition: all var(--transition-speed);
-    width: 100%;
-  }
-
-  .submit-btn:hover {
-    background: var(--secondary-color);
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
-  }
-
-  /* Map */
-  .contact-map {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    height: 100%;
-    min-height: 300px;
-  }
-
-  /* Social Links */
-  .social-links {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-top: 2rem;
-  }
-
-  .social-links a {
-    width: 50px;
-    height: 50px;
     border-radius: 50%;
-    background: var(--light-bg);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--dark-text);
-    font-size: 1.25rem;
-    transition: all var(--transition-speed);
-  }
-
-  .social-links a:hover {
-    background: var(--primary-color);
-    color: white;
-    transform: translateY(-5px);
+    margin-right: 10px;
+    font-weight: 600;
   }
   /* Footer */
   .footer {
@@ -321,48 +211,6 @@
   .footer-bottom {
     border-top: 1px solid rgba(255,255,255,0.1);
     padding-top: 1.5rem;
-  }
-
-  /* Responsive Adjustments */
-  @media (max-width: 992px) {
-    .contact-hero h1 {
-      font-size: 2.5rem;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .contact-hero {
-      min-height: 350px;
-    }
-    
-    .contact-hero h1 {
-      font-size: 2rem;
-    }
-    
-    .section-title {
-      font-size: 1.5rem;
-    }
-
-    .contact-form {
-      padding: 2rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .contact-hero {
-      min-height: 300px;
-      text-align: center;
-    }
-    
-    .social-links {
-      gap: 1rem;
-    }
-    
-    .social-links a {
-      width: 40px;
-      height: 40px;
-      font-size: 1rem;
-    }
   }
 </style>
 <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 sticky-top">
@@ -442,104 +290,157 @@
       </div>
     </div>
   </nav>
-<!-- Hero Section -->
-<section class="contact-hero">
+<!-- Returns Hero Section -->
+<section class="returns-hero">
   <div class="container">
     <div class="row">
       <div class="col-lg-8">
-        <div class="contact-hero-content">
-          <h1>Get In Touch</h1>
-          <p class="lead">We'd love to hear from you! Reach out with questions, feedback, or just to say hello.</p>
+        <div class="hero-content">
+          <h1>Returns & Exchanges</h1>
+          <p class="lead">Our hassle-free return policy ensures you can shop with confidence</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Contact Content -->
-<section class="contact-content">
+<!-- Returns Policy Section -->
+<section class="py-5">
   <div class="container">
-    <div class="row mb-5">
-      <div class="col-12 text-center">
-        <h2 class="section-title">Contact Information</h2>
-        <p class="text-muted">Choose your preferred method to reach us</p>
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center mb-5">
+        <h2 class="section-title">Our Return Policy</h2>
+        <p class="text-muted">We want you to love everything you order from 18-CREW</p>
       </div>
     </div>
-    
-    <div class="row g-4 mb-5">
+
+    <div class="row g-4">
       <div class="col-md-4">
-        <div class="contact-card">
-          <div class="contact-icon">
-            <i class="bi bi-geo-alt"></i>
+        <div class="policy-card text-center">
+          <div class="policy-icon mx-auto">
+            <i class="bi bi-calendar-check"></i>
           </div>
-          <h4>Our Location</h4>
-          <p>123 Fashion Avenue<br>Kakkancherry, NY 10001</p>
-          <a href="#" class="text-dark">Get Directions</a>
+          <h4>30-Day Window</h4>
+          <p>You have 30 days from the delivery date to return your items for a full refund.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="contact-card">
-          <div class="contact-icon">
-            <i class="bi bi-telephone"></i>
+        <div class="policy-card text-center">
+          <div class="policy-icon mx-auto">
+            <i class="bi bi-tag"></i>
           </div>
-          <h4>Phone</h4>
-          <p>9747921462<br>Mon-Fri: 9am - 6pm EST</p>
-          <a href="tel:+15551234567" class="text-dark">Call Now</a>
+          <h4>Original Condition</h4>
+          <p>Items must be unworn, unwashed, and with all original tags attached.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="contact-card">
-          <div class="contact-icon">
-            <i class="bi bi-envelope"></i>
+        <div class="policy-card text-center">
+          <div class="policy-icon mx-auto">
+            <i class="bi bi-credit-card"></i>
           </div>
-          <h4>Email</h4>
-          <p>hello@18-crew.com<br>We reply within 24 hours</p>
-          <a href="mailto:hello@18-crew.com" class="text-dark">Email Us</a>
+          <h4>Full Refunds</h4>
+          <p>Refunds are issued to the original payment method within 3-5 business days.</p>
         </div>
       </div>
     </div>
-    
-    <div class="row align-items-center">
-      <div class="col-lg-6 mb-5 mb-lg-0">
-        <div class="contact-form">
-          <h3 class="section-title mb-4">Send Us a Message</h3>
-          <form id="contactForm" action="/sendMessage" method="POST">
-            <div class="row">
-              <div class="col-md-6">
-                <input type="text" class="form-control" name="name" placeholder="Your Name" required>
-              </div>
-              <div class="col-md-6">
-               <input type="email" class="form-control" name="email" placeholder="Your Email" required>
-              </div>
-            </div>
-           <input type="text" class="form-control" name="subject" placeholder="Subject">
-            <textarea class="form-control" name="message" placeholder="Your Message" required></textarea>
-            <button type="submit" class="submit-btn">Send Message</button>
-          </form>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="col-lg-6">
-  <div class="contact-map">
-   <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15657.74498567467!2d75.89466601535173!3d11.155300518598965!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba6503e63169bd3%3A0xd7f7da7e7646a003!2sKakkanchery%2C%20Chelambra%2C%20Kerala!5e0!3m2!1sen!2sin!4v1749241293849!5m2!1sen!2sin" width="600" height="512" style="border:0; " allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
   </div>
-</div>
-      </div>
-    </div>
-    
-    <div class="row mt-5">
-      <div class="col-12 text-center">
-        <h3 class="section-title">Follow Us</h3>
-        <p class="text-muted mb-4">Stay connected with 18-CREW on social media</p>
-        <div class="social-links">
-          <a href="#"><i class="bi bi-facebook"></i></a>
-          <a href="#"><i class="bi bi-twitter"></i></a>
-          <a href="#"><i class="bi bi-instagram"></i></a>
-          <a href="#"><i class="bi bi-pinterest"></i></a>
-          <a href="#"><i class="bi bi-tiktok"></i></a>
+</section>
+
+<!-- How to Return Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="section-title text-center mb-5">How to Return an Item</h2>
+        
+        <div class="return-steps">
+          <div class="d-flex mb-4">
+            <div class="step-number">1</div>
+            <div>
+              <h4>Initiate Your Return</h4>
+              <p class="mb-0">Log in to your account and go to "Order History". Select the item(s) you wish to return and print your prepaid return label.</p>
+            </div>
+          </div>
+          
+          <div class="d-flex mb-4">
+            <div class="step-number">2</div>
+            <div>
+              <h4>Package Your Items</h4>
+              <p class="mb-0">Place the item(s) in the original packaging if possible, or securely in a box or mailer. Attach the return label to the package.</p>
+            </div>
+          </div>
+          
+          <div class="d-flex mb-4">
+            <div class="step-number">3</div>
+            <div>
+              <h4>Ship Your Return</h4>
+              <p class="mb-0">Drop off your package at any UPS location. You'll receive an email confirmation when we receive your return.</p>
+            </div>
+          </div>
+          
+          <div class="d-flex">
+            <div class="step-number">4</div>
+            <div>
+              <h4>Receive Your Refund</h4>
+              <p class="mb-0">Refunds are processed within 3-5 business days after we receive and inspect your return.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- Exchanges Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="section-title text-center mb-5">Exchange Policy</h2>
+        <div class="alert alert-info">
+          <p class="mb-0"><strong>Note:</strong> We currently don't offer direct exchanges. To exchange an item, please return the original item for a refund and place a new order for the item you want.</p>
+        </div>
+        <p>This process is often faster than traditional exchanges and ensures you get the correct size or color immediately if it's in stock. If you need assistance finding the right size, our customer service team can help.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Non-Returnable Items Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="section-title text-center mb-5">Non-Returnable Items</h2>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex align-items-center">
+            <i class="bi bi-x-circle-fill text-danger me-3"></i>
+            Final sale items (clearly marked at purchase)
+          </li>
+          <li class="list-group-item d-flex align-items-center">
+            <i class="bi bi-x-circle-fill text-danger me-3"></i>
+            Worn, washed, or damaged items
+          </li>
+          <li class="list-group-item d-flex align-items-center">
+            <i class="bi bi-x-circle-fill text-danger me-3"></i>
+            Items without original tags
+          </li>
+          <li class="list-group-item d-flex align-items-center">
+            <i class="bi bi-x-circle-fill text-danger me-3"></i>
+            Gift cards
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="about-cta">
+  <div class="container text-center">
+    <h2>Need Help With Your Return?</h2>
+    <p class="lead mb-4">Our customer service team is happy to assist with any questions</p>
+    <a href="/contact" class="btn cta-btn">Contact Us</a>
   </div>
 </section>
 <!-- Footer -->
@@ -598,50 +499,4 @@
     </div>
   </div>
 </footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
-<script>
-document.getElementById('contactForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const form = this;
-    const formData = new FormData(form);
-    
-    try {
-      const response = await fetch('/sendMessage', {
-        method: 'POST',
-        body: new URLSearchParams(formData), // Send form data as URL-encoded
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        Toastify({
-          text: result.message,
-          duration: 3000,
-          close: true,
-          gravity: 'top',
-          position: 'center',
-          backgroundColor: '#C586A5',
-          stopOnFocus: true,
-        }).showToast();
-        form.reset(); // Reset form on success
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (error) {
-      Toastify({
-        text: error.message || 'Failed to send message. Please try again.',
-        duration: 3000,
-        close: true,
-        gravity: 'top',
-        position: 'center',
-        backgroundColor: '#e60039',
-        stopOnFocus: true,
-      }).showToast();
-    }
-  });
-</script>
-
 <%- include("../layouts/footer.ejs") %>

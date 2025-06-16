@@ -1,11 +1,11 @@
 <%- include("../layouts/header.ejs") %>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
 <style>
-  :root {
+       :root {
     --primary-color: #C586A5;
     --secondary-color: #1a1517;
     --accent-color: #e60039;
@@ -24,6 +24,7 @@
     color: var(--dark-text);
     overflow-x: hidden;
   }
+/* Navigation */
   .navbar {
     box-shadow: 0 2px 15px rgba(0,0,0,0.05);
     transition: all var(--transition-speed) ease;
@@ -94,9 +95,8 @@
     border-radius: 50%;
     border: 1px solid white;
   }
-  /* Hero Section */
-  .contact-hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/contact-hero.jpg') no-repeat center center;
+  .privacy-hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/privacy-hero.jpg') no-repeat center center;
     background-size: cover;
     min-height: 400px;
     display: flex;
@@ -105,154 +105,36 @@
     color: white;
   }
 
-  .contact-hero-content {
-    position: relative;
-    z-index: 2;
+  .privacy-content {
+    line-height: 1.8;
   }
 
-  .contact-hero h1 {
-    font-size: 3rem;
-    font-weight: 700;
+  .privacy-content h2 {
+    color: var(--primary-color);
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .privacy-content h3 {
+    margin-top: 2rem;
     margin-bottom: 1rem;
+    font-size: 1.25rem;
   }
 
-  /* Section Titles */
-  .section-title {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 2rem;
-    font-weight: 700;
+  .privacy-content ul {
+    padding-left: 1.5rem;
   }
 
-  .section-title::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    width: 60px;
-    height: 3px;
-    background: var(--primary-color);
+  .privacy-content li {
+    margin-bottom: 0.5rem;
   }
 
-  /* Contact Content */
-  .contact-content {
-    padding: 5rem 0;
-  }
-
-  /* Contact Cards */
-  .contact-card {
+  .update-card {
     background: white;
     border-radius: 12px;
     padding: 2rem;
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-speed);
-    height: 100%;
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .contact-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .contact-icon {
-    width: 80px;
-    height: 80px;
-    background: rgba(197, 134, 165, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-    color: var(--primary-color);
-    font-size: 2rem;
-    transition: all var(--transition-speed);
-  }
-
-  .contact-card:hover .contact-icon {
-    background: var(--primary-color);
-    color: white;
-  }
-
-  /* Contact Form */
-  .contact-form {
-    background: white;
-    border-radius: 12px;
-    padding: 3rem;
-    box-shadow: var(--shadow-md);
-  }
-
-  .form-control {
-    height: 50px;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.5rem;
-    transition: all var(--transition-speed);
-  }
-
-  .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(197, 134, 165, 0.25);
-  }
-
-  textarea.form-control {
-    height: auto;
-    min-height: 150px;
-  }
-
-  .submit-btn {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.75rem 2rem;
-    font-weight: 600;
-    border-radius: 50px;
-    transition: all var(--transition-speed);
-    width: 100%;
-  }
-
-  .submit-btn:hover {
-    background: var(--secondary-color);
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
-  }
-
-  /* Map */
-  .contact-map {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    height: 100%;
-    min-height: 300px;
-  }
-
-  /* Social Links */
-  .social-links {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-top: 2rem;
-  }
-
-  .social-links a {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--light-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--dark-text);
-    font-size: 1.25rem;
-    transition: all var(--transition-speed);
-  }
-
-  .social-links a:hover {
-    background: var(--primary-color);
-    color: white;
-    transform: translateY(-5px);
+    margin: 3rem 0;
   }
   /* Footer */
   .footer {
@@ -321,48 +203,6 @@
   .footer-bottom {
     border-top: 1px solid rgba(255,255,255,0.1);
     padding-top: 1.5rem;
-  }
-
-  /* Responsive Adjustments */
-  @media (max-width: 992px) {
-    .contact-hero h1 {
-      font-size: 2.5rem;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .contact-hero {
-      min-height: 350px;
-    }
-    
-    .contact-hero h1 {
-      font-size: 2rem;
-    }
-    
-    .section-title {
-      font-size: 1.5rem;
-    }
-
-    .contact-form {
-      padding: 2rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .contact-hero {
-      min-height: 300px;
-      text-align: center;
-    }
-    
-    .social-links {
-      gap: 1rem;
-    }
-    
-    .social-links a {
-      width: 40px;
-      height: 40px;
-      font-size: 1rem;
-    }
   }
 </style>
 <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 sticky-top">
@@ -442,101 +282,112 @@
       </div>
     </div>
   </nav>
-<!-- Hero Section -->
-<section class="contact-hero">
+<!-- Privacy Hero Section -->
+<section class="privacy-hero">
   <div class="container">
     <div class="row">
       <div class="col-lg-8">
-        <div class="contact-hero-content">
-          <h1>Get In Touch</h1>
-          <p class="lead">We'd love to hear from you! Reach out with questions, feedback, or just to say hello.</p>
+        <div class="hero-content">
+          <h1>Privacy Policy</h1>
+          <p class="lead">Your privacy is important to us</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Contact Content -->
-<section class="contact-content">
+<!-- Privacy Content Section -->
+<section class="py-5">
   <div class="container">
-    <div class="row mb-5">
-      <div class="col-12 text-center">
-        <h2 class="section-title">Contact Information</h2>
-        <p class="text-muted">Choose your preferred method to reach us</p>
-      </div>
-    </div>
-    
-    <div class="row g-4 mb-5">
-      <div class="col-md-4">
-        <div class="contact-card">
-          <div class="contact-icon">
-            <i class="bi bi-geo-alt"></i>
+    <div class="row">
+      <div class="col-lg-10 mx-auto">
+        <div class="privacy-content">
+          <p class="lead">Last Updated: <strong><%= new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></strong></p>
+          
+          <p>At 18-CREW, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or make a purchase from us.</p>
+          
+          <h2>1. Information We Collect</h2>
+          <p>We may collect personal information that you voluntarily provide to us when you:</p>
+          <ul>
+            <li>Register on our website</li>
+            <li>Place an order</li>
+            <li>Subscribe to our newsletter</li>
+            <li>Contact customer service</li>
+            <li>Participate in surveys or promotions</li>
+          </ul>
+          
+          <h3>Types of information collected may include:</h3>
+          <ul>
+            <li>Name and contact details (email, phone number, address)</li>
+            <li>Payment information (credit card details are processed securely and not stored)</li>
+            <li>Order history and preferences</li>
+            <li>IP address and browser information</li>
+            <li>Cookies and usage data</li>
+          </ul>
+          
+          <h2>2. How We Use Your Information</h2>
+          <p>We use the information we collect to:</p>
+          <ul>
+            <li>Process and fulfill your orders</li>
+            <li>Communicate with you about your orders</li>
+            <li>Provide customer support</li>
+            <li>Improve our website and services</li>
+            <li>Send marketing communications (if you opt-in)</li>
+            <li>Prevent fraud and enhance security</li>
+            <li>Comply with legal obligations</li>
+          </ul>
+          
+          <h2>3. Sharing Your Information</h2>
+          <p>We do not sell or rent your personal information to third parties. We may share information with:</p>
+          <ul>
+            <li>Service providers who assist with order fulfillment, payment processing, and marketing</li>
+            <li>Shipping carriers to deliver your orders</li>
+            <li>Legal authorities when required by law</li>
+          </ul>
+          <p>All third parties are required to maintain the confidentiality and security of your information.</p>
+          
+          <h2>4. Cookies and Tracking Technologies</h2>
+          <p>We use cookies and similar technologies to:</p>
+          <ul>
+            <li>Remember your preferences</li>
+            <li>Analyze website traffic</li>
+            <li>Improve user experience</li>
+            <li>Deliver targeted advertising</li>
+          </ul>
+          <p>You can control cookies through your browser settings, but disabling them may affect website functionality.</p>
+          
+          <h2>5. Data Security</h2>
+          <p>We implement appropriate security measures to protect your personal information, including:</p>
+          <ul>
+            <li>SSL encryption for all data transmissions</li>
+            <li>Secure storage systems</li>
+            <li>Regular security audits</li>
+            <li>Limited access to personal data</li>
+          </ul>
+          
+          <h2>6. Your Rights</h2>
+          <p>Depending on your location, you may have the right to:</p>
+          <ul>
+            <li>Access the personal information we hold about you</li>
+            <li>Request correction of inaccurate data</li>
+            <li>Request deletion of your data</li>
+            <li>Opt-out of marketing communications</li>
+            <li>Withdraw consent where processing is based on consent</li>
+          </ul>
+          <p>To exercise these rights, please contact us using the information below.</p>
+          
+          <div class="update-card">
+            <h2>7. Policy Updates</h2>
+            <p>We may update this Privacy Policy periodically. The updated version will be posted on our website with a new "Last Updated" date. We encourage you to review this policy regularly.</p>
           </div>
-          <h4>Our Location</h4>
-          <p>123 Fashion Avenue<br>Kakkancherry, NY 10001</p>
-          <a href="#" class="text-dark">Get Directions</a>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="contact-card">
-          <div class="contact-icon">
-            <i class="bi bi-telephone"></i>
-          </div>
-          <h4>Phone</h4>
-          <p>9747921462<br>Mon-Fri: 9am - 6pm EST</p>
-          <a href="tel:+15551234567" class="text-dark">Call Now</a>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="contact-card">
-          <div class="contact-icon">
-            <i class="bi bi-envelope"></i>
-          </div>
-          <h4>Email</h4>
-          <p>hello@18-crew.com<br>We reply within 24 hours</p>
-          <a href="mailto:hello@18-crew.com" class="text-dark">Email Us</a>
-        </div>
-      </div>
-    </div>
-    
-    <div class="row align-items-center">
-      <div class="col-lg-6 mb-5 mb-lg-0">
-        <div class="contact-form">
-          <h3 class="section-title mb-4">Send Us a Message</h3>
-          <form id="contactForm" action="/sendMessage" method="POST">
-            <div class="row">
-              <div class="col-md-6">
-                <input type="text" class="form-control" name="name" placeholder="Your Name" required>
-              </div>
-              <div class="col-md-6">
-               <input type="email" class="form-control" name="email" placeholder="Your Email" required>
-              </div>
-            </div>
-           <input type="text" class="form-control" name="subject" placeholder="Subject">
-            <textarea class="form-control" name="message" placeholder="Your Message" required></textarea>
-            <button type="submit" class="submit-btn">Send Message</button>
-          </form>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="col-lg-6">
-  <div class="contact-map">
-   <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15657.74498567467!2d75.89466601535173!3d11.155300518598965!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba6503e63169bd3%3A0xd7f7da7e7646a003!2sKakkanchery%2C%20Chelambra%2C%20Kerala!5e0!3m2!1sen!2sin!4v1749241293849!5m2!1sen!2sin" width="600" height="512" style="border:0; " allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-  </div>
-</div>
-      </div>
-    </div>
-    
-    <div class="row mt-5">
-      <div class="col-12 text-center">
-        <h3 class="section-title">Follow Us</h3>
-        <p class="text-muted mb-4">Stay connected with 18-CREW on social media</p>
-        <div class="social-links">
-          <a href="#"><i class="bi bi-facebook"></i></a>
-          <a href="#"><i class="bi bi-twitter"></i></a>
-          <a href="#"><i class="bi bi-instagram"></i></a>
-          <a href="#"><i class="bi bi-pinterest"></i></a>
-          <a href="#"><i class="bi bi-tiktok"></i></a>
+          
+          <h2>8. Contact Us</h2>
+          <p>If you have any questions about this Privacy Policy or our data practices, please contact us:</p>
+          <ul>
+            <li>Email: privacy@18-crew.com</li>
+            <li>Phone: +1 (555) 123-4567</li>
+            <li>Mail: 18-CREW Privacy Office, 123 Fashion Ave, New York, NY 10001</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -598,50 +449,4 @@
     </div>
   </div>
 </footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
-<script>
-document.getElementById('contactForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const form = this;
-    const formData = new FormData(form);
-    
-    try {
-      const response = await fetch('/sendMessage', {
-        method: 'POST',
-        body: new URLSearchParams(formData), // Send form data as URL-encoded
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        Toastify({
-          text: result.message,
-          duration: 3000,
-          close: true,
-          gravity: 'top',
-          position: 'center',
-          backgroundColor: '#C586A5',
-          stopOnFocus: true,
-        }).showToast();
-        form.reset(); // Reset form on success
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (error) {
-      Toastify({
-        text: error.message || 'Failed to send message. Please try again.',
-        duration: 3000,
-        close: true,
-        gravity: 'top',
-        position: 'center',
-        backgroundColor: '#e60039',
-        stopOnFocus: true,
-      }).showToast();
-    }
-  });
-</script>
-
 <%- include("../layouts/footer.ejs") %>

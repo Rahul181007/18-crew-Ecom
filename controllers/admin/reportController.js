@@ -339,82 +339,108 @@ const getSalesDataInternal = async (params) => {
 
 // PDF Report Generator
 async function generatePDFReport(res, { summary, dailyData, data, includeDetails, includeSummary, includeCharts }) {
-  const PDFDocument = require('pdfkit');
-  const doc = new PDFDocument();
-  const filename = `sales-report-${new Date().toISOString().split('T')[0]}.pdf`;
+  try {
+    const doc = new PDFDocument();
 
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    const filename = `sales-report-${new Date().toISOString().split('T')[0]}.pdf`;
 
-  doc.pipe(res);
+    // Set response headers
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
-  doc.fontSize(20).text('Sales Report', { align: 'center' });
-  doc.moveDown();
-
-  doc.fontSize(12).text(`Report generated on: ${new Date().toLocaleDateString()}`, { align: 'left' });
-  doc.moveDown();
-
-  if (includeSummary) {
-    doc.fontSize(16).text('Summary', { underline: true });
-    doc.moveDown(0.5);
-
-    doc.fontSize(12).text(`Total Sales: $${summary.totalSales.toFixed(2)}`);
-    doc.text(`Total Orders: ${summary.totalOrders}`);
-    doc.text(`Total Discounts: $${summary.totalDiscounts.toFixed(2)}`);
-    doc.text(`Average Order Value: $${summary.avgOrderValue.toFixed(2)}`);
-    doc.moveDown();
-  }
-
-  if (includeCharts) {
-    doc.fontSize(12).text('Note: Charts are available in the web interface only.', { align: 'center' });
-    doc.moveDown();
-  }
-
-  if (includeDetails) {
-    doc.fontSize(16).text('Order Details', { underline: true });
-    doc.moveDown(0.5);
-
-    const headers = ['Date', 'Order ID', 'Customer', 'Amount', 'Discount', 'Net Amount', 'Status'];
-    const columnWidths = [80, 100, 100, 60, 60, 80, 80];
-    const rowHeight = 20;
-    let startX = 50;
-    let startY = doc.y;
-
-    // Draw header row
-    let x = startX;
-    headers.forEach((header, i) => {
-      doc.font('Helvetica-Bold').fontSize(10).text(header, x, startY, { width: columnWidths[i], align: 'left' });
-      x += columnWidths[i];
+    // Attach error handler for PDF stream
+    doc.on('error', (err) => {
+      console.error('PDF generation error:', err);
+      if (!res.headersSent) {
+        res.status(500).send('Error generating PDF');
+      }
     });
 
-    // Draw a line under headers
-    doc.moveTo(startX, startY + rowHeight - 8).lineTo(startX + columnWidths.reduce((a, b) => a + b, 0), startY + rowHeight - 8).stroke();
+    // Pipe PDF stream to response
+    doc.pipe(res);
 
-    // Draw data rows
-    startY += rowHeight;
-    data.forEach((order) => {
+    // Title
+    doc.fontSize(20).text('Sales Report', { align: 'center' });
+    doc.moveDown();
+
+    // Report generated date
+    doc.fontSize(12).text(`Report generated on: ${new Date().toLocaleDateString()}`, { align: 'left' });
+    doc.moveDown();
+
+    // Summary section
+    if (includeSummary) {
+      doc.fontSize(16).text('Summary', { underline: true });
+      doc.moveDown(0.5);
+
+      doc.fontSize(12).text(`Total Sales: ₹${summary.totalSales.toFixed(2)}`);
+      doc.text(`Total Orders: ${summary.totalOrders}`);
+      doc.text(`Total Discounts: ₹${summary.totalDiscounts.toFixed(2)}`);
+      doc.text(`Average Order Value: ₹${summary.avgOrderValue.toFixed(2)}`);
+      doc.moveDown();
+    }
+
+    // Chart notice
+    if (includeCharts) {
+      doc.fontSize(12).text('Note: Charts are available in the web interface only.', { align: 'center' });
+      doc.moveDown();
+    }
+
+    // Order Details section
+    if (includeDetails) {
+      doc.fontSize(16).text('Order Details', { underline: true });
+      doc.moveDown(0.5);
+
+      const headers = ['Date', 'Order ID', 'Customer', 'Amount', 'Discount', 'Net Amount', 'Status'];
+      const columnWidths = [80, 100, 100, 60, 60, 80, 80];
+      const rowHeight = 20;
+      let startX = 50;
+      let startY = doc.y;
+
+      // Draw header row
       let x = startX;
-      const row = [
-        new Date(order.date).toLocaleDateString(),
-        order.orderId,
-        order.customer,
-        `$${order.amount.toFixed(2)}`,
-        `$${order.discount.toFixed(2)}`,
-        `$${order.netAmount.toFixed(2)}`,
-        order.status,
-      ];
-
-      row.forEach((cell, i) => {
-        doc.font('Helvetica').fontSize(10).text(cell, x, startY, { width: columnWidths[i], align: 'left' });
+      headers.forEach((header, i) => {
+        doc.font('Helvetica-Bold').fontSize(10).text(header, x, startY, { width: columnWidths[i], align: 'left' });
         x += columnWidths[i];
       });
 
-      // Move Y down to next row
-      startY += rowHeight;
-    });
-  }
+      // Draw line under headers
+      doc.moveTo(startX, startY + rowHeight - 8)
+        .lineTo(startX + columnWidths.reduce((a, b) => a + b, 0), startY + rowHeight - 8)
+        .stroke();
 
-  doc.end();
+      // Draw data rows
+      startY += rowHeight;
+      data.forEach((order) => {
+        let x = startX;
+        const row = [
+          new Date(order.date).toLocaleDateString(),
+          order.orderId,
+          order.customer,
+          `₹${order.amount.toFixed(2)}`,
+          `₹${order.discount.toFixed(2)}`,
+          `₹${order.netAmount.toFixed(2)}`,
+          order.status,
+        ];
+
+        row.forEach((cell, i) => {
+          doc.font('Helvetica').fontSize(10).text(cell, x, startY, { width: columnWidths[i], align: 'left' });
+          x += columnWidths[i];
+        });
+
+        // Move Y down to next row
+        startY += rowHeight;
+      });
+    }
+
+    // Finalize and close the PDF stream
+    doc.end();
+
+  } catch (error) {
+    console.error('Error while generating PDF report:', error);
+    if (!res.headersSent) {
+      res.status(500).send('Error generating PDF');
+    }
+  }
 }
 
 
@@ -517,7 +543,7 @@ async function generateCSVReport(res, { summary, dailyData, data, includeDetails
 
 
 
-// Add these functions to your reportController.js
+
 
 const getBestSellingProducts = async (req, res, next) => {
   try {

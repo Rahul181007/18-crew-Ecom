@@ -9,6 +9,8 @@ const Order=require("../../models/orderSchema");
 const Cart=require("../../models/cartSchema");
 const WalletTransaction=require("../../models/walletSchema");
 const WishList=require("../../models/wishlistSchema")
+
+// GENERATE OTP
 function generateOtp(){
     const digits='1234567890';
     let otp="";
@@ -17,6 +19,8 @@ function generateOtp(){
     }
     return otp
 }
+
+// send verification Email
 const  sendVerificationEmail= async (email,otp)=>{
     try {
         const transporter=nodemailer.createTransport({
@@ -47,6 +51,8 @@ const  sendVerificationEmail= async (email,otp)=>{
    
 }
 
+
+// password Hashing
 const securePassword=async(password)=>{
     const passwordHash=await bcrypt.hash(password,10);
     return passwordHash;
@@ -54,10 +60,10 @@ const securePassword=async(password)=>{
 
 
 
-
+// forgot password
 const getForgotPassPage=async(req,res)=>{
     try {
-        res.render("forgot-password");
+        res.render("forgot-password",{title: "forgot-password"});
     } catch (error) {
         res.redirect("/pageNotFound");
     }
@@ -75,14 +81,14 @@ try {
         if(emailSent){
             req.session.userOtp=otp;
             req.session.email=email;
-            res.render("forgotPass-otp");
+            res.render("forgotPass-otp",{title: "forgotPass-otp"});
             console.log("OTP",otp);
         }else{
             res.json({status:false,message:"Failed send OTP. Please try again later"})
         }
     }else{
         return res.render("forgot-password", {
-            message: "User with this mail id does not exist"
+            message: "User with this mail id does not exist",title: "forgot-password"
         });
         
     }
@@ -107,7 +113,7 @@ const verifyForgotPassOtp = async (req, res,next) => {
   
 const getresetPassword=async(req,res,next)=>{
     try {
-        res.render("reset-password");
+        res.render("reset-password",{title: "reset-password"});
     } catch (error) {
         next(error)
     }
@@ -140,7 +146,7 @@ const postResetPassword = async (req, res,next) => {
         await User.updateOne({email:email},{$set:{password:hashPassword}})
         res.redirect("/signin")
       }else{
-        res.render("reset-password",{message:"Password donot match"})
+        res.render("reset-password",{message:"Password donot match",title: "reset-password"})
       }
      
     } catch (error) {
@@ -154,12 +160,12 @@ const userProfile = async (req, res,next) => {
     const userId = req.session.user;
     const userData = await User.findById(userId);
     const addressData = await Address.findOne({ userId: userId });
-    const orderData = await Order.find({ userId: userId });
-    const cart = await Cart.findOne({ userId });
+    const orderData = await Order.find({ userId: userId }).sort({createdOn:-1});
+    const cart = await Cart.findOne({ userId:userId });
     const walletTransactions=await WalletTransaction.find({userId})
     console.log("1",walletTransactions)
     let cartCount = 0;
-    const wishlist = await WishList.findOne({ userId })
+    const wishlist = await WishList.findOne({ userId:userId })
     const wishlistCount = wishlist ? wishlist.products.length : 0;
     cartCount = cart && cart.items ? cart.items.length : 0;
 
@@ -190,6 +196,7 @@ const userProfile = async (req, res,next) => {
       wishlistCount,
       page: 'profile',
       walletTransactions,
+      title: "Profile"
     });
   } catch (error) {
     next(error)
@@ -200,7 +207,7 @@ const userProfile = async (req, res,next) => {
 
 const changeEmail=async(req,res,next)=>{
     try {
-       res.render("change-email") ;
+       res.render("change-email",{title: "change-email"}) ;
     } catch (error) {
        next(error)
     }
@@ -212,7 +219,7 @@ const changeEmailValid=async(req,res,next)=>{
     const findUser=await User.findOne({email:email});
     if(!findUser){
         res.render("change-email",{
-            message:"user with this email not found"
+            message:"user with this email not found",title: "change-email"
         })
     }else{
         const otp= generateOtp();
@@ -221,7 +228,7 @@ const changeEmailValid=async(req,res,next)=>{
             req.session.userOtp=otp;
             req.session.email=email;
             req.session.userData=req.body;
-            res.render("change-email-otp");
+            res.render("change-email-otp",{title: "change-email-otp"});
             console.log("emailsent email:",email);
             console.log("emailsent otp:",otp);
 
@@ -259,7 +266,7 @@ const verifyChangeEmailOtp = async (req, res,next) => {
   const getResetEmailPage=async(req,res,next)=>{
     try {
       res.render("new-email",{
-        userData:req.session.userData
+        userData:req.session.userData,title: "new-email"
       })  
     } catch (error) {
         next(error)
@@ -273,7 +280,7 @@ const updateEmail=async(req,res,next)=>{
         const alreadyExist=await User.findOne({email:email});
         if(alreadyExist){
             res.render("new-email",{
-                message:"user already exist",
+                message:"user already exist",title: "new-email"
                 
             })
         }else{
@@ -292,86 +299,87 @@ const updateEmail=async(req,res,next)=>{
 // change-password
 const changePassword=async(req,res,next)=>{
   try {
-    res.render("change-password")
+    res.render("change-password",{title: "change-password"})
   } catch (error) {
     next(error)
   }
 }
 
-const changePassValid=async(req,res,next)=>{
+const changePassValid = async (req, res, next) => {
     try {
-       const {email}=req.body;
-       const findUser=await User.findOne({email:email});
-       if(!findUser){
-        res.render("change-password",{
-            message:"User not found"
-        })
-       }else{
-        const otp=generateOtp();
-        const emailSent=await sendVerificationEmail(email,otp);
-        if(emailSent){
-            req.session.userOtp=otp;
-            req.session.email=email;
-            req.session.userData=req.body;
-            res.render("change-pass-otp");
-            console.log("otp is ",otp);
-            console.log("email",email);
-        }else{
-            res.json({status:false,message:"Failed send OTP. Please try again later"}) 
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+        const userId = req.session.user;
+        
+        // Validate all fields are present
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({ 
+                success: false,
+                message: "All fields are required" 
+            });
         }
-       }
+
+        // Check if new passwords match
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ 
+                success: false,
+                message: "New passwords do not match" 
+            });
+        }
+
+        // Check if new password is different from current
+        if (currentPassword === newPassword) {
+            return res.status(400).json({ 
+                success: false,
+                message: "New password must be different from current password" 
+            });
+        }
+
+        // Find user and verify current password
+        const findUser = await User.findById(userId);
+        if (!findUser) {
+            return res.status(404).json({ 
+                success: false,
+                message: "User not found" 
+            });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, findUser.password);
+        if (!isMatch) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Current password is incorrect" 
+            });
+        }
+
+        // Validate new password strength
+        if (newPassword.length < 8) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Password must be at least 8 characters long" 
+            });
+        }
+
+        // Hash and update the new password
+        const hashPassword = await securePassword(newPassword);
+        await User.updateOne({ _id: userId }, { $set: { password: hashPassword } });
+
+        return res.status(200).json({ 
+            success: true,
+            message: "Password changed successfully" 
+        });
+
     } catch (error) {
-        next(error)
+        console.error("Password change error:", error);
+        return res.status(500).json({ 
+            success: false,
+            message: "An error occurred during password change" 
+        });
     }
-}
-
-const verifyChangePassOtp=async(req,res,next)=>{
- try {
-    const otpInput=req.body.otp;
-    const sessionOtp=req.session.userOtp;
-    console.log("otp:",otpInput);
-    console.log("session Otp",sessionOtp)
-    if(!sessionOtp){
-      return res.json({ status: false, message: 'No OTP found in session. Please request a new OTP.' });
-    }
-    if(otpInput===sessionOtp){
-      res.json({status:true});
-      
-    }else{
-      res.json({status:false,message:"Otp doesnot match"})
-    }
- } catch (error) {
-    next(error)
-    
- }
-}
+};
 
 
-const getResetPassPage=async(req,res,next)=>{
-    try {
-        res.render("new-pass",{
-            userData:req.session.userData
-        })
-    } catch (error) {
-        next(error)
-    }
-}
 
-const updatePass=async(req,res,next)=>{
-try {
-    const {newPass1,newPass2}=req.body;
-    const email = req.session.email;
-    if(newPass1===newPass2){
-      const hashPassword=await securePassword(newPass1);
-      await User.updateOne({email:email},{$set:{password:hashPassword}})
-      res.redirect("/signin")
-    }else{
-      res.render("Update-pass",{message:"Password donot match"})
-    }
-} catch (error) {
-    next(error)
-}
-}
+
 
 //  update profile
 const updateProfile = async (req, res,next) => {
@@ -425,6 +433,7 @@ const addAddress = async (req, res,next) => {
       user: userData,
       cartCount,
       wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
+      title: "Address-add"
     });
   } catch (error) {
     next(error)
@@ -452,6 +461,7 @@ const postAddAddress = async (req, res,next) => {
         cartCount: userData?.cart?.length ?? 0,
         wishlistCount: userData?.wishlist?.length ?? 0,
         error: "Please fill in all required fields.",
+        title: "Address-add"
       });
     }
 
@@ -516,7 +526,8 @@ const editAddress = async (req, res,next) => {
       user: userData,
       cartCount,
       wishlistCount: userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
-      source, // Pass the source to the form
+      source, 
+      title: "Address-edit"
     });
   } catch (error) {
    next(error)
@@ -551,6 +562,7 @@ const postEditAddress = async (req, res,next) => {
         wishlistCount: userData?.wishlist?.length ?? 0,
         source, // Pass source back to the form in case of validation error
         error: "Please fill in all required fields.",
+        title: "Address-edit"
       });
     }
 
@@ -709,9 +721,6 @@ module.exports={
     getResetEmailPage,
     updateEmail,
     changePassValid,
-    verifyChangePassOtp,
-    getResetPassPage,
-    updatePass,
     updateProfile,
     addAddress,
     postAddAddress,

@@ -3,7 +3,8 @@ const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
-const WishList=require("../../models/wishlistSchema")
+const WishList=require("../../models/wishlistSchema");
+
 const productDetails = async (req, res,next) => {
   try {
     const userId = req.session.user;
@@ -74,6 +75,7 @@ const productDetails = async (req, res,next) => {
       wishlistCount,
       isInWishlist,
       page: 'product-details',
+      title: "Product-details"
     });
   } catch (error) {
     next(error)

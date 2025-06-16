@@ -36,7 +36,8 @@ const getCartPage = async (req, res, next) => {
         page: 'cart',
         pageTitle: 'Your Cart',
         wishlistCount,
-        cartCount
+        cartCount,
+        title: "Cart"
       });
     }
 
@@ -67,7 +68,8 @@ const getCartPage = async (req, res, next) => {
       page: 'cart',
       pageTitle: 'Your Cart',
       wishlistCount,
-      cartCount
+      cartCount,
+      title: "Cart"
     });
 
   } catch (error) {
@@ -168,9 +170,29 @@ const changeQuantity = async (req, res,next) => {
     const item = cart.items.id(cartItemId);
     if (!item) return res.status(404).json({ success: false, message: "Cart item not found" });
 
+    let product = item.productId
+    let sizeStock=product.sizes.find(s=>s.size===item.size);
+    if(!sizeStock){
+       return res.status(400).json({
+        success: false,
+        message: `Selected size not available for this product`
+       })
+      }
+      if(newQuantity>sizeStock.stock){
+         return res.status(400).json({
+        success: false,
+        message: `Only ${sizeStock.stock} items in stock for size ${item.size}`
+      });
+      }
+      if(newQuantity<1){
+        return res.status(400).json({
+        success: false,
+        message: "Quantity must be at least 1"
+      });
+      }
+      
     item.quantity = newQuantity;
     item.totalPrice = newQuantity * item.productId.salePrice;
-
     await cart.save();
 
     const newGrandTotal = cart.items.reduce((sum, i) => sum + (i.quantity * i.productId.salePrice), 0);

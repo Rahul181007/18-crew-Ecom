@@ -1,81 +1,300 @@
-<% include("../layouts/header.ejs") %>
-<link rel="stylesheet" href="/css/user/register.css">
+
+<%- include("../layouts/header.ejs") %>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- Sign Up Form -->
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-  <div class="card p-4 shadow" style="width: 100%; max-width: 400px;">
-    <h1 class="text-center mb-4">Sign Up —</h1>
-    <% if(locals.message && message.length > 0){ %>
-      <span id="message" class="text-danger text-center">
-          <%= message %>
-      </span>
-      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-      <script>
-          $(document).ready(function() {
-              setTimeout(function() {
-                  $('#message').fadeOut();
-              }, 3000);
-          });
-      </script>
-    <% } %>
-    <form action="/register" method="post" id="signform">
-      <div class="mb-3">
-        <input type="text" class="form-control" id="name" name="name" placeholder="Name" required>
-        <div id="error1" class="error-message"></div>
-      </div>
+<style>
+  :root {
+    --primary-color: #C586A5;
+    --secondary-color: #1a1517;
+    --accent-color: #e60039;
+    --light-bg: #f8f9fa;
+    --dark-text: #212529;
+    --muted-text: #6c757d;
+    --transition-speed: 0.3s;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--dark-text);
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  
+  .auth-container {
+    min-height: calc(100vh - 2rem);
+    display: flex;
+    align-items: center;
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    margin: 0 auto;
+  }
+  
+  .auth-header {
+    padding: 1.25rem 1.5rem;
+    background-color: white;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  
+  .auth-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+    text-align: center;
+    margin-bottom: 0;
+  }
+  
+  .auth-title::after {
+    content: "—";
+    display: block;
+    color: var(--primary-color);
+    margin: 0.5rem auto 0;
+  }
+  
+  .auth-body {
+    padding: 1.5rem;
+    background-color: white;
+  }
+  
+  .form-control {
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(197, 134, 165, 0.1);
+  }
+  
+  .btn-auth {
+    height: 42px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all var(--transition-speed);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-primary-auth {
+    background-color: var(--secondary-color);
+    border: none;
+    color: white;
+  }
+  
+  .btn-primary-auth .btn-text {
+    display: block;
+    transition: all var(--transition-speed);
+  }
+  
+  .btn-primary-auth .hover-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: all var(--transition-speed);
+  }
+  
+  .btn-primary-auth:hover .btn-text {
+    opacity: 0;
+  }
+  
+  .btn-primary-auth:hover .hover-text {
+    opacity: 1;
+  }
+  
+  .btn-primary-auth:hover {
+    background-color: var(--primary-color);
+  }
+  
+  .btn-google {
+    border: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .btn-google:hover {
+    background-color: #f8f9fa;
+    border-color: #d0d0d0;
+  }
+  
+  .divider {
+    display: flex;
+    align-items: center;
+    margin: 1rem 0;
+    color: var(--muted-text);
+    font-size: 0.875rem;
+  }
+  
+  .divider::before,
+  .divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .divider::before {
+    margin-right: 1rem;
+  }
+  
+  .divider::after {
+    margin-left: 1rem;
+  }
+  
+  .auth-footer {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .auth-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
+  .auth-link:hover {
+    text-decoration: underline;
+  }
+  
+  .error-message {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    margin-top: 0.25rem;
+    display: block;
+  }
+  
+  .flash-message {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 50px;
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    animation: fadeInOut 3s ease-in-out forwards;
+  }
+  
+  .gender-options {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .gender-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  @keyframes fadeInOut {
+    0% { opacity: 0; top: 0; }
+    10% { opacity: 1; top: 1rem; }
+    90% { opacity: 1; top: 1rem; }
+    100% { opacity: 0; top: 0; }
+  }
 
-      <div class="mb-3">
-        <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
-        <div id="error2" class="error-message"></div>
-      </div>
+  /* Compact form elements */
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
 
-      <div class="mb-3">
-        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-        <div id="error3" class="error-message"></div>
-      </div>
+  .form-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+</style>
 
-      <div class="mb-3">
-        <input type="text" class="form-control" id="mobile" name="mobile" placeholder="Phone No" required>
-        <div id="error5" class="error-message"></div>
-      </div>
+<div class="container auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1 class="auth-title">Sign Up</h1>
+    </div>
+    
+    <div class="auth-body">
+      <% if(locals.message && message.length > 0){ %>
+        <div class="flash-message"><%= message %></div>
+      <% } %>
 
-      <div class="mb-3">
-        <input type="text" class="form-control" id="referralCode" name="referralCode" placeholder="Referral Code (optional)">
-        <div id="error6" class="error-message"></div>
-      </div>
+      <form action="/register" method="post" id="signform">
+        <div class="form-group">
+          <input type="text" class="form-control" id="name" name="name" placeholder="Name" required>
+          <div id="error1" class="error-message"></div>
+        </div>
 
-      <div class="mb-3">
-        <label class="form-label">Gender</label><br>
-        <div class="d-flex gap-3">
-          <div>
-            <input type="radio" id="male" name="gender" value="male" required>
-            <label for="male">Male</label>
-          </div>
-          <div>
-            <input type="radio" id="female" name="gender" value="female">
-            <label for="female">Female</label>
+        <div class="form-group">
+          <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+          <div id="error2" class="error-message"></div>
+        </div>
+
+        <div class="form-group">
+          <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+          <div id="error3" class="error-message"></div>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" id="mobile" name="mobile" placeholder="Phone No" required>
+          <div id="error5" class="error-message"></div>
+        </div>
+
+        <div class="form-group">
+          <input type="text" class="form-control" id="referralCode" name="referralCode" placeholder="Referral Code (optional)">
+          <div id="error6" class="error-message"></div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label">Gender</label>
+          <div class="gender-options">
+            <div class="gender-option">
+              <input type="radio" id="male" name="gender" value="male" required>
+              <label for="male">Male</label>
+            </div>
+            <div class="gender-option">
+              <input type="radio" id="female" name="gender" value="female">
+              <label for="female">Female</label>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="d-grid">
-        <button type="submit" class="btn btn-dark mb-3">Create</button>
-      </div>
+        <button type="submit" class="btn btn-primary-auth btn-auth w-100 mb-2">
+          <span class="btn-text">Create Account</span>
+          <span class="hover-text">Let's Get Started!</span>
+        </button>
 
-      <!-- Google Sign In Button -->
-   <div class="social-btns text-center mb-3">
-  <a href="/auth/google<%= referralCode ? '?ref=' + referralCode : '' %>" class="btn-google btn btn-outline-dark btn-lg rounded-pill d-flex align-items-center justify-content-center gap-2 w-100">
-    <img src="/images/googlesignup.png" alt="Google Logo" style="width: 24px; height: 24px;">
-    <span>Sign up with Google</span>
-  </a>
-</div>
+        <div class="divider">OR</div>
 
+        <a href="/auth/google" class="btn btn-google btn-auth w-100 mb-3">
+          <img src="/images/googlesignup.png" alt="Google Logo" width="18" height="18">
+          <span>Sign up with Google</span>
+        </a>
 
-      <div class="text-center">
-        Already have an account? <a href="/signin" class="text-dark fw-bold">Sign In</a>
-      </div>
-    </form>
+        <div class="auth-footer">
+          Already have an account? <a href="/signin" class="auth-link">Sign In</a>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -229,4 +448,4 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-<% include("../layouts/footer.ejs") %>
+<%-include("../layouts/footer.ejs") %>

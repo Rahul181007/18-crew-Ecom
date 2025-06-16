@@ -1091,9 +1091,22 @@ function handleRazorpayPayment(razorpayOrder, orderId) {
     theme: {
       color: "#C586A5",
     },
+    modal: {
+      ondismiss: function () {
+        // Runs when user closes Razorpay modal without completing payment
+        Swal.fire({
+          icon: 'info',
+          title: 'Payment Cancelled',
+          text: 'You closed the payment window before completing the transaction.',
+        }).then(() => {
+          window.location.href = `/failedPage?message=${encodeURIComponent('You cancelled the payment.')}`;
+        });
+      }
+    }
   };
 
   const rzp = new Razorpay(options);
+
   rzp.on('payment.failed', function (response) {
     Swal.fire({
       icon: 'error',
@@ -1103,8 +1116,10 @@ function handleRazorpayPayment(razorpayOrder, orderId) {
       window.location.href = `/failedPage?message=${encodeURIComponent(response.error.description || 'Payment failed. Please try again.')}`;
     });
   });
+
   rzp.open();
 }
+
 // Coupon list toggle functionality
 document.addEventListener('DOMContentLoaded', function() {
     const toggleBtn = document.getElementById('toggleCouponsBtn');

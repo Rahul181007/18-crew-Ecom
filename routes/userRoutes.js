@@ -57,7 +57,7 @@ user_route.get(
   async (req, res) => {
     try {
       req.session.user = req.user;
-      console.log("Authenticated User:", req.user);
+      
 
       // Check if user already redeemed referral
       if (!req.user.redeemed) {
@@ -83,9 +83,11 @@ user_route.get("/referral/skip",userAuth,userContoller.skipReferral)
 // sign in Management
 user_route.get("/signin",userContoller.loadLogin)
 user_route.post("/signin",userContoller.login)
+
 //homepage  and shopping page
 user_route.get("/",userContoller.loadhomepage);
 user_route.get("/logout",userAuth,userContoller.logout);
+user_route.get("/check-user-block",userContoller.checkUserBlock)
 user_route.get("/shop",userContoller.loadShoppingPage);
 user_route.get("/filter",userContoller.filterProduct)
 user_route.get("/filterPrice",userContoller.filterPrice);
@@ -111,9 +113,6 @@ user_route.get("/reset-email",userAuth,profileController.getResetEmailPage);
 user_route.post("/update-email",userAuth,profileController.updateEmail);
 user_route.get("/change-password",userAuth,profileController.changePassword);
 user_route.post("/change-password",userAuth,profileController.changePassValid);
-user_route.post("/verifyChangePass-otp",userAuth,profileController.verifyChangePassOtp);
-user_route.get("/reset-pass",userAuth,profileController.getResetPassPage);
-user_route.post("/update-pass",userAuth,profileController.updatePass);
 user_route.post("/update-profile",userAuth,upload.single("image"),profileController.updateProfile);
 user_route.post("/delete-account",userAuth,profileController.deleteAccn);
 // address management
@@ -157,6 +156,11 @@ user_route.post("/applyCoupon",userAuth, couponController.applyCoupon)
 user_route.post("/removeCoupon",userAuth,couponController.removeCoupon);
 
 
+// Faq
+user_route.get("/faq",userContoller.loadFaqpage);
+user_route.get ("/returns",userContoller.loadReturnPage);
+user_route.get("/shipping",userContoller.loadShippingPage)
+user_route.get("/privacy",userContoller.loadPrivacyPage)
 
 // .........pagenot found.........
 user_route.get("/pageNotFound",userContoller.pageNotFound);

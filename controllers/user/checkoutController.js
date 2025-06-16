@@ -49,7 +49,7 @@ const loadCheckout = async (req, res,next) => {
     let subtotal = 0;
 
     const applyGeneralDiscount = (total) => {
-      return total * 0.1; // Example: 10% off
+      return total * 0.1; //  10% off
     };
 
     // Handle retry flow for existing order
@@ -135,7 +135,7 @@ const loadCheckout = async (req, res,next) => {
         grandTotal = subtotal - discount - couponDiscount;
         buyNowData = { productId, size };
       } else {
-        // Existing cart flow
+        
         console.log("Entering Cart flow");
         const cart = await Cart.findOne({ userId }).populate("items.productId");
         if (!cart || cart.items.length === 0) {
@@ -214,6 +214,7 @@ console.log("Available coupons for user:", findCoupons);
       wishlistCount: findUser.wishlist?.length || 0,
       buyNowData,
       orderId: orderId || null,
+      title: "Checkout"
     });
 
   } catch (error) {
@@ -713,6 +714,7 @@ const failedPage = async (req, res,next) => {
       user: req.session.user,
       retryAvailable: true, // Enable retry for Razorpay
       tempOrder: tempOrder, // Pass temp order for retry form
+      title: "FailedPage"
     });
   } catch (error) {
     next(error)
@@ -738,7 +740,7 @@ const successPage = async (req, res,next) => {
       return res.status(404).redirect('/pageNotFound');
     }
     // Render success page with order details
-    res.render('successPage', { order });
+    res.render('successPage', { order,title: "SuccessPage" });
   } catch (error) {
    next(error)
   }
@@ -759,7 +761,7 @@ const orderDetails = async (req, res,next) => {
 
 
 
-    res.render('order-details', { order });
+    res.render('order-details', { order,title: "Order-Details" });
   } catch (error) {
     next(error)
   }

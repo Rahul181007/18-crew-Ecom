@@ -270,10 +270,19 @@
       margin-right: 0.75rem;
     }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-    }
+   .user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  margin-bottom: 0.25rem; 
+}
+
+.user-id {
+  font-size: 0.875rem; 
+  color: #6c757d; 
+}
 
     .expired {
       position: relative;
@@ -616,432 +625,547 @@
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
   <script>
-    class CouponManager {
-      constructor() {
-        this.coupons = [];
-        this.initDatePickers();
-        this.initEventListeners();
-        this.initDataTables();
-        this.loadCoupons();
-      }
+class CouponManager {
+  constructor() {
+    this.coupons = [];
+    this.initDatePickers();
+    this.initEventListeners();
+    this.initDataTables();
+    this.loadCoupons();
+  }
 
-      initDatePickers() {
-        flatpickr("#expireOn", {
-          minDate: "today",
-          dateFormat: "Y-m-d",
-          defaultDate: new Date().fp_incr(30) // Default to 30 days from now
-        });
+  initDatePickers() {
+    flatpickr("#expireOn", {
+      minDate: "today",
+      dateFormat: "Y-m-d",
+      defaultDate: new Date().fp_incr(30)
+    });
 
-        flatpickr("#editExpireOn", {
-          minDate: "today",
-          dateFormat: "Y-m-d"
-        });
-      }
+    flatpickr("#editExpireOn", {
+      minDate: "today",
+      dateFormat: "Y-m-d"
+    });
+  }
 
-      initEventListeners() {
-        // Bind change event for create form
-        const $discountType = $('#discountType');
-        if ($discountType.length) {
-          console.log('Binding change event to #discountType');
-          $discountType.change(this.toggleDiscountFields.bind(this));
-        } else {
-          console.error('Element #discountType not found in DOM');
-        }
-
-        // Bind change event for edit modal
-        const $editDiscountType = $('#editDiscountType');
-        if ($editDiscountType.length) {
-          console.log('Binding change event to #editDiscountType');
-          $editDiscountType.change(this.toggleDiscountFields.bind(this));
-        } else {
-          console.error('Element #editDiscountType not found in DOM');
-        }
-
-        // Trigger initial change events
-        console.log('Triggering initial change events');
-        $discountType.trigger('change');
-        $editDiscountType.trigger('change');
-        
-        // Form submission
-        $('#couponForm').on('submit', this.handleFormSubmit.bind(this));
-        
-        // Refresh button
-        $('#refreshCoupons').click(() => this.loadCoupons());
-        
-        // Save edited coupon
-        $('#saveEditBtn').click(this.saveEditedCoupon.bind(this));
-         
-        
-        // Table actions (edit, view users, delete)
-        $('#couponTableBody').on('click', '.edit-coupon', (e) => this.showEditModal($(e.target).data('name')));
-        $('#couponTableBody').on('click', '.view-users', (e) => this.showUserDetails($(e.target).data('name')));
-        $('#couponTableBody').on('click', '.delete-coupon', (e) => this.deleteCoupon($(e.target).data('name')));
-      }
-
-      initDataTables() {
-        this.couponTable = $('#couponTable').DataTable({
-          responsive: true,
-          language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search coupons...",
-          },
-          columns: [
-            { data: 'code' },
-            { data: 'discount' },
-            { data: 'minimumPrice' },
-            { data: 'usage' },
-            { data: 'expires' },
-            { data: 'actions', orderable: false }
-          ]
-        });
-
-        this.userDetailsTable = $('#userDetailsTable').DataTable({
-          responsive: true,
-          language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search users...",
-          },
-          columns: [
-            { data: 'user' },
-            { data: 'email' },
-            { data: 'usedOn' }
-          ]
-        });
-      }
-
-      toggleDiscountFields(event) {
-        const isEdit = event.target.id === 'editDiscountType';
-        const prefix = isEdit ? 'edit' : '';
-        const type = $(event.target).val();
-        
-        console.log('Toggle called for:', event.target.id, 'with value:', type);
-        
-        const $offerPriceGroup = $(`#${prefix}offerPriceGroup`);
-        const $offerPercentageGroup = $(`#${prefix}offerPercentageGroup`);
-        
-        if (!$offerPriceGroup.length || !$offerPercentageGroup.length) {
-          console.error(`Elements not found: #${prefix}offerPriceGroup or #${prefix}offerPercentageGroup`);
-          return;
-        }
-        
-        if (!type || type === '') {
-          $offerPriceGroup.removeClass('d-none');
-          $offerPercentageGroup.addClass('d-none');
-          $(`#${prefix}offerPrice`).prop('required', true);
-          $(`#${prefix}offerPercentage`).prop('required', false);
-          console.log(`Default state for ${event.target.id}: Showing ${prefix}OfferPriceGroup`);
-          return;
-        }
-        
-        if (type === 'price') {
-          $offerPriceGroup.removeClass('d-none');
-          $offerPercentageGroup.addClass('d-none');
-          $(`#${prefix}offerPrice`).prop('required', true);
-          $(`#${prefix}offerPercentage`).prop('required', false);
-          console.log(`Showing ${prefix}OfferPriceGroup, hiding ${prefix}OfferPercentageGroup`);
-        } else if (type === 'percentage') {
-          $offerPriceGroup.addClass('d-none');
-          $offerPercentageGroup.removeClass('d-none');
-          $(`#${prefix}offerPrice`).prop('required', false);
-          $(`#${prefix}offerPercentage`).prop('required', true);
-          console.log(`Hiding ${prefix}offerPriceGroup, showing ${prefix}offerPercentageGroup`);
-        }
-      }
-
-      async loadCoupons() {
-        try {
-          const response = await fetch('/admin/coupons/list');
-          if (response.ok) {
-            this.coupons = await response.json();
-            this.updateCouponTable();
-          } else {
-            this.showAlert('Failed to load coupons. Please try again.', 'danger');
-          }
-        } catch (error) {
-          this.showAlert('An error occurred while loading coupons.', 'danger');
-        }
-      }
-
-      async handleFormSubmit(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        const form = event.target;
-        if (!form.checkValidity()) {
-          form.classList.add('was-validated');
-          return;
-        }
-        
-        const formData = new FormData(form);
-        const couponData = Object.fromEntries(formData.entries());
-        
-        // Validate discount fields
-        if (couponData.discountType === 'percentage' && (!couponData.offerPercentage || parseFloat(couponData.offerPercentage) <= 0 || parseFloat(couponData.offerPercentage) > 100)) {
-          this.showAlert('Discount percentage must be between 0.01 and 100.', 'danger');
-          return;
-        }
-        if (couponData.discountType === 'price' && (!couponData.offerPrice || parseFloat(couponData.offerPrice) <= 0)) {
-          this.showAlert('Discount amount must be greater than 0.', 'danger');
-          return;
-        }
-        
-        const expireDate = new Date(couponData.expireOn);
-        if (expireDate <= new Date()) {
-          this.showAlert('Expiration date must be in the future.', 'danger');
-          return;
-        }
-        
-        const payload = {
-          name: couponData.name.trim().toUpperCase(),
-          discountType: couponData.discountType,
-          offerPrice: couponData.discountType === 'price' ? parseFloat(couponData.offerPrice) : null,
-          offerPercentage: couponData.discountType === 'percentage' ? parseFloat(couponData.offerPercentage) : null,
-          minimumPrice: parseFloat(couponData.minimumPrice),
-          maxUsage: parseInt(couponData.maxUsage),
-          expireOn: couponData.expireOn,
-          islist: true
-        };
-        
-        this.toggleLoading(true, '#submitBtn', '#spinner');
-        
-        try {
-          const response = await fetch('/admin/coupons', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          
-          const result = await response.json();
-          
-          if (response.ok) {
-            this.showAlert('Coupon created successfully!', 'success');
-            this.coupons.push({ ...payload, userId: [] });
-            this.updateCouponTable();
-            form.reset();
-            form.classList.remove('was-validated');
-            $('#discountType').val('').trigger('change'); // Reset and trigger change
-          } else {
-            const errorMsg = result.errors?.map(err => err.msg).join('<br>') || 'Failed to create coupon.';
-            this.showAlert(errorMsg, 'danger');
-          }
-        } catch (error) {
-          this.showAlert('An error occurred. Please try again.', 'danger');
-        } finally {
-          this.toggleLoading(false, '#submitBtn', '#spinner');
-        }
-      }
-
-      showEditModal(couponName) {
-        const coupon = this.coupons.find(c => c.name === couponName);
-        if (!coupon) return;
-        
-        $('#editCouponName').val(coupon.name);
-        $('#editDiscountType').val(coupon.discountType || (coupon.offerPrice ? 'price' : 'percentage'));
-        $('#editOfferPrice').val(coupon.offerPrice || '');
-        $('#editOfferPercentage').val(coupon.offerPercentage || '');
-        $('#editMinimumPrice').val(coupon.minimumPrice);
-        $('#editMaxUsage').val(coupon.maxUsage);
-        $('#editExpireOn').val(coupon.expireOn.split('T')[0]);
-        
-        // Trigger change to show correct fields
-        $('#editDiscountType').trigger('change');
-        
-        // Initialize modal
-        new bootstrap.Modal(document.getElementById('editCouponModal')).show();
-      }
-
-      async saveEditedCoupon() {
-        const form = document.getElementById('editCouponForm');
-        if (!form.checkValidity()) {
-          form.classList.add('was-validated');
-          return;
-        }
-
-        const couponName = $('#editCouponName').val();
-        const discountType = $('#editDiscountType').val();
-        const payload = {
-          discountType: discountType,
-          offerPrice: discountType === 'price' ? parseFloat($('#editOfferPrice').val()) : null,
-          offerPercentage: discountType === 'percentage' ? parseFloat($('#editOfferPercentage').val()) : null,
-          minimumPrice: parseFloat($('#editMinimumPrice').val()),
-          maxUsage: parseInt($('#editMaxUsage').val()),
-          expireOn: $('#editExpireOn').val()
-        };
-
-        // Validate expiration date
-        const expireDate = new Date(payload.expireOn);
-        if (expireDate <= new Date()) {
-          this.showAlert('Expiration date must be in the future.', 'danger');
-          return;
-        }
-
-        this.toggleLoading(true, '#saveEditBtn', '#editSpinner');
-
-        try {
-          const response = await fetch(`/admin/coupons/${couponName}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          const result = await response.json();
-
-          if (response.ok) {
-            this.showAlert('Coupon updated successfully!', 'success');
-            await this.loadCoupons();
-            bootstrap.Modal.getInstance(document.getElementById('editCouponModal')).hide();
-          } else {
-            const errorMsg = result.errors?.map(err => err.msg).join('<br>') || 'Failed to update coupon.';
-            this.showAlert(errorMsg, 'danger');
-          }
-        } catch (error) {
-          console.error('Update coupon error:', error);
-          this.showAlert('An error occurred. Please try again.', 'danger');
-        } finally {
-          this.toggleLoading(false, '#saveEditBtn', '#editSpinner');
-        }
-      }
-
-async showUserDetails(couponName) {
-  try {
-    const response = await fetch(`/admin/coupon/users/${couponName}`);
-    console.log('Response status:', response.status, 'Response:', response);
-    if (response.ok) {
-      const users = await response.json();
-      if (users.length === 0) {
-        this.showAlert('No users have used this coupon yet.', 'info');
-        this.userDetailsTable.clear().draw();
-        $('#userDetailsModalLabel').text(`Users Who Used Coupon: ${couponName}`);
-        new bootstrap.Modal(document.getElementById('userDetailsModal')).show();
-      } else {
-        this.updateUserDetailsTable(users, couponName);
-        new bootstrap.Modal(document.getElementById('userDetailsModal')).show();
-      }
+  initEventListeners() {
+    const $discountType = $('#discountType');
+    if ($discountType.length) {
+      console.log('Binding change event to #discountType');
+      $discountType.on('change', this.toggleDiscountFields.bind(this));
     } else {
-      const errorData = await response.json();
-      console.error('Error response:', errorData);
-      this.showAlert(errorData.errors?.[0]?.msg || 'Failed to load user details.', 'danger');
+      console.error('Element #discountType not found in DOM');
     }
-  } catch (error) {
-    console.error('Error in showUserDetails:', error);
-    this.showAlert('An error occurred while loading user details.', 'danger');
+
+    const $editDiscountType = $('#editDiscountType');
+    if ($editDiscountType.length) {
+      console.log('Binding change event to #editDiscountType');
+      $editDiscountType.on('change', this.toggleDiscountFields.bind(this));
+    } else {
+      console.error('Element #editDiscountType not found in DOM');
+    }
+
+    $('#couponForm').on('submit', this.handleFormSubmit.bind(this));
+    $('#refreshCoupons').on('click', () => this.loadCoupons());
+    $('#saveEditBtn').on('click', this.saveEditedCoupon.bind(this));
+
+    $(document).on('click', '#couponTable .edit-coupon', (e) => {
+      const couponName = $(e.target).closest('button').data('name');
+      console.log('Edit button clicked, couponName:', couponName);
+      this.showEditModal(couponName);
+    });
+    $(document).on('click', '#couponTable .view-users', (e) => {
+      const couponName = $(e.target).closest('button').data('name');
+      console.log('Users button clicked, couponName:', couponName);
+      this.showUserDetails(couponName);
+    });
+    $(document).on('click', '#couponTable .delete-coupon', (e) => {
+      const couponName = $(e.target).closest('button').data('name');
+      console.log('Delete button clicked, couponName:', couponName);
+      this.deleteCoupon(couponName);
+    });
+  }
+
+  initDataTables() {
+    if (!$('#couponTable').length) {
+      console.error('Coupon table element not found');
+      this.showAlert('Coupon table not found. Please refresh the page.', 'warning');
+      return;
+    }
+    this.couponTable = $('#couponTable').DataTable({
+      responsive: true,
+      language: {
+        search: "_INPUT_",
+        searchPlaceholder: "Search coupons...",
+      },
+      columns: [
+        { data: 'code' },
+        { data: 'discount' },
+        { data: 'minimumPrice' },
+        { data: 'usage' },
+        { data: 'expires' },
+        { data: 'actions', orderable: false }
+      ]
+    });
+
+    if (!$('#userDetailsTable').length) {
+      console.error('User details table element not found');
+      this.showAlert('User details table not found.', 'warning');
+      return;
+    }
+    this.userDetailsTable = $('#userDetailsTable').DataTable({
+      responsive: true,
+      language: {
+        search: "_INPUT_",
+        searchPlaceholder: "Search users...",
+      },
+      columns: [
+        { data: 'user' },
+        { data: 'email' },
+        { data: 'usedOn' }
+      ]
+    });
+  }
+
+  toggleDiscountFields(event) {
+    const isEdit = event.target.id === 'editDiscountType';
+    const prefix = isEdit ? 'edit' : '';
+    const type = $(event.target).val();
+    
+    console.log('Toggle called for:', event.target.id, 'with value:', type);
+    
+    const $offerPriceGroup = $(`#${prefix}offerPriceGroup`);
+    const $offerPercentageGroup = $(`#${prefix}offerPercentageGroup`);
+    const $offerPrice = $(`#${prefix}offerPrice`);
+    const $offerPercentage = $(`#${prefix}offerPercentage`);
+    
+    if (!$offerPriceGroup.length || !$offerPercentageGroup.length) {
+      console.error(`Elements not found: #${prefix}offerPriceGroup or #${prefix}offerPercentageGroup`);
+      return;
+    }
+    
+    if (!type || type === '') {
+      $offerPriceGroup.removeClass('d-none');
+      $offerPercentageGroup.addClass('d-none');
+      if ($offerPrice.length) {
+        $offerPrice.prop('required', true).val('');
+      } else {
+        console.warn(`#${prefix}offerPrice not found`);
+      }
+      if ($offerPercentage.length) {
+        $offerPercentage.prop('required', false).val('');
+      } else {
+        console.warn(`#${prefix}offerPercentage not found`);
+      }
+      console.log(`Reset to default state for ${event.target.id}: Showing ${prefix}offerPriceGroup`);
+      return;
+    }
+    
+    if (type === 'price') {
+      $offerPriceGroup.removeClass('d-none');
+      $offerPercentageGroup.addClass('d-none');
+      if ($offerPrice.length) {
+        $offerPrice.prop('required', true).val($offerPrice.val() || '');
+      }
+      if ($offerPercentage.length) {
+        $offerPercentage.prop('required', false).val('');
+      }
+      console.log(`Showing ${prefix}offerPriceGroup, hiding ${prefix}offerPercentageGroup`);
+    } else if (type === 'percentage') {
+      $offerPriceGroup.addClass('d-none');
+      $offerPercentageGroup.removeClass('d-none');
+      if ($offerPrice.length) {
+        $offerPrice.prop('required', false).val('');
+      }
+      if ($offerPercentage.length) {
+        $offerPercentage.prop('required', true).val($offerPercentage.val() || '');
+      }
+      console.log(`Hiding ${prefix}offerPriceGroup, showing ${prefix}offerPercentageGroup`);
+    }
+  }
+
+  async loadCoupons() {
+    try {
+      const response = await fetch('/admin/coupons/list');
+      if (response.ok) {
+        this.coupons = await response.json();
+        console.log('Loaded coupons:', this.coupons);
+        this.updateCouponTable();
+      } else {
+        console.error('Failed to load coupons, status:', response.status);
+        this.showAlert('Failed to load coupons. Please try again.', 'warning');
+      }
+    } catch (error) {
+      console.error('Error loading coupons:', error);
+      this.showAlert('An error occurred while loading coupons.', 'warning');
+    }
+  }
+
+  async handleFormSubmit(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const form = event.target;
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      return;
+    }
+
+    const formData = new FormData(form);
+    const couponData = Object.fromEntries(formData.entries());
+
+    if (couponData.discountType === 'percentage' && (!couponData.offerPercentage || parseFloat(couponData.offerPercentage) <= 0 || parseFloat(couponData.offerPercentage) > 100)) {
+      this.showAlert('Discount percentage must be between 0.01 and 100.', 'warning');
+      return;
+    }
+    if (couponData.discountType === 'price' && (!couponData.offerPrice || parseFloat(couponData.offerPrice) <= 0)) {
+      this.showAlert('Discount amount must be greater than 0.', 'warning');
+      return;
+    }
+
+    const expireDate = new Date(couponData.expireOn);
+    if (expireDate <= new Date()) {
+      this.showAlert('Expiration date must be in the future.', 'warning');
+      return;
+    }
+
+    const payload = {
+      name: couponData.name.trim().toUpperCase(),
+      discountType: couponData.discountType,
+      offerPrice: couponData.discountType === 'price' ? parseFloat(couponData.offerPrice) : null,
+      offerPercentage: couponData.discountType === 'percentage' ? parseFloat(couponData.offerPercentage) : null,
+      minimumPrice: parseFloat(couponData.minimumPrice),
+      maxUsage: parseInt(couponData.maxUsage),
+      expireOn: couponData.expireOn,
+      islist: true
+    };
+
+    this.toggleLoading(true, '#submitBtn', '#spinner');
+
+    try {
+      const response = await fetch('/admin/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers.get('Content-Type'));
+
+      if (!response.headers.get('Content-Type')?.includes('application/json')) {
+        this.showAlert('Unexpected server response. Coupon may have been created.', 'warning');
+        return;
+      }
+
+      const result = await response.json();
+      console.log('Response body:', result);
+
+      if (response.ok) {
+        try {
+          this.showAlert('Coupon created successfully!', 'success');
+          this.coupons.push({ ...payload, usedBy: [] });
+          this.updateCouponTable();
+          form.reset();
+          form.classList.remove('was-validated');
+          const $discountType = $('#discountType');
+          if ($discountType.length) {
+            $discountType.val('');
+            this.toggleDiscountFields({ target: $discountType[0] });
+          } else {
+            console.warn('discountType element not found');
+          }
+        } catch (innerError) {
+          console.error('Error in success handling:', innerError);
+          this.showAlert('Coupon created, but an issue occurred while updating the UI.', 'warning');
+        }
+      } else {
+        const errorMsg = result.errors?.map(err => err.msg).join('<br>') || 'Failed to create coupon.';
+        this.showAlert(errorMsg, 'warning');
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      this.showAlert('An error occurred. Please try again.', 'warning');
+    } finally {
+      this.toggleLoading(false, '#submitBtn', '#spinner');
+    }
+  }
+
+  showEditModal(couponName) {
+    if (!couponName) {
+      console.error('Invalid couponName:', couponName);
+      this.showAlert('Invalid coupon selected.', 'warning');
+      return;
+    }
+    const coupon = this.coupons.find(c => c.name === couponName);
+    if (!coupon) {
+      console.warn('Coupon not found:', couponName);
+      this.showAlert('Coupon not found.', 'warning');
+      return;
+    }
+
+    $('#editCouponName').val(coupon.name);
+    $('#editDiscountType').val(coupon.discountType || (coupon.offerPrice ? 'price' : 'percentage'));
+    $('#editOfferPrice').val(coupon.offerPrice || '');
+    $('#editOfferPercentage').val(coupon.offerPercentage || '');
+    $('#editMinimumPrice').val(coupon.minimumPrice || '');
+    $('#editMaxUsage').val(coupon.maxUsage || '');
+    $('#editExpireOn').val(coupon.expireOn ? coupon.expireOn.split('T')[0] : '');
+
+    $('#editDiscountType').trigger('change');
+    try {
+      new bootstrap.Modal(document.getElementById('editCouponModal')).show();
+    } catch (error) {
+      console.error('Error opening edit modal:', error);
+      this.showAlert('Failed to open edit modal.', 'warning');
+    }
+  }
+
+  async saveEditedCoupon() {
+    const form = document.getElementById('editCouponForm');
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      return;
+    }
+
+    const couponName = $('#editCouponName').val();
+    if (!couponName) {
+      this.showAlert('Invalid coupon name.', 'warning');
+      return;
+    }
+
+    const discountType = $('#editDiscountType').val();
+    const payload = {
+      discountType: discountType,
+      offerPrice: discountType === 'price' ? parseFloat($('#editOfferPrice').val()) : null,
+      offerPercentage: discountType === 'percentage' ? parseFloat($('#editOfferPercentage').val()) : null,
+      minimumPrice: parseFloat($('#editMinimumPrice').val()),
+      maxUsage: parseInt($('#editMaxUsage').val()),
+      expireOn: $('#editExpireOn').val()
+    };
+
+    if (isNaN(payload.minimumPrice) || isNaN(payload.maxUsage) || !payload.expireOn) {
+      this.showAlert('Please fill in all required fields correctly.', 'warning');
+      return;
+    }
+
+    const expireDate = new Date(payload.expireOn);
+    if (expireDate <= new Date()) {
+      this.showAlert('Expiration date must be in the future.', 'warning');
+      return;
+    }
+
+    this.toggleLoading(true, '#saveEditBtn', '#editSpinner');
+
+    try {
+      const response = await fetch(`/admin/coupons/${couponName}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        this.showAlert('Coupon updated successfully!', 'success');
+        await this.loadCoupons();
+        bootstrap.Modal.getInstance(document.getElementById('editCouponModal')).hide();
+      } else {
+        const errorMsg = result.errors?.map(err => err.msg).join('<br>') || 'Failed to update coupon.';
+        this.showAlert(errorMsg, 'warning');
+      }
+    } catch (error) {
+      console.error('Update coupon error:', error);
+      this.showAlert('An error occurred. Please try again.', 'warning');
+    } finally {
+      this.toggleLoading(false, '#saveEditBtn', '#editSpinner');
+    }
+  }
+
+  async showUserDetails(couponName) {
+    if (!couponName) {
+      console.error('Invalid couponName:', couponName);
+      this.showAlert('Invalid coupon selected.', 'warning');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/admin/coupon/users/${couponName}`);
+      console.log('showUserDetails - Response status:', response.status);
+      if (response.ok) {
+        const users = await response.json();
+        console.log('showUserDetails - Users:', users);
+        if (!Array.isArray(users) || users.length === 0) {
+          this.showAlert('No users have used this coupon yet.', 'info');
+          this.userDetailsTable.clear().draw();
+          $('#userDetailsModalLabel').text(`Users Who Used Coupon: ${couponName}`);
+          new bootstrap.Modal(document.getElementById('userDetailsModal')).show();
+        } else {
+          this.updateUserDetailsTable(users, couponName);
+          new bootstrap.Modal(document.getElementById('userDetailsModal')).show();
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('showUserDetails - Error response:', errorData);
+        this.showAlert(errorData.errors?.[0]?.msg || 'Failed to load user details.', 'warning');
+      }
+    } catch (error) {
+      console.error('Error in showUserDetails:', error);
+      this.showAlert('An error occurred while loading user details.', 'warning');
+    }
+  }
+
+  async deleteCoupon(couponName) {
+    if (!couponName) {
+      console.error('Invalid couponName:', couponName);
+      this.showAlert('Invalid coupon selected.', 'warning');
+      return;
+    }
+
+    try {
+      const confirmResult = await Swal.fire({
+        title: 'Delete Coupon?',
+        text: `Are you sure you want to delete the coupon ${couponName}? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (!confirmResult.isConfirmed) {
+        console.log('Delete cancelled for coupon:', couponName);
+        return;
+      }
+
+      const response = await fetch(`/admin/coupons/${couponName}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      console.log('deleteCoupon - Response status:', response.status);
+      if (response.ok) {
+        this.coupons = this.coupons.filter(c => c.name !== couponName);
+        this.updateCouponTable();
+        this.showAlert('Coupon deleted successfully!', 'success');
+      } else {
+        const result = await response.json();
+        console.error('deleteCoupon - Error response:', result);
+        const errorMsg = result.errors?.map(err => err.msg).join('<br>') || 'Failed to delete coupon.';
+        this.showAlert(errorMsg, 'warning');
+      }
+    } catch (error) {
+      console.error('Error deleting coupon:', error);
+      this.showAlert('An error occurred while deleting the coupon.', 'warning');
+    }
+  }
+
+  updateCouponTable() {
+    if (!this.couponTable) {
+      console.error('Coupon table not initialized');
+      this.showAlert('Table not initialized. Please refresh the page.', 'warning');
+      return;
+    }
+
+    const tableData = this.coupons.map(coupon => {
+      if (!coupon || !coupon.name || !coupon.discountType || !coupon.maxUsage || !coupon.expireOn) {
+        console.warn('Invalid coupon data:', coupon);
+        return null;
+      }
+
+      const isExpired = new Date(coupon.expireOn) < new Date();
+      const discount = coupon.discountType === 'price' && coupon.offerPrice !== null
+        ? `<span class="badge badge-discount">₹${coupon.offerPrice.toFixed(2)} OFF</span>`
+        : `<span class="badge badge-discount">${coupon.offerPercentage || 0}% OFF</span>`;
+
+      const usage = `<span class="badge badge-usage">
+        ${(coupon.usedBy || []).length} / ${coupon.maxUsage}
+      </span>`;
+
+      const expires = isExpired 
+        ? `<span class="text-danger">${new Date(coupon.expireOn).toLocaleDateString()}</span>`
+        : new Date(coupon.expireOn).toLocaleDateString();
+
+      return {
+        code: `<span class="${isExpired ? 'expired' : ''}">${coupon.name}</span>`,
+        discount,
+        minimumPrice: `₹${(coupon.minimumPrice || 0).toFixed(2)}`,
+        usage,
+        expires,
+        actions: `
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-warning edit-coupon" data-name="${coupon.name}">
+              <i class="fas fa-edit me-1"></i>Edit
+            </button>
+            <button class="btn btn-sm btn-primary view-users" data-name="${coupon.name}">
+              <i class="fas fa-users me-1"></i>Users
+            </button>
+            <button class="btn btn-sm btn-danger delete-coupon" data-name="${coupon.name}">
+              <i class="fas fa-trash me-1"></i>Delete
+            </button>
+          </div>
+        `
+      };
+    }).filter(row => row !== null);
+
+    try {
+      console.log('Updating table with data:', tableData);
+      console.log('Table visibility:', $('#couponTable').is(':visible'));
+      this.couponTable.clear().rows.add(tableData).draw();
+    } catch (error) {
+      console.error('Error updating coupon table:', error);
+      this.showAlert('Failed to update coupon table.', 'warning');
+    }
+  }
+
+  updateUserDetailsTable(users, couponName) {
+    if (!this.userDetailsTable) {
+      console.error('User details table not initialized');
+      this.showAlert('User details table not initialized.', 'warning');
+      return;
+    }
+
+    const tableData = users.map(user => ({
+      user: `
+        <div class="user-info">
+          <div class="user-name fw-bold mb-1">${user.name || 'Anonymous'}</div>
+          <div class="user-id text-muted"><small>ID: ${user._id}</small></div>
+        </div>
+      `,
+      email: user.email || 'N/A',
+      usedOn: user.usageDate ? new Date(user.usageDate).toLocaleString() : 'N/A'
+    }));
+
+    try {
+      this.userDetailsTable.clear().rows.add(tableData).draw();
+      $('#userDetailsModalLabel').text(`Users Who Used Coupon: ${couponName}`);
+    } catch (error) {
+      console.error('Error updating user details table:', error);
+      this.showAlert('Failed to update user details table.', 'warning');
+    }
+  }
+
+  showAlert(message, type) {
+    const alertDiv = $('#alertMessage');
+    alertDiv.html(`
+      <div class="alert alert-${type} alert-dismissible fade show">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    `);
+    setTimeout(() => alertDiv.find('.alert').alert('close'), 5000);
+  }
+
+  toggleLoading(isLoading, buttonSelector, spinnerSelector) {
+    const button = $(buttonSelector);
+    const spinner = $(spinnerSelector);
+    button.prop('disabled', isLoading);
+    spinner.toggleClass('d-none', !isLoading);
   }
 }
 
-      async deleteCoupon(couponName) {
-        const confirmResult = await Swal.fire({
-          title: 'Delete Coupon?',
-          text: `Are you sure you want to delete the coupon ${couponName}? This action cannot be undone.`,
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#d33',
-          confirmButtonText: 'Yes, delete it!',
-          cancelButtonText: 'Cancel'
-        });
-        
-        if (!confirmResult.isConfirmed) return;
-        
-        try {
-          const response = await fetch(`/admin/coupons/${couponName}`, {
-            method: 'DELETE'
-          });
-          
-          if (response.ok) {
-            this.coupons = this.coupons.filter(c => c.name !== couponName);
-            this.updateCouponTable();
-            this.showAlert('Coupon deleted successfully!', 'success');
-          } else {
-            const result = await response.json();
-            const errorMsg = result.errors?.map(err => err.msg).join('<br>') || 'Failed to delete coupon.';
-            this.showAlert(errorMsg, 'danger');
-          }
-        } catch (error) {
-          this.showAlert('An error occurred while deleting the coupon.', 'danger');
-        }
-      }
-
-      updateCouponTable() {
-        const tableData = this.coupons.map(coupon => {
-          const isExpired = new Date(coupon.expireOn) < new Date();
-          const discount = coupon.discountType === 'price' && coupon.offerPrice !== null
-            ? `<span class="badge badge-discount">₹${coupon.offerPrice.toFixed(2)} OFF</span>`
-            : `<span class="badge badge-discount">${coupon.offerPercentage}% OFF</span>`;
-          
-          const usage = `<span class="badge badge-usage">
-            ${coupon.usedBy.length || 0} / ${coupon.maxUsage}
-          </span>`;
-          
-          const expires = isExpired 
-            ? `<span class="text-danger">${new Date(coupon.expireOn).toLocaleDateString()}</span>`
-            : new Date(coupon.expireOn).toLocaleDateString();
-          
-          return {
-            code: `<span class="${isExpired ? 'expired' : ''}">${coupon.name}</span>`,
-            discount,
-            minimumPrice: `₹${coupon.minimumPrice.toFixed(2)}`,
-            usage,
-            expires,
-            actions: `
-              <div class="action-buttons">
-                <button class="btn btn-sm btn-warning edit-coupon" data-name="${coupon.name}">
-                  <i class="fas fa-edit me-1"></i>Edit
-                </button>
-                <button class="btn btn-sm btn-primary view-users" data-name="${coupon.name}">
-                  <i class="fas fa-users me-1"></i>Users
-                </button>
-                <button class="btn btn-sm btn-danger delete-coupon" data-name="${coupon.name}">
-                  <i class="fas fa-trash me-1"></i>Delete
-                </button>
-              </div>
-            `
-          };
-        });
-        
-        this.couponTable.clear().rows.add(tableData).draw();
-      }
-
-      updateUserDetailsTable(users, couponName) {
-        const tableData = users.map(user => ({
-          user: `
-                <div class="fw-bold">${user.name || 'Anonymous'}</div>
-                <small class="text-muted">ID: ${user._id}</small>
-              </div>
-            </div>
-          `,
-          email: user.email || 'N/A',
-          usedOn: user.usageDate ? new Date(user.usageDate).toLocaleString() : 'N/A'
-        }));
-        
-        this.userDetailsTable.clear().rows.add(tableData).draw();
-        $('#userDetailsModalLabel').text(`Users Who Used Coupon: ${couponName}`);
-      }
-
-      showAlert(message, type) {
-        const alertDiv = $('#alertMessage');
-        alertDiv.html(`
-          <div class="alert alert-${type} alert-dismissible fade show">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        `);
-        
-        setTimeout(() => alertDiv.find('.alert').alert('close'), 5000);
-      }
-
-      toggleLoading(isLoading, buttonSelector, spinnerSelector) {
-        const button = $(buttonSelector);
-        const spinner = $(spinnerSelector);
-        
-        button.prop('disabled', isLoading);
-        spinner.toggleClass('d-none', !isLoading);
-      }
-    }
-
-    // Initialize the coupon manager when DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('DOM fully loaded, initializing CouponManager');
-      new CouponManager();
-    });
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM fully loaded, initializing CouponManager');
+  new CouponManager();
+});
   </script>
 
 <%- include("../layouts/admin/footer.ejs") %>

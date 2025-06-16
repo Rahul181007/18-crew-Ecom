@@ -1,29 +1,38 @@
 const { error } = require("console");
 const User=require("../models/userSchema");
 
-const userAuth = (req, res, next) => {
+
+const userAuth = async (req, res, next) => {
+  try {
     if (!req.session.user) {
       console.log('No user in session - redirecting to login');
       return res.redirect("/signin");
     }
-    
-    User.findById(req.session.user)
-      .then(data => {
-        if (!data) {
-          console.log('User not found in DB');
-          return res.redirect("/signin");
-        }
-        if (data.isBlocked) {
-          console.log('User is blocked');
-          return res.redirect("/signin");
-        }
-        next();
-      })
-      .catch(error => {
-        console.error("Error in user auth middleware", error);
-        res.redirect("/signin");
-      });
-  };
+
+    const user = await User.findById(req.session.user);
+    if (!user) {
+      console.log('User not found in DB');
+      req.session.destroy();
+      return res.redirect("/signin");
+    }
+
+    if (user.isBlocked) {
+      console.log('User is blocked, destroying session');
+      req.session.destroy();
+      const isAjax = req.xhr || req.headers.accept.includes('json');
+      if (isAjax) {
+        return res.status(403).json({ success: false, message: 'User is blocked' });
+      }
+      return res.redirect("/signin");
+    }
+
+    next();
+
+  } catch (error) {
+    console.error("Error in user auth middleware:", error);
+    res.redirect("/signin");
+  }
+};
 
 
 

@@ -3,9 +3,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
 <style>
-  :root {
+       :root {
     --primary-color: #C586A5;
     --secondary-color: #1a1517;
     --accent-color: #e60039;
@@ -24,6 +23,7 @@
     color: var(--dark-text);
     overflow-x: hidden;
   }
+/* Navigation */
   .navbar {
     box-shadow: 0 2px 15px rgba(0,0,0,0.05);
     transition: all var(--transition-speed) ease;
@@ -94,9 +94,8 @@
     border-radius: 50%;
     border: 1px solid white;
   }
-  /* Hero Section */
-  .contact-hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/contact-hero.jpg') no-repeat center center;
+  .shipping-hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/shipping-hero.jpg') no-repeat center center;
     background-size: cover;
     min-height: 400px;
     display: flex;
@@ -105,154 +104,64 @@
     color: white;
   }
 
-  .contact-hero-content {
-    position: relative;
-    z-index: 2;
-  }
-
-  .contact-hero h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-  }
-
-  /* Section Titles */
-  .section-title {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 2rem;
-    font-weight: 700;
-  }
-
-  .section-title::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    width: 60px;
-    height: 3px;
-    background: var(--primary-color);
-  }
-
-  /* Contact Content */
-  .contact-content {
-    padding: 5rem 0;
-  }
-
-  /* Contact Cards */
-  .contact-card {
+  .shipping-method {
     background: white;
     border-radius: 12px;
     padding: 2rem;
     box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
     transition: all var(--transition-speed);
     height: 100%;
-    text-align: center;
-    margin-bottom: 2rem;
   }
 
-  .contact-card:hover {
+  .shipping-method:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
   }
 
-  .contact-icon {
-    width: 80px;
-    height: 80px;
+  .shipping-icon {
+    width: 60px;
+    height: 60px;
     background: rgba(197, 134, 165, 0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1.5rem;
-    color: var(--primary-color);
-    font-size: 2rem;
-    transition: all var(--transition-speed);
-  }
-
-  .contact-card:hover .contact-icon {
-    background: var(--primary-color);
-    color: white;
-  }
-
-  /* Contact Form */
-  .contact-form {
-    background: white;
-    border-radius: 12px;
-    padding: 3rem;
-    box-shadow: var(--shadow-md);
-  }
-
-  .form-control {
-    height: 50px;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
     margin-bottom: 1.5rem;
-    transition: all var(--transition-speed);
+    color: var(--primary-color);
+    font-size: 1.5rem;
   }
 
-  .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(197, 134, 165, 0.25);
+  .timeline {
+    position: relative;
+    padding-left: 3rem;
   }
 
-  textarea.form-control {
-    height: auto;
-    min-height: 150px;
-  }
-
-  .submit-btn {
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 1.5rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
     background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.75rem 2rem;
-    font-weight: 600;
-    border-radius: 50px;
-    transition: all var(--transition-speed);
-    width: 100%;
   }
 
-  .submit-btn:hover {
-    background: var(--secondary-color);
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
+  .timeline-item {
+    position: relative;
+    padding-bottom: 2rem;
   }
 
-  /* Map */
-  .contact-map {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    height: 100%;
-    min-height: 300px;
-  }
-
-  /* Social Links */
-  .social-links {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-top: 2rem;
-  }
-
-  .social-links a {
-    width: 50px;
-    height: 50px;
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -3rem;
+    top: 0;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: var(--light-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--dark-text);
-    font-size: 1.25rem;
-    transition: all var(--transition-speed);
-  }
-
-  .social-links a:hover {
-    background: var(--primary-color);
-    color: white;
-    transform: translateY(-5px);
+    background: white;
+    border: 4px solid var(--primary-color);
   }
   /* Footer */
   .footer {
@@ -321,48 +230,6 @@
   .footer-bottom {
     border-top: 1px solid rgba(255,255,255,0.1);
     padding-top: 1.5rem;
-  }
-
-  /* Responsive Adjustments */
-  @media (max-width: 992px) {
-    .contact-hero h1 {
-      font-size: 2.5rem;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .contact-hero {
-      min-height: 350px;
-    }
-    
-    .contact-hero h1 {
-      font-size: 2rem;
-    }
-    
-    .section-title {
-      font-size: 1.5rem;
-    }
-
-    .contact-form {
-      padding: 2rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .contact-hero {
-      min-height: 300px;
-      text-align: center;
-    }
-    
-    .social-links {
-      gap: 1rem;
-    }
-    
-    .social-links a {
-      width: 40px;
-      height: 40px;
-      font-size: 1rem;
-    }
   }
 </style>
 <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 sticky-top">
@@ -442,102 +309,138 @@
       </div>
     </div>
   </nav>
-<!-- Hero Section -->
-<section class="contact-hero">
+<!-- Shipping Hero Section -->
+<section class="shipping-hero">
   <div class="container">
     <div class="row">
       <div class="col-lg-8">
-        <div class="contact-hero-content">
-          <h1>Get In Touch</h1>
-          <p class="lead">We'd love to hear from you! Reach out with questions, feedback, or just to say hello.</p>
+        <div class="hero-content">
+          <h1>Shipping Policy</h1>
+          <p class="lead">Fast, reliable delivery to your doorstep</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Contact Content -->
-<section class="contact-content">
+<!-- Shipping Methods Section -->
+<section class="py-5">
   <div class="container">
-    <div class="row mb-5">
-      <div class="col-12 text-center">
-        <h2 class="section-title">Contact Information</h2>
-        <p class="text-muted">Choose your preferred method to reach us</p>
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center mb-5">
+        <h2 class="section-title">Shipping Options</h2>
+        <p class="text-muted">We offer several shipping methods to suit your needs</p>
       </div>
     </div>
-    
-    <div class="row g-4 mb-5">
+
+    <div class="row g-4">
       <div class="col-md-4">
-        <div class="contact-card">
-          <div class="contact-icon">
-            <i class="bi bi-geo-alt"></i>
+        <div class="shipping-method text-center">
+          <div class="shipping-icon mx-auto">
+            <i class="bi bi-truck"></i>
           </div>
-          <h4>Our Location</h4>
-          <p>123 Fashion Avenue<br>Kakkancherry, NY 10001</p>
-          <a href="#" class="text-dark">Get Directions</a>
+          <h4>Standard Shipping</h4>
+          <p class="text-muted">3-5 business days</p>
+          <p class="mb-0">Free on orders over $50</p>
+          <p>$5.99 for orders under $50</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="contact-card">
-          <div class="contact-icon">
-            <i class="bi bi-telephone"></i>
+        <div class="shipping-method text-center">
+          <div class="shipping-icon mx-auto">
+            <i class="bi bi-lightning-charge"></i>
           </div>
-          <h4>Phone</h4>
-          <p>9747921462<br>Mon-Fri: 9am - 6pm EST</p>
-          <a href="tel:+15551234567" class="text-dark">Call Now</a>
+          <h4>Expedited Shipping</h4>
+          <p class="text-muted">2-3 business days</p>
+          <p class="mb-0">$12.99 for all orders</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="contact-card">
-          <div class="contact-icon">
-            <i class="bi bi-envelope"></i>
+        <div class="shipping-method text-center">
+          <div class="shipping-icon mx-auto">
+            <i class="bi bi-rocket"></i>
           </div>
-          <h4>Email</h4>
-          <p>hello@18-crew.com<br>We reply within 24 hours</p>
-          <a href="mailto:hello@18-crew.com" class="text-dark">Email Us</a>
+          <h4>Overnight Shipping</h4>
+          <p class="text-muted">Next business day</p>
+          <p class="mb-0">$24.99 for all orders</p>
+          <p>Order by 12pm ET for same-day shipping</p>
         </div>
       </div>
     </div>
-    
-    <div class="row align-items-center">
-      <div class="col-lg-6 mb-5 mb-lg-0">
-        <div class="contact-form">
-          <h3 class="section-title mb-4">Send Us a Message</h3>
-          <form id="contactForm" action="/sendMessage" method="POST">
-            <div class="row">
-              <div class="col-md-6">
-                <input type="text" class="form-control" name="name" placeholder="Your Name" required>
-              </div>
-              <div class="col-md-6">
-               <input type="email" class="form-control" name="email" placeholder="Your Email" required>
+  </div>
+</section>
+
+<!-- Processing Time Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="section-title text-center mb-5">Order Processing</h2>
+        
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-year">1-2 Days</div>
+            <h4>Processing Time</h4>
+            <p>Most orders are processed and shipped within 1-2 business days. During peak seasons or promotions, processing may take slightly longer.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">Email</div>
+            <h4>Order Confirmation</h4>
+            <p>You'll receive an order confirmation email immediately after placing your order with all the details.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-year">Email</div>
+            <h4>Shipping Notification</h4>
+            <p>When your order ships, you'll receive another email with tracking information so you can follow your package's journey.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- International Shipping Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="section-title text-center mb-5">International Shipping</h2>
+        
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body">
+                <h4><i class="bi bi-globe me-2"></i> Global Delivery</h4>
+                <p>We ship to most countries worldwide. Shipping costs and delivery times vary by destination.</p>
               </div>
             </div>
-           <input type="text" class="form-control" name="subject" placeholder="Subject">
-            <textarea class="form-control" name="message" placeholder="Your Message" required></textarea>
-            <button type="submit" class="submit-btn">Send Message</button>
-          </form>
+          </div>
+          <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body">
+                <h4><i class="bi bi-receipt me-2"></i> Duties & Taxes</h4>
+                <p>International customers are responsible for all customs fees, import duties, and taxes which may be charged upon delivery.</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="col-lg-6">
-  <div class="contact-map">
-   <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15657.74498567467!2d75.89466601535173!3d11.155300518598965!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba6503e63169bd3%3A0xd7f7da7e7646a003!2sKakkanchery%2C%20Chelambra%2C%20Kerala!5e0!3m2!1sen!2sin!4v1749241293849!5m2!1sen!2sin" width="600" height="512" style="border:0; " allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-  </div>
-</div>
+        
+        <div class="alert alert-info mt-4">
+          <p class="mb-0"><strong>Note:</strong> Some product restrictions may apply based on international shipping regulations. Delivery times are estimates and not guaranteed due to customs processing.</p>
+        </div>
       </div>
     </div>
-    
-    <div class="row mt-5">
-      <div class="col-12 text-center">
-        <h3 class="section-title">Follow Us</h3>
-        <p class="text-muted mb-4">Stay connected with 18-CREW on social media</p>
-        <div class="social-links">
-          <a href="#"><i class="bi bi-facebook"></i></a>
-          <a href="#"><i class="bi bi-twitter"></i></a>
-          <a href="#"><i class="bi bi-instagram"></i></a>
-          <a href="#"><i class="bi bi-pinterest"></i></a>
-          <a href="#"><i class="bi bi-tiktok"></i></a>
-        </div>
+  </div>
+</section>
+
+<!-- Tracking Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center">
+        <h2 class="section-title mb-5">Track Your Order</h2>
+        <p class="lead mb-4">Once your order has shipped, you'll receive a tracking number to monitor your package's progress.</p>
+        <a href="/track-order" class="btn btn-dark px-4">Track Order</a>
       </div>
     </div>
   </div>
@@ -598,50 +501,4 @@
     </div>
   </div>
 </footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
-<script>
-document.getElementById('contactForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const form = this;
-    const formData = new FormData(form);
-    
-    try {
-      const response = await fetch('/sendMessage', {
-        method: 'POST',
-        body: new URLSearchParams(formData), // Send form data as URL-encoded
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        Toastify({
-          text: result.message,
-          duration: 3000,
-          close: true,
-          gravity: 'top',
-          position: 'center',
-          backgroundColor: '#C586A5',
-          stopOnFocus: true,
-        }).showToast();
-        form.reset(); // Reset form on success
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (error) {
-      Toastify({
-        text: error.message || 'Failed to send message. Please try again.',
-        duration: 3000,
-        close: true,
-        gravity: 'top',
-        position: 'center',
-        backgroundColor: '#e60039',
-        stopOnFocus: true,
-      }).showToast();
-    }
-  });
-</script>
-
 <%- include("../layouts/footer.ejs") %>

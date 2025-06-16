@@ -1,2 +1,14 @@
+<script>
+  setInterval(() => {
+    fetch('/check-user-block')
+      .then(res => res.json())
+      .then(data => {
+        if (data.isBlocked) {
+          window.location.href = "/signin";
+        }
+      });
+  }, 1000); 
+</script>
+
 </body>
 </html>

@@ -149,10 +149,12 @@
     transform: scale(1.2);
   }
 
+
   /* Product Info Styles */
   .product-info {
     padding-left: 1.5rem;
   }
+  
   
   @media (max-width: 768px) {
     .product-info {
@@ -422,49 +424,73 @@
     font-size: 0.8rem;
   }
   
-  /* Footer Styles */
+ /* Footer */
   .footer {
-    background-color: var(--light-bg);
-    padding: 2.5rem 0;
+    background: var(--secondary-color);
+    color: white;
   }
   
-  .footer-heading {
+  .footer-logo {
     font-weight: 700;
-    font-size: 1rem;
-    margin-bottom: 1.2rem;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+  
+  .footer-logo-dot {
+    color: var(--primary-color);
+  }
+  
+  .footer-about {
+    color: rgba(255,255,255,0.7);
+  }
+  
+  .footer-title {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
     position: relative;
     display: inline-block;
   }
   
-  .footer-heading:after {
+  .footer-title::after {
     content: '';
     position: absolute;
-    width: 50%;
-    height: 2px;
-    bottom: -6px;
+    bottom: -8px;
     left: 0;
-    background-color: var(--primary-color);
+    width: 40px;
+    height: 2px;
+    background: var(--primary-color);
+  }
+  
+  .footer-links li {
+    margin-bottom: 0.75rem;
   }
   
   .footer-link {
-    color: var(--muted-text);
+    color: rgba(255,255,255,0.7);
+    transition: all var(--transition-speed);
     text-decoration: none;
-    transition: all 0.3s ease;
-    display: block;
-    margin-bottom: 0.4rem;
-    font-size: 0.85rem;
   }
   
   .footer-link:hover {
-    color: var(--primary-color);
-    transform: translateX(5px);
+    color: white;
+    padding-left: 5px;
   }
   
-  .copyright {
-    border-top: 1px solid #dee2e6;
-    padding-top: 1.2rem;
-    color: var(--muted-text);
-    font-size: 0.85rem;
+  .footer-contact-item {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .footer-contact-icon {
+    margin-right: 1rem;
+    color: var(--primary-color);
+  }
+  
+  .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 1.5rem;
   }
   
   /* Image Zoom Effect */
@@ -851,36 +877,59 @@
   </div>
 </div>
 
-<!-- FOOTER -->
-<footer class="footer">
+<!-- Footer -->
+<footer class="footer py-5">
   <div class="container">
-    <div class="row gy-3">
-      <div class="col-md-6 col-lg-5">
-        <h5 class="footer-heading">18-CREW</h5>
-        <p class="text-muted small mb-0">
-          Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
+    <div class="row gy-4">
+      <div class="col-lg-5">
+        <a href="/" class="footer-logo text-white">18-CREW<span class="footer-logo-dot">.</span></a>
+        <p class="footer-about">
+          We're dedicated to providing you with the very best fashion experience, with an emphasis on quality, style, and exceptional service.
         </p>
       </div>
-      
-      <div class="col-md-3 col-lg-3">
-        <h5 class="footer-heading">COMPANY</h5>
-        <ul class="list-unstyled">
+      <div class="col-lg-2 col-md-4">
+        <h6 class="footer-title">COMPANY</h6>
+        <ul class="footer-links list-unstyled">
           <li><a href="/home" class="footer-link">Home</a></li>
           <li><a href="/about" class="footer-link">About us</a></li>
-          <li><a href="/delivery" class="footer-link">Delivery</a></li>
-          <li><a href="/privacy" class="footer-link">Privacy policy</a></li>
+          <li><a href="/shop" class="footer-link">Shop</a></li>
+          <li><a href="/contact" class="footer-link">Contact</a></li>
         </ul>
       </div>
-
-      <div class="col-md-3 col-lg-4">
-        <h5 class="footer-heading">GET IN TOUCH</h5>
-        <p class="mb-1 text-muted small">+1-212-456-7890</p>
-        <p class="mb-0 text-muted small">18CREW@gmail.com</p>
+      <div class="col-lg-2 col-md-4">
+        <h6 class="footer-title">HELP</h6>
+        <ul class="footer-links list-unstyled">
+          <li><a href="/faq" class="footer-link">FAQs</a></li>
+          <li><a href="/shipping" class="footer-link">Shipping</a></li>
+          <li><a href="/returns" class="footer-link">Returns</a></li>
+          <li><a href="/privacy" class="footer-link">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3 col-md-4">
+        <h6 class="footer-title">CONTACT</h6>
+        <div class="footer-contact-item">
+          <i class="bi bi-geo-alt footer-contact-icon"></i>
+          <div>
+            <p class="mb-0">123 Fashion Street, Mumbai</p>
+            <p class="mb-0">India 400001</p>
+          </div>
+        </div>
+        <div class="footer-contact-item">
+          <i class="bi bi-envelope footer-contact-icon"></i>
+          <div>
+            <p class="mb-0">18CREW@gmail.com</p>
+          </div>
+        </div>
+        <div class="footer-contact-item">
+          <i class="bi bi-telephone footer-contact-icon"></i>
+          <div>
+            <p class="mb-0">+1-212-456-7890</p>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="copyright text-center mt-4">
-      Copyright © 2024 @ 18-CREW.dev – All Right Reserved.
+    <div class="footer-bottom text-center mt-5 pt-4">
+      <p class="text-muted mb-0">Copyright © 2024 18-CREW. All Rights Reserved.</p>
     </div>
   </div>
 </footer>

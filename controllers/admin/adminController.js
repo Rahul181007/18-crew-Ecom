@@ -20,7 +20,7 @@ const loadLogin = async (req, res,next) => {
             return res.redirect("/admin");
         } else {
             // Otherwise, render the login page
-            res.render("admin-login", { message: null });
+            res.render("admin-login", { message: null,title: "Admin-login" });
         }
     } catch (error) {
         console.log(error);

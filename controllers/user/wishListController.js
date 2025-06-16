@@ -25,7 +25,8 @@ const loadWishlist = async (req, res,next) => {
       wishlist: wishlistProducts,
       cartCount,
       wishlistCount: wishlistProducts.length,
-      user: await User.findById(userId)
+      user: await User.findById(userId),
+      title: "Wishlist"
     });
   } catch (error) {
     next(error)
