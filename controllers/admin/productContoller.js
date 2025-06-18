@@ -1,30 +1,30 @@
 const Product = require("../../models/productSchema");
-const Category=require("../../models/categorySchema");
-const Brand=require("../../models/brandSchema");
-const fs=require("fs");
-const path=require("path");
-const sharp=require("sharp"); // it is used for image resizing and image setting
+const Category = require("../../models/categorySchema");
+const Brand = require("../../models/brandSchema");
+const fs = require("fs");
+const path = require("path");
+const sharp = require("sharp"); // it is used for image resizing and image setting
 
-const getProductAddPage=async(req,res,next)=>{
-    try {
-        const category=await Category.find({isListed:true});
-        const brand=await Brand.find({isBlocked:false});
-        res.render("product-add",{
-            cat:category,
-            brand:brand,
-            activePage:"addProduct",
-        })
-    } catch (error) {
-     next(error)
-    }
-}
+const getProductAddPage = async (req, res, next) => {
+  try {
+    const category = await Category.find({ isListed: true });
+    const brand = await Brand.find({ isBlocked: false });
+    res.render("product-add", {
+      cat: category,
+      brand: brand,
+      activePage: "addProduct",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
-const addProducts = async (req, res,next) => {
+const addProducts = async (req, res, next) => {
   try {
     const products = req.body;
 
     const productExist = await Product.findOne({
-      productName: products.productName
+      productName: products.productName,
     });
 
     if (!productExist) {
@@ -55,7 +55,6 @@ const addProducts = async (req, res,next) => {
         return res.status(400).json("Invalid category name");
       }
 
-      
       let sizesWithStock = [];
 
       if (products.sizes) {
@@ -67,7 +66,7 @@ const addProducts = async (req, res,next) => {
           selectedSizes = [products.sizes]; // Only one size selected
         }
 
-        sizesWithStock = selectedSizes.map(size => {
+        sizesWithStock = selectedSizes.map((size) => {
           const stockKey = `stock_${size}`;
           const stockValue = parseInt(products[stockKey]) || 0;
           return { size, stock: stockValue };
@@ -86,22 +85,20 @@ const addProducts = async (req, res,next) => {
         color: products.color,
         productImage: images,
         status: "Available",
-        sizes: sizesWithStock 
+        sizes: sizesWithStock,
       });
 
       await newProduct.save();
       res.redirect("/admin/addProducts");
-
     } else {
       return res.status(400).json("Product already exists, try another name.");
     }
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
-  
-const getAllProduct = async (req, res,next) => {
+const getAllProduct = async (req, res, next) => {
   try {
     const search = req.query.search || "";
     const page = parseInt(req.query.page) || 1;
@@ -111,15 +108,15 @@ const getAllProduct = async (req, res,next) => {
     const query = {
       $or: [
         { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
-        { brand: { $regex: new RegExp(".*" + search + ".*", "i") } }
-      ]
+        { brand: { $regex: new RegExp(".*" + search + ".*", "i") } },
+      ],
     };
 
     // Get products with populated category
     const productData = await Product.find(query)
       .limit(limit)
       .skip((page - 1) * limit)
-      .populate('category')
+      .populate("category")
       .lean()
       .exec();
 
@@ -129,18 +126,21 @@ const getAllProduct = async (req, res,next) => {
     // Get categories and brands
     const [category, brand] = await Promise.all([
       Category.find({ isListed: true }),
-      Brand.find({ isBlocked: false })
+      Brand.find({ isBlocked: false }),
     ]);
 
     // Process product data - calculate total quantity and handle null categories
-    const processedData = productData.map(product => {
+    const processedData = productData.map((product) => {
       // Calculate total quantity from sizes array
-      const totalQuantity = product.sizes.reduce((sum, size) => sum + (size.stock || 0), 0);
-      
+      const totalQuantity = product.sizes.reduce(
+        (sum, size) => sum + (size.stock || 0),
+        0
+      );
+
       return {
         ...product,
         quantity: totalQuantity, // Add calculated quantity
-        category: product.category || { name: "Uncategorized" } // Default for null categories
+        category: product.category || { name: "Uncategorized" }, // Default for null categories
       };
     });
 
@@ -151,36 +151,46 @@ const getAllProduct = async (req, res,next) => {
       cat: category,
       brand: brand,
       activePage: "products",
-      searchQuery: search
+      searchQuery: search,
     });
-
   } catch (error) {
-   next(error)
+    next(error);
   }
 };
 // adding product oofer
-const addProductOffer = async (req, res,next) => {
+const addProductOffer = async (req, res, next) => {
   try {
     const percentage = parseInt(req.body.percentage);
     const productId = req.body.productId;
 
     // Validate inputs
     if (!productId || isNaN(percentage) || percentage < 0) {
-      return res.status(400).json({ status: false, message: 'Invalid product ID or percentage' });
+      return res
+        .status(400)
+        .json({ status: false, message: "Invalid product ID or percentage" });
     }
 
     const findProduct = await Product.findOne({ _id: productId });
     if (!findProduct) {
-      return res.status(404).json({ status: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ status: false, message: "Product not found" });
     }
 
     const findCategory = await Category.findOne({ _id: findProduct.category });
     if (!findCategory) {
-      return res.status(404).json({ status: false, message: 'Category not found' });
+      return res
+        .status(404)
+        .json({ status: false, message: "Category not found" });
     }
 
     if (findCategory.categoryOffer > percentage) {
-      return res.status(400).json({ status: false, message: 'This product category already has a higher offer' });
+      return res
+        .status(400)
+        .json({
+          status: false,
+          message: "This product category already has a higher offer",
+        });
     }
 
     // Update only specific fields
@@ -188,101 +198,111 @@ const addProductOffer = async (req, res,next) => {
       { _id: productId },
       {
         $set: {
-          salePrice: findProduct.salePrice - Math.floor(findProduct.regularPrice * (percentage / 100)),
+          salePrice:
+            findProduct.salePrice -
+            Math.floor(findProduct.regularPrice * (percentage / 100)),
           productOffer: parseInt(percentage),
         },
       },
       { new: true, runValidators: true }
     );
 
-
     return res.json({ status: true });
   } catch (error) {
-   next(error)
+    next(error);
   }
 };
 // removeProductOffer
-const removeProductOffer=async(req,res,next)=>{
+const removeProductOffer = async (req, res, next) => {
   try {
-    const productId=req.body.productId;
-    const findProduct=await Product.findOne({_id:productId});
-    const percentage=findProduct.productOffer;
-    findProduct.salePrice=findProduct.salePrice+Math.floor(findProduct.regularPrice*(percentage/100));
-    findProduct.productOffer=0;
-     await findProduct.save();
-    res.json({status:true});
-
+    const productId = req.body.productId;
+    const findProduct = await Product.findOne({ _id: productId });
+    const percentage = findProduct.productOffer;
+    findProduct.salePrice =
+      findProduct.salePrice +
+      Math.floor(findProduct.regularPrice * (percentage / 100));
+    findProduct.productOffer = 0;
+    await findProduct.save();
+    res.json({ status: true });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
-const blockProduct=async(req,res,next)=>{
-try {
-  const productId=req.query.id;
-  await Product.updateOne({_id:productId},{$set:{isBlocked:true}});
-  res.redirect("/admin/products");
-} catch (error) {
-  next(error)
-}
-}
-const unblockProduct=async(req,res,next)=>{
- try {
-  const productId=req.query.id;
-  await Product.updateOne({_id:productId},{$set:{isBlocked:false}});
-  res.redirect("/admin/products");
- } catch (error) {
-  next(error)
- }
-}
+const blockProduct = async (req, res, next) => {
+  try {
+    const productId = req.query.id;
+    await Product.updateOne({ _id: productId }, { $set: { isBlocked: true } });
+    res.redirect("/admin/products");
+  } catch (error) {
+    next(error);
+  }
+};
+const unblockProduct = async (req, res, next) => {
+  try {
+    const productId = req.query.id;
+    await Product.updateOne({ _id: productId }, { $set: { isBlocked: false } });
+    res.redirect("/admin/products");
+  } catch (error) {
+    next(error);
+  }
+};
 
 // getedit product
-const geteditProduct=async(req,res,next)=>{
-try {
-  const id=req.query.id;
-  const findProduct=await Product.findOne({_id:id}).populate("category");
-  const category=await Category.find({});
-  const brand=await Brand.find({});
-  console.log(findProduct)
-  console.log(category)
-  res.render("edit-product",{product:findProduct,activePage:"products",brand:brand,cat:category})
-} catch (error) {
-  next(error)
-}
-}
+const geteditProduct = async (req, res, next) => {
+  try {
+    const id = req.query.id;
+    const findProduct = await Product.findOne({ _id: id }).populate("category");
+    const category = await Category.find({});
+    const brand = await Brand.find({});
+    res.render("edit-product", {
+      product: findProduct,
+      activePage: "products",
+      brand: brand,
+      cat: category,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // edit product
-const editProduct = async (req, res,next) => {
+const editProduct = async (req, res, next) => {
   try {
     const id = req.params.id;
     const product = await Product.findOne({ _id: id });
     const data = req.body;
-    
+
     // Check for existing product with same name
-    const existingProduct = await Product.findOne({ 
+    const existingProduct = await Product.findOne({
       productName: data.productName,
-      _id: { $ne: id }
+      _id: { $ne: id },
     });
-    
+
     if (existingProduct) {
-      return res.status(400).json({ error: "Product with this name already exists. Please try a different name." });
+      return res
+        .status(400)
+        .json({
+          error:
+            "Product with this name already exists. Please try a different name.",
+        });
     }
 
     // Process sizes and stock
     let sizesArray = [];
     if (Array.isArray(data.sizes)) {
       // Multiple sizes selected
-      data.sizes.forEach(size => {
+      data.sizes.forEach((size) => {
         sizesArray.push({
           size: size,
-          stock: parseInt(data[`stock_${size}`]) || 0
+          stock: parseInt(data[`stock_${size}`]) || 0,
         });
       });
     } else if (data.sizes) {
       // Single size selected
       sizesArray.push({
         size: data.sizes,
-        stock: parseInt(data[`stock_${data.sizes}`]) || 0
+        stock: parseInt(data[`stock_${data.sizes}`]) || 0,
       });
     }
 
@@ -313,7 +333,7 @@ const editProduct = async (req, res,next) => {
       salePrice: data.salePrice,
       color: data.color,
       sizes: sizesArray,
-      quantity: totalQuantity
+      quantity: totalQuantity,
     };
 
     // Add new images if any
@@ -325,24 +345,25 @@ const editProduct = async (req, res,next) => {
     await Product.findByIdAndUpdate(id, updatedFields, { new: true });
     res.redirect("/admin/products");
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
-
-
-
-const updateProductImage = async (req, res,next) => {
+const updateProductImage = async (req, res, next) => {
   try {
     const { productId, imageIndex } = req.body;
 
     if (!req.file) {
-      return res.status(400).json({ status: false, message: 'No image file uploaded.' });
+      return res
+        .status(400)
+        .json({ status: false, message: "No image file uploaded." });
     }
 
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({ status: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ status: false, message: "Product not found" });
     }
 
     // replace image at specified index
@@ -350,24 +371,23 @@ const updateProductImage = async (req, res,next) => {
 
     await product.save();
 
-    return res.status(200).json({ status: true, message: 'Image updated successfully' });
-
+    return res
+      .status(200)
+      .json({ status: true, message: "Image updated successfully" });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
-
-
-module.exports={
-    getProductAddPage,
-    addProducts,
-    getAllProduct,
-    addProductOffer,
-    removeProductOffer,
-    blockProduct,
-    unblockProduct,
-   geteditProduct,
-   editProduct,
-   updateProductImage
-}
+module.exports = {
+  getProductAddPage,
+  addProducts,
+  getAllProduct,
+  addProductOffer,
+  removeProductOffer,
+  blockProduct,
+  unblockProduct,
+  geteditProduct,
+  editProduct,
+  updateProductImage,
+};

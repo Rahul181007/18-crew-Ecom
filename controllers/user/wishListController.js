@@ -1,21 +1,25 @@
-const User=require("../../models/userSchema");
-const product=require("../../models/productSchema");
+const User = require("../../models/userSchema");
+const product = require("../../models/productSchema");
 const Product = require("../../models/productSchema");
-const Cart=require("../../models/cartSchema");
+const Cart = require("../../models/cartSchema");
 const mongoose = require("mongoose");
-const Wishlist=require("../../models/wishlistSchema");
+const Wishlist = require("../../models/wishlistSchema");
 
-const loadWishlist = async (req, res,next) => {
+const loadWishlist = async (req, res, next) => {
   try {
     const userId = req.session.user;
-    const wishlist = await Wishlist.findOne({ userId })
-      .populate({
-        path: 'products.product',
-        populate: [
-          { path: 'category', select: 'name' },
-          { path: 'brand', select: 'brandName' }
-        ]
-      });
+    if (!userId) {
+      const error = new Error("unauthorised access");
+      error.statusCode = 404;
+      return next(error);
+    }
+    const wishlist = await Wishlist.findOne({ userId }).populate({
+      path: "products.product",
+      populate: [
+        { path: "category", select: "name" },
+        { path: "brand", select: "brandName" },
+      ],
+    });
 
     const cart = await Cart.findOne({ userId });
     const cartCount = cart?.items?.length || 0;
@@ -26,64 +30,85 @@ const loadWishlist = async (req, res,next) => {
       cartCount,
       wishlistCount: wishlistProducts.length,
       user: await User.findById(userId),
-      title: "Wishlist"
+      title: "Wishlist",
     });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
-
-
-const addToWishlist = async (req, res,next) => {
+const addToWishlist = async (req, res, next) => {
   try {
     const userId = req.session.user;
+     if (!userId) {
+      const error = new Error("unauthorised access");
+      error.statusCode = 404;
+      return next(error);
+    }
     const productId = req.body.productId;
-
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Invalid product ID" });
+    }
     let wishlist = await Wishlist.findOne({ userId: userId });
 
     if (!wishlist) {
       wishlist = new Wishlist({
         userId: userId,
-        products: [{ product: productId }]
+        products: [{ product: productId }],
       });
     } else {
-      const alreadyExists = wishlist.products.some(item => item.product.toString() === productId);
+      const alreadyExists = wishlist.products.some(
+        (item) => item.product.toString() === productId
+      );
       if (alreadyExists) {
-        return res.json({ status: false, message: 'Product already in wishlist' });
+        return res.json({
+          status: false,
+          message: "Product already in wishlist",
+        });
       }
 
       wishlist.products.push({ product: productId });
     }
 
     await wishlist.save();
-    res.json({ status: true, message: 'Product added to wishlist', wishlistCount: wishlist.products.length });
-
+    res.json({
+      status: true,
+      message: "Product added to wishlist",
+      wishlistCount: wishlist.products.length,
+    });
   } catch (error) {
-   next(error)
+    next(error);
   }
 };
 
-
-
-const removeFromWishlist = async (req, res,next) => {
+const removeFromWishlist = async (req, res, next) => {
   try {
     const { productId } = req.body;
     const userId = req.session.user;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({ status: false, message: "Invalid product ID" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Invalid product ID" });
     }
 
     const wishlist = await Wishlist.findOne({ userId });
     if (!wishlist) {
-      return res.status(404).json({ status: false, message: "Wishlist not found" });
+      return res
+        .status(404)
+        .json({ status: false, message: "Wishlist not found" });
     }
 
     // Find index of product in wishlist.products array
-    const index = wishlist.products.findIndex(item => item.product.toString() === productId);
+    const index = wishlist.products.findIndex(
+      (item) => item.product.toString() === productId
+    );
     if (index === -1) {
-      return res.status(404).json({ status: false, message: "Product not in wishlist" });
+      return res
+        .status(404)
+        .json({ status: false, message: "Product not in wishlist" });
     }
 
     // Remove the product from the array
@@ -93,16 +118,15 @@ const removeFromWishlist = async (req, res,next) => {
     return res.status(200).json({
       status: true,
       message: "Product removed from wishlist",
-      wishlistCount: wishlist.products.length
+      wishlistCount: wishlist.products.length,
     });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
-
-module.exports={
-    loadWishlist,
-    addToWishlist,
-    removeFromWishlist
-}
+module.exports = {
+  loadWishlist,
+  addToWishlist,
+  removeFromWishlist,
+};

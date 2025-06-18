@@ -3,22 +3,24 @@ const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
-const WishList=require("../../models/wishlistSchema");
+const WishList = require("../../models/wishlistSchema");
 
-const productDetails = async (req, res,next) => {
+const productDetails = async (req, res, next) => {
   try {
     const userId = req.session.user;
     const productId = req.query.id;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.redirect('/page-not-found');
+      const error = new Error("Invalid product ID");
+      error.statusCode = 400;
+      return next(error);
     }
 
     const userData = userId ? await User.findById(userId) : null;
     const cart = await Cart.findOne({ userId });
     const cartCount = cart && cart.items ? cart.items.length : 0;
 
-    const wishlist = await WishList.findOne({ userId })
+    const wishlist = await WishList.findOne({ userId });
     const wishlistCount = wishlist ? wishlist.products.length : 0;
 
     const product = await Product.findById(productId)
@@ -26,10 +28,15 @@ const productDetails = async (req, res,next) => {
       .populate("brand");
 
     if (!product) {
-      return res.redirect('/page-not-found');
+      const error = new Error("Product not found");
+      error.statusCode = 404;
+      return next(error);
     }
 
-    const isInWishlist = userData && userData.wishlist ? userData.wishlist.includes(productId) : false;
+    const isInWishlist =
+      userData && userData.wishlist
+        ? userData.wishlist.includes(productId)
+        : false;
     const findCategory = product.category;
     const categoryOffer = findCategory?.categoryOffer || 0;
     const productOffer = product.productOffer || 0;
@@ -45,12 +52,16 @@ const productDetails = async (req, res,next) => {
     // Adjust salePrice if an offer is applicable
     let adjustedSalePrice = product.salePrice;
     if (applicableOffer > 0) {
-      adjustedSalePrice = product.regularPrice - (product.regularPrice * (applicableOffer / 100));
+      adjustedSalePrice =
+        product.regularPrice - product.regularPrice * (applicableOffer / 100);
       adjustedSalePrice = Math.round(adjustedSalePrice); // Round to nearest integer
     }
 
-    const totalQuantity = product.sizes.reduce((sum, size) => sum + size.stock, 0);
-    const availableSizes = product.sizes.filter(size => size.stock > 0);
+    const totalQuantity = product.sizes.reduce(
+      (sum, size) => sum + size.stock,
+      0
+    );
+    const availableSizes = product.sizes.filter((size) => size.stock > 0);
 
     const relatedProducts = await Product.find({
       category: product.category._id,
@@ -64,21 +75,21 @@ const productDetails = async (req, res,next) => {
       user: userData,
       product: {
         ...product._doc,
-        salePrice: adjustedSalePrice, 
+        salePrice: adjustedSalePrice,
         totalQuantity,
       },
-      totalOffer: applicableOffer, 
+      totalOffer: applicableOffer,
       category: findCategory,
       relatedProducts,
       availableSizes,
       cartCount,
       wishlistCount,
       isInWishlist,
-      page: 'product-details',
-      title: "Product-details"
+      page: "product-details",
+      title: "Product-details",
     });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 

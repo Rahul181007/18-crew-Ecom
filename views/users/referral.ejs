@@ -1,26 +1,56 @@
 <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Enter Referral Code</title>
-      <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
-        .modal { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; }
-        .modal h2 { margin-top: 0; }
-        .modal input { padding: 10px; margin: 10px 0; width: 200px; }
-        .modal button { padding: 10px 20px; margin: 5px; cursor: pointer; }
-      </style>
-    </head>
-    <body>
-      <div class="modal">
-        <h2>Enter Referral Code</h2>
-        <form action="/referral/submit" method="POST">
-          <input type="text" name="referralCode" placeholder="Enter referral code (optional)">
-          <br>
-          <button type="submit">Submit</button>
-          <button type="button" onclick="window.location.href='/referral/skip'">Skip</button>
-        </form>
-      </div>
-    </body>
-    </html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enter Referral Code</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+      .modal {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      .modal h2 {
+        margin-top: 0;
+      }
+      .modal input {
+        padding: 10px;
+        margin: 10px 0;
+        width: 200px;
+      }
+      .modal button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="modal">
+      <h2>Enter Referral Code</h2>
+      <form action="/referral/submit" method="POST">
+        <input
+          type="text"
+          name="referralCode"
+          placeholder="Enter referral code (optional)"
+        />
+        <br />
+        <button type="submit">Submit</button>
+        <button type="button" onclick="window.location.href='/referral/skip'">
+          Skip
+        </button>
+      </form>
+    </div>
+  </body>
+</html>

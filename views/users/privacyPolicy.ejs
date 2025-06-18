@@ -1,39 +1,51 @@
 <%- include("../layouts/header.ejs") %>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+/>
 <style>
-       :root {
-    --primary-color: #C586A5;
+  :root {
+    --primary-color: #c586a5;
     --secondary-color: #1a1517;
     --accent-color: #e60039;
     --light-bg: #f8f9fa;
     --dark-text: #212529;
     --muted-text: #6c757d;
     --transition-speed: 0.3s;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
   }
-  
+
   body {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     background-color: var(--light-bg);
     color: var(--dark-text);
     overflow-x: hidden;
   }
-/* Navigation */
+  /* Navigation */
   .navbar {
-    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
     transition: all var(--transition-speed) ease;
   }
-  
+
   .navbar.scrolled {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   }
-  
+
   .navbar-brand {
     font-weight: 700;
     font-size: 1.6rem;
@@ -41,49 +53,49 @@
     letter-spacing: 0.5px;
     position: relative;
   }
-  
+
   .brand-dot {
     width: 10px;
     height: 10px;
-    background: #C586A5;
+    background: #c586a5;
     border-radius: 50%;
     display: inline-block;
     margin-left: 4px;
   }
-  
+
   .navbar-nav {
     gap: 1.5rem;
   }
-  
+
   .navbar-nav .nav-link {
     font-weight: 500;
-    color:#212529;
+    color: #212529;
     transition: color var(--transition-speed);
     position: relative;
     padding: 0.5rem 0;
   }
-  
+
   .navbar-nav .nav-link::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
     width: 0;
     height: 2px;
-    background: #C586A5;
+    background: #c586a5;
     transition: width var(--transition-speed);
   }
-  
+
   .navbar-nav .nav-link:hover::after,
   .navbar-nav .nav-link.active::after {
     width: 100%;
   }
-  
+
   .navbar-nav .nav-link:hover,
   .navbar-nav .nav-link.active {
-    color: #C586A5;
+    color: #c586a5;
   }
-  
+
   /* Badge */
   .badge-dot {
     position: absolute;
@@ -91,12 +103,13 @@
     right: -5px;
     width: 10px;
     height: 10px;
-    background-color:#e60039;
+    background-color: #e60039;
     border-radius: 50%;
     border: 1px solid white;
   }
   .privacy-hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/privacy-hero.jpg') no-repeat center center;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("/images/privacy-hero.jpg") no-repeat center center;
     background-size: cover;
     min-height: 400px;
     display: flex;
@@ -141,31 +154,31 @@
     background: var(--secondary-color);
     color: white;
   }
-  
+
   .footer-logo {
     font-weight: 700;
     font-size: 1.8rem;
     margin-bottom: 1rem;
     display: inline-block;
   }
-  
+
   .footer-logo-dot {
     color: var(--primary-color);
   }
-  
+
   .footer-about {
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
   }
-  
+
   .footer-title {
     font-weight: 600;
     margin-bottom: 1.5rem;
     position: relative;
     display: inline-block;
   }
-  
+
   .footer-title::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -8px;
     left: 0;
@@ -173,115 +186,170 @@
     height: 2px;
     background: var(--primary-color);
   }
-  
+
   .footer-links li {
     margin-bottom: 0.75rem;
   }
-  
+
   .footer-link {
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
     transition: all var(--transition-speed);
     text-decoration: none;
   }
-  
+
   .footer-link:hover {
     color: white;
     padding-left: 5px;
   }
-  
+
   .footer-contact-item {
     margin-bottom: 1rem;
     display: flex;
     align-items: flex-start;
   }
-  
+
   .footer-contact-icon {
     margin-right: 1rem;
     color: var(--primary-color);
   }
-  
+
   .footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 1.5rem;
   }
 </style>
 <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 sticky-top">
-    <div class="container">
-      <a href="/" class="navbar-brand d-flex align-items-center">
-        18-CREW<span class="brand-dot"></span>
-      </a>
+  <div class="container">
+    <a href="/" class="navbar-brand d-flex align-items-center">
+      18-CREW<span class="brand-dot"></span>
+    </a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarContent"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-      <div class="collapse navbar-collapse" id="navbarContent">
-        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>" href="/">HOME</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="/about">ABOUT</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="/contact">CONTACT</a>
-          </li>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>"
+            href="/"
+            >HOME</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>"
+            href="/shop"
+            >COLLECTION</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>"
+            href="/about"
+            >ABOUT</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>"
+            href="/contact"
+            >CONTACT</a
+          >
+        </li>
 
-          <% if (locals?.user || user) { %>
-            <li class="nav-item dropdown d-lg-none">
-              <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <%= user.name %>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-              </ul>
-            </li>
-          <% } else { %>
-            <li class="nav-item d-lg-none">
-              <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
-            </li>
-          <% } %>
-        </ul>
-
-        <div class="d-none d-lg-flex align-items-center gap-3">
-          <% if (locals?.user || user) { %>
-            <div class="dropdown">
-              <a class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-circle me-2"></i>
-                <%= user.name %>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-              </ul>
-            </div>
-          <% } else { %>
-            <a href="/signin" class="text-dark fs-5" title="Account" aria-label="Account">
-              <i class="bi bi-person"></i>
-            </a>
-          <% } %>
-          <a href="/wishlist" class="text-dark position-relative fs-5" title="Wishlist" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
-            <i class="bi bi-heart"></i>
-            <% if (wishlistCount > 0) { %>
-              <span class="badge-dot"></span>
-            <% } %>
+        <% if (locals?.user || user) { %>
+        <li class="nav-item dropdown d-lg-none">
+          <a
+            class="nav-link dropdown-toggle text-uppercase fw-bold"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <%= user.name %>
           </a>
-          <a href="/getCartPage" class="text-dark position-relative fs-5" title="Cart" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
-            <i class="bi bi-bag"></i>
-            <% if (cartCount > 0) { %>
-              <span class="badge-dot"></span>
-            <% } %>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item text-danger" href="/logout">Logout</a>
+            </li>
+          </ul>
+        </li>
+        <% } else { %>
+        <li class="nav-item d-lg-none">
+          <a class="nav-link" href="/signin"
+            ><i class="bi bi-person me-2"></i>Sign In</a
+          >
+        </li>
+        <% } %>
+      </ul>
+
+      <div class="d-none d-lg-flex align-items-center gap-3">
+        <% if (locals?.user || user) { %>
+        <div class="dropdown">
+          <a
+            class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-person-circle me-2"></i>
+            <%= user.name %>
           </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item text-danger" href="/logout">Logout</a>
+            </li>
+          </ul>
         </div>
+        <% } else { %>
+        <a
+          href="/signin"
+          class="text-dark fs-5"
+          title="Account"
+          aria-label="Account"
+        >
+          <i class="bi bi-person"></i>
+        </a>
+        <% } %>
+        <a
+          href="/wishlist"
+          class="text-dark position-relative fs-5"
+          title="Wishlist"
+          aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>"
+        >
+          <i class="bi bi-heart"></i>
+          <% if (wishlistCount > 0) { %>
+          <span class="badge-dot"></span>
+          <% } %>
+        </a>
+        <a
+          href="/getCartPage"
+          class="text-dark position-relative fs-5"
+          title="Cart"
+          aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>"
+        >
+          <i class="bi bi-bag"></i>
+          <% if (cartCount > 0) { %>
+          <span class="badge-dot"></span>
+          <% } %>
+        </a>
       </div>
     </div>
-  </nav>
+  </div>
+</nav>
 <!-- Privacy Hero Section -->
 <section class="privacy-hero">
   <div class="container">
@@ -302,12 +370,26 @@
     <div class="row">
       <div class="col-lg-10 mx-auto">
         <div class="privacy-content">
-          <p class="lead">Last Updated: <strong><%= new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></strong></p>
-          
-          <p>At 18-CREW, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or make a purchase from us.</p>
-          
+          <p class="lead">
+            Last Updated:
+            <strong
+              ><%= new Date().toLocaleDateString('en-US', { year: 'numeric',
+              month: 'long', day: 'numeric' }) %></strong
+            >
+          </p>
+
+          <p>
+            At 18-CREW, we are committed to protecting your privacy. This
+            Privacy Policy explains how we collect, use, disclose, and safeguard
+            your information when you visit our website or make a purchase from
+            us.
+          </p>
+
           <h2>1. Information We Collect</h2>
-          <p>We may collect personal information that you voluntarily provide to us when you:</p>
+          <p>
+            We may collect personal information that you voluntarily provide to
+            us when you:
+          </p>
           <ul>
             <li>Register on our website</li>
             <li>Place an order</li>
@@ -315,16 +397,19 @@
             <li>Contact customer service</li>
             <li>Participate in surveys or promotions</li>
           </ul>
-          
+
           <h3>Types of information collected may include:</h3>
           <ul>
             <li>Name and contact details (email, phone number, address)</li>
-            <li>Payment information (credit card details are processed securely and not stored)</li>
+            <li>
+              Payment information (credit card details are processed securely
+              and not stored)
+            </li>
             <li>Order history and preferences</li>
             <li>IP address and browser information</li>
             <li>Cookies and usage data</li>
           </ul>
-          
+
           <h2>2. How We Use Your Information</h2>
           <p>We use the information we collect to:</p>
           <ul>
@@ -336,16 +421,25 @@
             <li>Prevent fraud and enhance security</li>
             <li>Comply with legal obligations</li>
           </ul>
-          
+
           <h2>3. Sharing Your Information</h2>
-          <p>We do not sell or rent your personal information to third parties. We may share information with:</p>
+          <p>
+            We do not sell or rent your personal information to third parties.
+            We may share information with:
+          </p>
           <ul>
-            <li>Service providers who assist with order fulfillment, payment processing, and marketing</li>
+            <li>
+              Service providers who assist with order fulfillment, payment
+              processing, and marketing
+            </li>
             <li>Shipping carriers to deliver your orders</li>
             <li>Legal authorities when required by law</li>
           </ul>
-          <p>All third parties are required to maintain the confidentiality and security of your information.</p>
-          
+          <p>
+            All third parties are required to maintain the confidentiality and
+            security of your information.
+          </p>
+
           <h2>4. Cookies and Tracking Technologies</h2>
           <p>We use cookies and similar technologies to:</p>
           <ul>
@@ -354,17 +448,23 @@
             <li>Improve user experience</li>
             <li>Deliver targeted advertising</li>
           </ul>
-          <p>You can control cookies through your browser settings, but disabling them may affect website functionality.</p>
-          
+          <p>
+            You can control cookies through your browser settings, but disabling
+            them may affect website functionality.
+          </p>
+
           <h2>5. Data Security</h2>
-          <p>We implement appropriate security measures to protect your personal information, including:</p>
+          <p>
+            We implement appropriate security measures to protect your personal
+            information, including:
+          </p>
           <ul>
             <li>SSL encryption for all data transmissions</li>
             <li>Secure storage systems</li>
             <li>Regular security audits</li>
             <li>Limited access to personal data</li>
           </ul>
-          
+
           <h2>6. Your Rights</h2>
           <p>Depending on your location, you may have the right to:</p>
           <ul>
@@ -374,19 +474,31 @@
             <li>Opt-out of marketing communications</li>
             <li>Withdraw consent where processing is based on consent</li>
           </ul>
-          <p>To exercise these rights, please contact us using the information below.</p>
-          
+          <p>
+            To exercise these rights, please contact us using the information
+            below.
+          </p>
+
           <div class="update-card">
             <h2>7. Policy Updates</h2>
-            <p>We may update this Privacy Policy periodically. The updated version will be posted on our website with a new "Last Updated" date. We encourage you to review this policy regularly.</p>
+            <p>
+              We may update this Privacy Policy periodically. The updated
+              version will be posted on our website with a new "Last Updated"
+              date. We encourage you to review this policy regularly.
+            </p>
           </div>
-          
+
           <h2>8. Contact Us</h2>
-          <p>If you have any questions about this Privacy Policy or our data practices, please contact us:</p>
+          <p>
+            If you have any questions about this Privacy Policy or our data
+            practices, please contact us:
+          </p>
           <ul>
             <li>Email: privacy@18-crew.com</li>
             <li>Phone: +1 (555) 123-4567</li>
-            <li>Mail: 18-CREW Privacy Office, 123 Fashion Ave, New York, NY 10001</li>
+            <li>
+              Mail: 18-CREW Privacy Office, 123 Fashion Ave, New York, NY 10001
+            </li>
           </ul>
         </div>
       </div>
@@ -398,15 +510,19 @@
   <div class="container">
     <div class="row gy-4">
       <div class="col-lg-5">
-        <a href="/" class="footer-logo text-white">18-CREW<span class="footer-logo-dot">.</span></a>
+        <a href="/" class="footer-logo text-white"
+          >18-CREW<span class="footer-logo-dot">.</span></a
+        >
         <p class="footer-about">
-          We're dedicated to providing you with the very best fashion experience, with an emphasis on quality, style, and exceptional service.
+          We're dedicated to providing you with the very best fashion
+          experience, with an emphasis on quality, style, and exceptional
+          service.
         </p>
       </div>
       <div class="col-lg-2 col-md-4">
         <h6 class="footer-title">COMPANY</h6>
         <ul class="footer-links list-unstyled">
-          <li><a href="/home" class="footer-link">Home</a></li>
+          <li><a href="/" class="footer-link">Home</a></li>
           <li><a href="/about" class="footer-link">About us</a></li>
           <li><a href="/shop" class="footer-link">Shop</a></li>
           <li><a href="/contact" class="footer-link">Contact</a></li>
@@ -445,7 +561,9 @@
       </div>
     </div>
     <div class="footer-bottom text-center mt-5 pt-4">
-      <p class="text-muted mb-0">Copyright © 2024 18-CREW. All Rights Reserved.</p>
+      <p class="text-muted mb-0">
+        Copyright © 2024 18-CREW. All Rights Reserved.
+      </p>
     </div>
   </div>
 </footer>

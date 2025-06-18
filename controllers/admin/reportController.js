@@ -1,46 +1,66 @@
 // controllers/admin/reportController.js
 const Order = require("../../models/orderSchema");
-const moment = require('moment');
-const exceljs = require('exceljs');
-const PDFDocument = require('pdfkit');
-const fs = require('fs');
+const moment = require("moment");
+const exceljs = require("exceljs");
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
 
-const salesReportPage = async (req, res,next) => {
+const salesReportPage = async (req, res, next) => {
   try {
-    res.render('admin/sales-report', { title: 'Sales Report' });
+    res.render("admin/sales-report", { title: "Sales Report" });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
-const getSalesData = async (req, res,next) => {
+const getSalesData = async (req, res, next) => {
   try {
     const { period, specificDate, startDate, endDate } = req.body;
-   console.log(req.body)
+    
     // Input validation
-    if (!period || !['daily', 'weekly', 'monthly', 'yearly', 'custom'].includes(period)) {
-      return res.status(400).json({ success: false, message: 'Invalid or missing period' });
+    if (
+      !period ||
+      !["daily", "weekly", "monthly", "yearly", "custom"].includes(period)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or missing period" });
     }
-    if (period !== 'custom' && !specificDate) {
-      return res.status(400).json({ success: false, message: 'Specific date is required for non-custom periods' });
+    if (period !== "custom" && !specificDate) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Specific date is required for non-custom periods",
+        });
     }
-    if (period === 'custom' && (!startDate || !endDate)) {
-      return res.status(400).json({ success: false, message: 'Start and end dates are required for custom period' });
+    if (period === "custom" && (!startDate || !endDate)) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Start and end dates are required for custom period",
+        });
     }
-    if (period === 'custom' && new Date(endDate) < new Date(startDate)) {
-      return res.status(400).json({ success: false, message: 'End date cannot be before start date' });
+    if (period === "custom" && new Date(endDate) < new Date(startDate)) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "End date cannot be before start date",
+        });
     }
 
     // Determine date range
-   // Determine date range
+    // Determine date range
     let dateFilter = {};
-    let groupByFormat = '%Y-%m-%d'; // Default format for daily, weekly, monthly, custom
+    let groupByFormat = "%Y-%m-%d"; // Default format for daily, weekly, monthly, custom
 
-    if (period === 'custom') {
+    if (period === "custom") {
       dateFilter = {
         createdAt: {
           $gte: new Date(startDate),
-          $lte: new Date(endDate + 'T23:59:59.999Z'),
+          $lte: new Date(endDate + "T23:59:59.999Z"),
         },
       };
     } else {
@@ -48,14 +68,14 @@ const getSalesData = async (req, res,next) => {
       let start, end;
 
       switch (period) {
-        case 'daily':
+        case "daily":
           start = new Date(date);
           start.setHours(0, 0, 0, 0);
           end = new Date(date);
           end.setHours(23, 59, 59, 999);
           break;
 
-        case 'weekly':
+        case "weekly":
           start = new Date(date);
           start.setDate(start.getDate() - start.getDay());
           start.setHours(0, 0, 0, 0);
@@ -64,21 +84,21 @@ const getSalesData = async (req, res,next) => {
           end.setHours(23, 59, 59, 999);
           break;
 
-        case 'monthly':
+        case "monthly":
           start = new Date(date.getFullYear(), date.getMonth(), 1);
           end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
           end.setHours(23, 59, 59, 999);
           break;
 
-        case 'yearly':
+        case "yearly":
           start = new Date(date.getFullYear(), 0, 1);
           end = new Date(date.getFullYear(), 11, 31);
           end.setHours(23, 59, 59, 999);
-          groupByFormat = '%Y-%m'; // Use month format for yearly
+          groupByFormat = "%Y-%m"; // Use month format for yearly
           break;
 
         default:
-          throw new Error('Invalid period');
+          throw new Error("Invalid period");
       }
 
       dateFilter = {
@@ -91,7 +111,7 @@ const getSalesData = async (req, res,next) => {
 
     // Fetch orders
     const orders = await Order.find(dateFilter)
-      .populate('userId', 'name email')
+      .populate("userId", "name email")
       .sort({ createdAt: -1 });
 
     // Calculate summary
@@ -114,9 +134,9 @@ const getSalesData = async (req, res,next) => {
       {
         $group: {
           _id: {
-            $dateToString: { format: groupByFormat, date: '$createdAt' },
+            $dateToString: { format: groupByFormat, date: "$createdAt" },
           },
-          totalAmount: { $sum: '$finalAmount' },
+          totalAmount: { $sum: "$finalAmount" },
           count: { $sum: 1 },
         },
       },
@@ -130,7 +150,7 @@ const getSalesData = async (req, res,next) => {
     }));
 
     // For daily period, ensure at least one data point
-    if (period === 'daily' && dailyData.length === 0) {
+    if (period === "daily" && dailyData.length === 0) {
       dailyData.push({
         date: specificDate,
         amount: 0,
@@ -145,16 +165,19 @@ const getSalesData = async (req, res,next) => {
         totalSales: summary.totalNetAmount,
         totalOrders: summary.totalOrders,
         totalDiscounts: summary.totalDiscounts,
-        avgOrderValue: summary.totalOrders > 0 ? summary.totalNetAmount / summary.totalOrders : 0,
+        avgOrderValue:
+          summary.totalOrders > 0
+            ? summary.totalNetAmount / summary.totalOrders
+            : 0,
       },
       dailyData,
       data: orders.map((order) => ({
         date: order.createdAt,
         orderId: order.orderId,
-        customer: order.userId ? order.userId.name : 'Guest',
+        customer: order.userId ? order.userId.name : "Guest",
         amount: order.totalPrice || 0,
         discount: order.discount || 0,
-        couponUsed: order.couponCode || 'None',
+        couponUsed: order.couponCode || "None",
         netAmount: order.finalAmount || 0,
         status: order.status,
       })),
@@ -166,29 +189,50 @@ const getSalesData = async (req, res,next) => {
   }
 };
 
-const downloadReport = async (req, res,next) => {
+const downloadReport = async (req, res, next) => {
   try {
-    const { format, includeDetails, includeSummary, includeCharts, period, specificDate, startDate, endDate } = req.query;
+    const {
+      format,
+      includeDetails,
+      includeSummary,
+      includeCharts,
+      period,
+      specificDate,
+      startDate,
+      endDate,
+    } = req.query;
 
     // Input validation
-    if (!format || !['pdf', 'excel', 'csv'].includes(format)) {
-      return res.status(400).send('Invalid or missing format');
+    if (!format || !["pdf", "excel", "csv"].includes(format)) {
+      return res.status(400).send("Invalid or missing format");
     }
-    if (!period || !['daily', 'weekly', 'monthly', 'yearly', 'custom'].includes(period)) {
-      return res.status(400).send('Invalid or missing period');
+    if (
+      !period ||
+      !["daily", "weekly", "monthly", "yearly", "custom"].includes(period)
+    ) {
+      return res.status(400).send("Invalid or missing period");
     }
-    if (period !== 'custom' && !specificDate) {
-      return res.status(400).send('Specific date is required for non-custom periods');
+    if (period !== "custom" && !specificDate) {
+      return res
+        .status(400)
+        .send("Specific date is required for non-custom periods");
     }
-    if (period === 'custom' && (!startDate || !endDate)) {
-      return res.status(400).send('Start and end dates are required for custom period');
+    if (period === "custom" && (!startDate || !endDate)) {
+      return res
+        .status(400)
+        .send("Start and end dates are required for custom period");
     }
-    if (period === 'custom' && new Date(endDate) < new Date(startDate)) {
-      return res.status(400).send('End date cannot be before start date');
+    if (period === "custom" && new Date(endDate) < new Date(startDate)) {
+      return res.status(400).send("End date cannot be before start date");
     }
 
     // Get sales data
-    const dataResponse = await getSalesDataInternal({ period, specificDate, startDate, endDate });
+    const dataResponse = await getSalesDataInternal({
+      period,
+      specificDate,
+      startDate,
+      endDate,
+    });
     if (!dataResponse.success) {
       throw new Error(dataResponse.message);
     }
@@ -196,16 +240,37 @@ const downloadReport = async (req, res,next) => {
     const { summary, dailyData, data } = dataResponse;
 
     // Generate report based on format
-    if (format === 'pdf') {
-      await generatePDFReport(res, { summary, dailyData, data, includeDetails, includeSummary, includeCharts });
-    } else if (format === 'excel') {
-      await generateExcelReport(res, { summary, dailyData, data, includeDetails, includeSummary, includeCharts });
-    } else if (format === 'csv') {
-      await generateCSVReport(res, { summary, dailyData, data, includeDetails, includeSummary, includeCharts });
+    if (format === "pdf") {
+      await generatePDFReport(res, {
+        summary,
+        dailyData,
+        data,
+        includeDetails,
+        includeSummary,
+        includeCharts,
+      });
+    } else if (format === "excel") {
+      await generateExcelReport(res, {
+        summary,
+        dailyData,
+        data,
+        includeDetails,
+        includeSummary,
+        includeCharts,
+      });
+    } else if (format === "csv") {
+      await generateCSVReport(res, {
+        summary,
+        dailyData,
+        data,
+        includeDetails,
+        includeSummary,
+        includeCharts,
+      });
     }
   } catch (error) {
-    console.error('Error generating report:', error);
-    res.status(500).send('Error generating report');
+    console.error("Error generating report:", error);
+    res.status(500).send("Error generating report");
   }
 };
 
@@ -218,41 +283,41 @@ const getSalesDataInternal = async (params) => {
     let dateFilter = {};
     let groupBy = null;
 
-    if (period === 'custom') {
+    if (period === "custom") {
       dateFilter = {
         createdAt: {
           $gte: new Date(startDate),
-          $lte: new Date(endDate + 'T23:59:59.999Z'),
+          $lte: new Date(endDate + "T23:59:59.999Z"),
         },
       };
-      groupBy = '$dayOfMonth';
+      groupBy = "$dayOfMonth";
     } else {
       const date = new Date(specificDate);
       let start, end;
 
       switch (period) {
-        case 'daily':
+        case "daily":
           start = new Date(date.setHours(0, 0, 0, 0));
           end = new Date(date.setHours(23, 59, 59, 999));
           break;
-        case 'weekly':
+        case "weekly":
           start = new Date(date.setDate(date.getDate() - date.getDay()));
           end = new Date(start);
           end.setDate(start.getDate() + 6);
           end.setHours(23, 59, 59, 999);
           break;
-        case 'monthly':
+        case "monthly":
           start = new Date(date.getFullYear(), date.getMonth(), 1);
           end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
           end.setHours(23, 59, 59, 999);
           break;
-        case 'yearly':
+        case "yearly":
           start = new Date(date.getFullYear(), 0, 1);
           end = new Date(date.getFullYear(), 11, 31);
           end.setHours(23, 59, 59, 999);
           break;
         default:
-          throw new Error('Invalid period');
+          throw new Error("Invalid period");
       }
 
       dateFilter = {
@@ -262,16 +327,16 @@ const getSalesDataInternal = async (params) => {
         },
       };
 
-      if (period === 'weekly' || period === 'monthly') {
-        groupBy = '$dayOfMonth';
-      } else if (period === 'yearly') {
-        groupBy = '$month';
+      if (period === "weekly" || period === "monthly") {
+        groupBy = "$dayOfMonth";
+      } else if (period === "yearly") {
+        groupBy = "$month";
       }
     }
 
     // Fetch orders
     const orders = await Order.find(dateFilter)
-      .populate('userId', 'name email')
+      .populate("userId", "name email")
       .sort({ createdAt: -1 });
 
     // Calculate summary
@@ -296,9 +361,9 @@ const getSalesDataInternal = async (params) => {
         {
           $group: {
             _id: {
-              $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+              $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
             },
-            totalAmount: { $sum: '$finalAmount' },
+            totalAmount: { $sum: "$finalAmount" },
             count: { $sum: 1 },
           },
         },
@@ -318,41 +383,49 @@ const getSalesDataInternal = async (params) => {
         totalSales: summary.totalNetAmount,
         totalOrders: summary.totalOrders,
         totalDiscounts: summary.totalDiscounts,
-        avgOrderValue: summary.totalOrders > 0 ? summary.totalNetAmount / summary.totalOrders : 0,
+        avgOrderValue:
+          summary.totalOrders > 0
+            ? summary.totalNetAmount / summary.totalOrders
+            : 0,
       },
       dailyData,
       data: orders.map((order) => ({
         date: order.createdAt,
         orderId: order.orderId,
-        customer: order.userId ? order.userId.name : 'Guest',
+        customer: order.userId ? order.userId.name : "Guest",
         amount: order.totalPrice || 0,
         discount: order.discount || 0,
-        couponUsed: order.couponCode || 'None',
+        couponUsed: order.couponCode || "None",
         netAmount: order.finalAmount || 0,
         status: order.status,
       })),
     };
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
 // PDF Report Generator
-async function generatePDFReport(res, { summary, dailyData, data, includeDetails, includeSummary, includeCharts }) {
+async function generatePDFReport(
+  res,
+  { summary, dailyData, data, includeDetails, includeSummary, includeCharts }
+) {
   try {
     const doc = new PDFDocument();
 
-    const filename = `sales-report-${new Date().toISOString().split('T')[0]}.pdf`;
+    const filename = `sales-report-${
+      new Date().toISOString().split("T")[0]
+    }.pdf`;
 
     // Set response headers
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
     // Attach error handler for PDF stream
-    doc.on('error', (err) => {
-      console.error('PDF generation error:', err);
+    doc.on("error", (err) => {
+      console.error("PDF generation error:", err);
       if (!res.headersSent) {
-        res.status(500).send('Error generating PDF');
+        res.status(500).send("Error generating PDF");
       }
     });
 
@@ -360,16 +433,20 @@ async function generatePDFReport(res, { summary, dailyData, data, includeDetails
     doc.pipe(res);
 
     // Title
-    doc.fontSize(20).text('Sales Report', { align: 'center' });
+    doc.fontSize(20).text("Sales Report", { align: "center" });
     doc.moveDown();
 
     // Report generated date
-    doc.fontSize(12).text(`Report generated on: ${new Date().toLocaleDateString()}`, { align: 'left' });
+    doc
+      .fontSize(12)
+      .text(`Report generated on: ${new Date().toLocaleDateString()}`, {
+        align: "left",
+      });
     doc.moveDown();
 
     // Summary section
     if (includeSummary) {
-      doc.fontSize(16).text('Summary', { underline: true });
+      doc.fontSize(16).text("Summary", { underline: true });
       doc.moveDown(0.5);
 
       doc.fontSize(12).text(`Total Sales: ₹${summary.totalSales.toFixed(2)}`);
@@ -381,16 +458,28 @@ async function generatePDFReport(res, { summary, dailyData, data, includeDetails
 
     // Chart notice
     if (includeCharts) {
-      doc.fontSize(12).text('Note: Charts are available in the web interface only.', { align: 'center' });
+      doc
+        .fontSize(12)
+        .text("Note: Charts are available in the web interface only.", {
+          align: "center",
+        });
       doc.moveDown();
     }
 
     // Order Details section
     if (includeDetails) {
-      doc.fontSize(16).text('Order Details', { underline: true });
+      doc.fontSize(16).text("Order Details", { underline: true });
       doc.moveDown(0.5);
 
-      const headers = ['Date', 'Order ID', 'Customer', 'Amount', 'Discount', 'Net Amount', 'Status'];
+      const headers = [
+        "Date",
+        "Order ID",
+        "Customer",
+        "Amount",
+        "Discount",
+        "Net Amount",
+        "Status",
+      ];
       const columnWidths = [80, 100, 100, 60, 60, 80, 80];
       const rowHeight = 20;
       let startX = 50;
@@ -399,13 +488,20 @@ async function generatePDFReport(res, { summary, dailyData, data, includeDetails
       // Draw header row
       let x = startX;
       headers.forEach((header, i) => {
-        doc.font('Helvetica-Bold').fontSize(10).text(header, x, startY, { width: columnWidths[i], align: 'left' });
+        doc
+          .font("Helvetica-Bold")
+          .fontSize(10)
+          .text(header, x, startY, { width: columnWidths[i], align: "left" });
         x += columnWidths[i];
       });
 
       // Draw line under headers
-      doc.moveTo(startX, startY + rowHeight - 8)
-        .lineTo(startX + columnWidths.reduce((a, b) => a + b, 0), startY + rowHeight - 8)
+      doc
+        .moveTo(startX, startY + rowHeight - 8)
+        .lineTo(
+          startX + columnWidths.reduce((a, b) => a + b, 0),
+          startY + rowHeight - 8
+        )
         .stroke();
 
       // Draw data rows
@@ -423,7 +519,10 @@ async function generatePDFReport(res, { summary, dailyData, data, includeDetails
         ];
 
         row.forEach((cell, i) => {
-          doc.font('Helvetica').fontSize(10).text(cell, x, startY, { width: columnWidths[i], align: 'left' });
+          doc
+            .font("Helvetica")
+            .fontSize(10)
+            .text(cell, x, startY, { width: columnWidths[i], align: "left" });
           x += columnWidths[i];
         });
 
@@ -434,37 +533,39 @@ async function generatePDFReport(res, { summary, dailyData, data, includeDetails
 
     // Finalize and close the PDF stream
     doc.end();
-
   } catch (error) {
-    console.error('Error while generating PDF report:', error);
+    console.error("Error while generating PDF report:", error);
     if (!res.headersSent) {
-      res.status(500).send('Error generating PDF');
+      res.status(500).send("Error generating PDF");
     }
   }
 }
 
-
-
 // Excel Report Generator
-async function generateExcelReport(res, { summary, dailyData, data, includeDetails, includeSummary, includeCharts }) {
+async function generateExcelReport(
+  res,
+  { summary, dailyData, data, includeDetails, includeSummary, includeCharts }
+) {
   const workbook = new exceljs.Workbook();
-  const worksheet = workbook.addWorksheet('Sales Report');
-  const filename = `sales-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+  const worksheet = workbook.addWorksheet("Sales Report");
+  const filename = `sales-report-${
+    new Date().toISOString().split("T")[0]
+  }.xlsx`;
 
   // Summary Section
   if (includeSummary) {
-    worksheet.addRow(['Summary']);
-    worksheet.addRow(['Total Sales', summary.totalSales]);
-    worksheet.addRow(['Total Orders', summary.totalOrders]);
-    worksheet.addRow(['Total Discounts', summary.totalDiscounts]);
-    worksheet.addRow(['Average Order Value', summary.avgOrderValue]);
+    worksheet.addRow(["Summary"]);
+    worksheet.addRow(["Total Sales", summary.totalSales]);
+    worksheet.addRow(["Total Orders", summary.totalOrders]);
+    worksheet.addRow(["Total Discounts", summary.totalDiscounts]);
+    worksheet.addRow(["Average Order Value", summary.avgOrderValue]);
     worksheet.addRow([]); // empty row for spacing
   }
 
   // Daily Data Section
   if (includeCharts && dailyData.length) {
-    worksheet.addRow(['Daily Data']);
-    worksheet.addRow(['Date', 'Total Amount', 'Order Count']);
+    worksheet.addRow(["Daily Data"]);
+    worksheet.addRow(["Date", "Total Amount", "Order Count"]);
 
     dailyData.forEach((item) => {
       worksheet.addRow([item.date, item.amount, item.count]);
@@ -475,8 +576,16 @@ async function generateExcelReport(res, { summary, dailyData, data, includeDetai
 
   // Order Details Section
   if (includeDetails && data.length) {
-    worksheet.addRow(['Order Details']);
-    worksheet.addRow(['Date', 'Order ID', 'Customer', 'Amount', 'Discount', 'Net Amount', 'Status']);
+    worksheet.addRow(["Order Details"]);
+    worksheet.addRow([
+      "Date",
+      "Order ID",
+      "Customer",
+      "Amount",
+      "Discount",
+      "Net Amount",
+      "Status",
+    ]);
 
     data.forEach((order) => {
       worksheet.addRow([
@@ -492,71 +601,74 @@ async function generateExcelReport(res, { summary, dailyData, data, includeDetai
   }
 
   res.setHeader(
-    'Content-Type',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
-  res.setHeader(
-    'Content-Disposition',
-    `attachment; filename="${filename}"`
-  );
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
   await workbook.xlsx.write(res);
   res.end();
 }
 
-
 // CSV Report Generator
-async function generateCSVReport(res, { summary, dailyData, data, includeDetails, includeSummary, includeCharts }) {
-  const filename = `sales-report-${new Date().toISOString().split('T')[0]}.csv`;
+async function generateCSVReport(
+  res,
+  { summary, dailyData, data, includeDetails, includeSummary, includeCharts }
+) {
+  const filename = `sales-report-${new Date().toISOString().split("T")[0]}.csv`;
 
-  res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
-  let csvContent = '';
+  let csvContent = "";
 
   if (includeSummary) {
-    csvContent += 'Sales Report Summary\n\n';
+    csvContent += "Sales Report Summary\n\n";
     csvContent += `Total Sales,$${summary.totalSales.toFixed(2)}\n`;
     csvContent += `Total Orders,${summary.totalOrders}\n`;
     csvContent += `Total Discounts,$${summary.totalDiscounts.toFixed(2)}\n`;
-    csvContent += `Average Order Value,$${summary.avgOrderValue.toFixed(2)}\n\n`;
+    csvContent += `Average Order Value,$${summary.avgOrderValue.toFixed(
+      2
+    )}\n\n`;
   }
 
   if (includeDetails) {
-    csvContent += 'Date,Order ID,Customer,Amount,Discount,Coupon Used,Net Amount,Status\n';
+    csvContent +=
+      "Date,Order ID,Customer,Amount,Discount,Coupon Used,Net Amount,Status\n";
     data.forEach((order) => {
-      csvContent += [
-        `"${new Date(order.date).toLocaleDateString()}"`,
-        `"${order.orderId}"`,
-        `"${order.customer}"`,
-        order.amount.toFixed(2),
-        order.discount.toFixed(2),
-        `"${order.couponUsed}"`,
-        order.netAmount.toFixed(2),
-        `"${order.status}"`,
-      ].join(',') + '\n';
+      csvContent +=
+        [
+          `"${new Date(order.date).toLocaleDateString()}"`,
+          `"${order.orderId}"`,
+          `"${order.customer}"`,
+          order.amount.toFixed(2),
+          order.discount.toFixed(2),
+          `"${order.couponUsed}"`,
+          order.netAmount.toFixed(2),
+          `"${order.status}"`,
+        ].join(",") + "\n";
     });
   }
 
   res.send(csvContent);
 }
 
-
-
-
-
 const getBestSellingProducts = async (req, res, next) => {
   try {
     const { limit = 10 } = req.query;
-    
+
     const result = await Order.aggregate([
       { $unwind: "$orderedItems" },
       {
         $group: {
           _id: "$orderedItems.product",
           totalQuantity: { $sum: "$orderedItems.quantity" },
-          totalRevenue: { $sum: { $multiply: ["$orderedItems.quantity", "$orderedItems.price"] } }
-        }
+          totalRevenue: {
+            $sum: {
+              $multiply: ["$orderedItems.quantity", "$orderedItems.price"],
+            },
+          },
+        },
       },
       { $sort: { totalQuantity: -1 } },
       { $limit: parseInt(limit) },
@@ -565,8 +677,8 @@ const getBestSellingProducts = async (req, res, next) => {
           from: "products",
           localField: "_id",
           foreignField: "_id",
-          as: "productDetails"
-        }
+          as: "productDetails",
+        },
       },
       { $unwind: "$productDetails" },
       {
@@ -576,9 +688,9 @@ const getBestSellingProducts = async (req, res, next) => {
           productImage: "$productDetails.productImage",
           totalQuantity: 1,
           totalRevenue: 1,
-          _id: 0
-        }
-      }
+          _id: 0,
+        },
+      },
     ]);
 
     res.json({ success: true, data: result });
@@ -590,7 +702,7 @@ const getBestSellingProducts = async (req, res, next) => {
 const getBestSellingCategories = async (req, res, next) => {
   try {
     const { limit = 10 } = req.query;
-    
+
     const result = await Order.aggregate([
       { $unwind: "$orderedItems" },
       {
@@ -598,8 +710,8 @@ const getBestSellingCategories = async (req, res, next) => {
           from: "products",
           localField: "orderedItems.product",
           foreignField: "_id",
-          as: "productDetails"
-        }
+          as: "productDetails",
+        },
       },
       { $unwind: "$productDetails" },
       // Add this additional lookup to get category names
@@ -608,16 +720,20 @@ const getBestSellingCategories = async (req, res, next) => {
           from: "categories", // Make sure this matches your categories collection name
           localField: "productDetails.category",
           foreignField: "_id",
-          as: "categoryDetails"
-        }
+          as: "categoryDetails",
+        },
       },
       { $unwind: "$categoryDetails" },
       {
         $group: {
           _id: "$categoryDetails.name", // Now using the category name from the lookup
           totalQuantity: { $sum: "$orderedItems.quantity" },
-          totalRevenue: { $sum: { $multiply: ["$orderedItems.quantity", "$orderedItems.price"] } }
-        }
+          totalRevenue: {
+            $sum: {
+              $multiply: ["$orderedItems.quantity", "$orderedItems.price"],
+            },
+          },
+        },
       },
       { $sort: { totalRevenue: -1 } },
       { $limit: parseInt(limit) },
@@ -626,9 +742,9 @@ const getBestSellingCategories = async (req, res, next) => {
           category: "$_id",
           totalQuantity: 1,
           totalRevenue: 1,
-          _id: 0
-        }
-      }
+          _id: 0,
+        },
+      },
     ]);
 
     res.json({ success: true, data: result });
@@ -640,7 +756,7 @@ const getBestSellingCategories = async (req, res, next) => {
 const getBestSellingBrands = async (req, res, next) => {
   try {
     const { limit = 10 } = req.query;
-    
+
     const result = await Order.aggregate([
       { $unwind: "$orderedItems" },
       {
@@ -648,16 +764,20 @@ const getBestSellingBrands = async (req, res, next) => {
           from: "products",
           localField: "orderedItems.product",
           foreignField: "_id",
-          as: "productDetails"
-        }
+          as: "productDetails",
+        },
       },
       { $unwind: "$productDetails" },
       {
         $group: {
           _id: "$productDetails.brand",
           totalQuantity: { $sum: "$orderedItems.quantity" },
-          totalRevenue: { $sum: { $multiply: ["$orderedItems.quantity", "$orderedItems.price"] } }
-        }
+          totalRevenue: {
+            $sum: {
+              $multiply: ["$orderedItems.quantity", "$orderedItems.price"],
+            },
+          },
+        },
       },
       { $sort: { totalRevenue: -1 } },
       { $limit: parseInt(limit) },
@@ -666,9 +786,9 @@ const getBestSellingBrands = async (req, res, next) => {
           brand: "$_id",
           totalQuantity: 1,
           totalRevenue: 1,
-          _id: 0
-        }
-      }
+          _id: 0,
+        },
+      },
     ]);
 
     res.json({ success: true, data: result });
@@ -682,5 +802,5 @@ module.exports = {
   downloadReport,
   getBestSellingBrands,
   getBestSellingCategories,
-  getBestSellingProducts
+  getBestSellingProducts,
 };

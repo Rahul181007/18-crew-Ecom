@@ -1,81 +1,104 @@
 <%- include("../layouts/admin/header.ejs") %>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+/>
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <style>
-    .custom-toast-confirm {
-        background: linear-gradient(to right, #4b6cb7, #182848) !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        font-weight: 500;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        border-radius: 8px;
-        padding: 16px 24px;
-    }
-    .custom-toast-cancel {
-        background: linear-gradient(to right, #f5f7fa, #c3cfe2) !important;
-        color: #333 !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        font-weight: 500;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        border-radius: 8px;
-        padding: 16px 24px;
-    }
-    .toast-close {
-        color: white !important;
-        opacity: 0.8 !important;
-    }
-    .custom-toast-cancel .toast-close {
-        color: #333 !important;
-    }
+  .custom-toast-confirm {
+    background: linear-gradient(to right, #4b6cb7, #182848) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 16px 24px;
+  }
+  .custom-toast-cancel {
+    background: linear-gradient(to right, #f5f7fa, #c3cfe2) !important;
+    color: #333 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 16px 24px;
+  }
+  .toast-close {
+    color: white !important;
+    opacity: 0.8 !important;
+  }
+  .custom-toast-cancel .toast-close {
+    color: #333 !important;
+  }
 </style>
 <div class="main-content">
-<div class="main-content container-fluid py-4">
+  <div class="main-content container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h4 fw-bold"><i class="bi bi-images me-2"></i>Banner Management</h2>
-        <a href="/admin/banners/add" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-circle me-1"></i> Add New Banner
-        </a>
+      <h2 class="h4 fw-bold">
+        <i class="bi bi-images me-2"></i>Banner Management
+      </h2>
+      <a href="/admin/banners/add" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i> Add New Banner
+      </a>
     </div>
 
     <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col" style="width: 120px;">Image</th>
-                            <th scope="col">Title</th>
-                            <th scope="col">Description</th>
-                            <th scope="col">Start Date</th>
-                            <th scope="col">End Date</th>
-                            <th scope="col" style="width: 100px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% banners.forEach(banner => { %>
-                        <tr>
-                            <td>
-                                <img src="/uploads/banner/<%= banner.image %>" class="img-thumbnail" style="width: 100px; height: 60px; object-fit: cover;">
-                            </td>
-                            <td class="align-middle"><%= banner.title %></td>
-                            <td class="align-middle"><%= banner.description %></td>
-                            <td class="align-middle"><%= banner.startDate.toDateString() %></td>
-                            <td class="align-middle"><%= banner.endDate.toDateString() %></td>
-                            <td class="align-middle">
-                                <a href="/admin/banners/delete/<%= banner._id %>" 
-                                   class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i> Delete
-                                </a>
-                            </td>
-                        </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
-            </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" style="width: 120px">Image</th>
+                <th scope="col">Title</th>
+                <th scope="col">Description</th>
+                <th scope="col">Start Date</th>
+                <th scope="col">End Date</th>
+                <th scope="col" style="width: 100px">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% banners.forEach(banner => { %>
+              <tr>
+                <td>
+                  <img
+                    src="/uploads/banner/<%= banner.image %>"
+                    class="img-thumbnail"
+                    style="width: 100px; height: 60px; object-fit: cover"
+                  />
+                </td>
+                <td class="align-middle"><%= banner.title %></td>
+                <td class="align-middle"><%= banner.description %></td>
+                <td class="align-middle">
+                  <%= banner.startDate.toDateString() %>
+                </td>
+                <td class="align-middle">
+                  <%= banner.endDate.toDateString() %>
+                </td>
+                <td class="align-middle">
+                  <a
+                    href="/admin/banners/delete/<%= banner._id %>"
+                    class="btn btn-sm btn-outline-danger"
+                  >
+                    <i class="bi bi-trash"></i> Delete
+                  </a>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
-</div>
+  </div>
 </div>
 
 <%- include("../layouts/admin/footer.ejs") %>

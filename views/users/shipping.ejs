@@ -1,38 +1,50 @@
 <%- include("../layouts/header.ejs") %>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+/>
 <style>
-       :root {
-    --primary-color: #C586A5;
+  :root {
+    --primary-color: #c586a5;
     --secondary-color: #1a1517;
     --accent-color: #e60039;
     --light-bg: #f8f9fa;
     --dark-text: #212529;
     --muted-text: #6c757d;
     --transition-speed: 0.3s;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
   }
-  
+
   body {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     background-color: var(--light-bg);
     color: var(--dark-text);
     overflow-x: hidden;
   }
-/* Navigation */
+  /* Navigation */
   .navbar {
-    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
     transition: all var(--transition-speed) ease;
   }
-  
+
   .navbar.scrolled {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   }
-  
+
   .navbar-brand {
     font-weight: 700;
     font-size: 1.6rem;
@@ -40,49 +52,49 @@
     letter-spacing: 0.5px;
     position: relative;
   }
-  
+
   .brand-dot {
     width: 10px;
     height: 10px;
-    background: #C586A5;
+    background: #c586a5;
     border-radius: 50%;
     display: inline-block;
     margin-left: 4px;
   }
-  
+
   .navbar-nav {
     gap: 1.5rem;
   }
-  
+
   .navbar-nav .nav-link {
     font-weight: 500;
-    color:#212529;
+    color: #212529;
     transition: color var(--transition-speed);
     position: relative;
     padding: 0.5rem 0;
   }
-  
+
   .navbar-nav .nav-link::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
     width: 0;
     height: 2px;
-    background: #C586A5;
+    background: #c586a5;
     transition: width var(--transition-speed);
   }
-  
+
   .navbar-nav .nav-link:hover::after,
   .navbar-nav .nav-link.active::after {
     width: 100%;
   }
-  
+
   .navbar-nav .nav-link:hover,
   .navbar-nav .nav-link.active {
-    color: #C586A5;
+    color: #c586a5;
   }
-  
+
   /* Badge */
   .badge-dot {
     position: absolute;
@@ -90,12 +102,13 @@
     right: -5px;
     width: 10px;
     height: 10px;
-    background-color:#e60039;
+    background-color: #e60039;
     border-radius: 50%;
     border: 1px solid white;
   }
   .shipping-hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/shipping-hero.jpg') no-repeat center center;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("/images/shipping-hero.jpg") no-repeat center center;
     background-size: cover;
     min-height: 400px;
     display: flex;
@@ -138,7 +151,7 @@
   }
 
   .timeline::before {
-    content: '';
+    content: "";
     position: absolute;
     left: 1.5rem;
     top: 0;
@@ -153,7 +166,7 @@
   }
 
   .timeline-item::before {
-    content: '';
+    content: "";
     position: absolute;
     left: -3rem;
     top: 0;
@@ -168,31 +181,31 @@
     background: var(--secondary-color);
     color: white;
   }
-  
+
   .footer-logo {
     font-weight: 700;
     font-size: 1.8rem;
     margin-bottom: 1rem;
     display: inline-block;
   }
-  
+
   .footer-logo-dot {
     color: var(--primary-color);
   }
-  
+
   .footer-about {
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
   }
-  
+
   .footer-title {
     font-weight: 600;
     margin-bottom: 1.5rem;
     position: relative;
     display: inline-block;
   }
-  
+
   .footer-title::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -8px;
     left: 0;
@@ -200,115 +213,170 @@
     height: 2px;
     background: var(--primary-color);
   }
-  
+
   .footer-links li {
     margin-bottom: 0.75rem;
   }
-  
+
   .footer-link {
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
     transition: all var(--transition-speed);
     text-decoration: none;
   }
-  
+
   .footer-link:hover {
     color: white;
     padding-left: 5px;
   }
-  
+
   .footer-contact-item {
     margin-bottom: 1rem;
     display: flex;
     align-items: flex-start;
   }
-  
+
   .footer-contact-icon {
     margin-right: 1rem;
     color: var(--primary-color);
   }
-  
+
   .footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 1.5rem;
   }
 </style>
 <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 sticky-top">
-    <div class="container">
-      <a href="/" class="navbar-brand d-flex align-items-center">
-        18-CREW<span class="brand-dot"></span>
-      </a>
+  <div class="container">
+    <a href="/" class="navbar-brand d-flex align-items-center">
+      18-CREW<span class="brand-dot"></span>
+    </a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarContent"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-      <div class="collapse navbar-collapse" id="navbarContent">
-        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>" href="/">HOME</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="/about">ABOUT</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="/contact">CONTACT</a>
-          </li>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>"
+            href="/"
+            >HOME</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>"
+            href="/shop"
+            >COLLECTION</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>"
+            href="/about"
+            >ABOUT</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>"
+            href="/contact"
+            >CONTACT</a
+          >
+        </li>
 
-          <% if (locals?.user || user) { %>
-            <li class="nav-item dropdown d-lg-none">
-              <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <%= user.name %>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-              </ul>
-            </li>
-          <% } else { %>
-            <li class="nav-item d-lg-none">
-              <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
-            </li>
-          <% } %>
-        </ul>
-
-        <div class="d-none d-lg-flex align-items-center gap-3">
-          <% if (locals?.user || user) { %>
-            <div class="dropdown">
-              <a class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-circle me-2"></i>
-                <%= user.name %>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-              </ul>
-            </div>
-          <% } else { %>
-            <a href="/signin" class="text-dark fs-5" title="Account" aria-label="Account">
-              <i class="bi bi-person"></i>
-            </a>
-          <% } %>
-          <a href="/wishlist" class="text-dark position-relative fs-5" title="Wishlist" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
-            <i class="bi bi-heart"></i>
-            <% if (wishlistCount > 0) { %>
-              <span class="badge-dot"></span>
-            <% } %>
+        <% if (locals?.user || user) { %>
+        <li class="nav-item dropdown d-lg-none">
+          <a
+            class="nav-link dropdown-toggle text-uppercase fw-bold"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <%= user.name %>
           </a>
-          <a href="/getCartPage" class="text-dark position-relative fs-5" title="Cart" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
-            <i class="bi bi-bag"></i>
-            <% if (cartCount > 0) { %>
-              <span class="badge-dot"></span>
-            <% } %>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item text-danger" href="/logout">Logout</a>
+            </li>
+          </ul>
+        </li>
+        <% } else { %>
+        <li class="nav-item d-lg-none">
+          <a class="nav-link" href="/signin"
+            ><i class="bi bi-person me-2"></i>Sign In</a
+          >
+        </li>
+        <% } %>
+      </ul>
+
+      <div class="d-none d-lg-flex align-items-center gap-3">
+        <% if (locals?.user || user) { %>
+        <div class="dropdown">
+          <a
+            class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-person-circle me-2"></i>
+            <%= user.name %>
           </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item text-danger" href="/logout">Logout</a>
+            </li>
+          </ul>
         </div>
+        <% } else { %>
+        <a
+          href="/signin"
+          class="text-dark fs-5"
+          title="Account"
+          aria-label="Account"
+        >
+          <i class="bi bi-person"></i>
+        </a>
+        <% } %>
+        <a
+          href="/wishlist"
+          class="text-dark position-relative fs-5"
+          title="Wishlist"
+          aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>"
+        >
+          <i class="bi bi-heart"></i>
+          <% if (wishlistCount > 0) { %>
+          <span class="badge-dot"></span>
+          <% } %>
+        </a>
+        <a
+          href="/getCartPage"
+          class="text-dark position-relative fs-5"
+          title="Cart"
+          aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>"
+        >
+          <i class="bi bi-bag"></i>
+          <% if (cartCount > 0) { %>
+          <span class="badge-dot"></span>
+          <% } %>
+        </a>
       </div>
     </div>
-  </nav>
+  </div>
+</nav>
 <!-- Shipping Hero Section -->
 <section class="shipping-hero">
   <div class="container">
@@ -329,7 +397,9 @@
     <div class="row">
       <div class="col-lg-8 mx-auto text-center mb-5">
         <h2 class="section-title">Shipping Options</h2>
-        <p class="text-muted">We offer several shipping methods to suit your needs</p>
+        <p class="text-muted">
+          We offer several shipping methods to suit your needs
+        </p>
       </div>
     </div>
 
@@ -376,22 +446,32 @@
     <div class="row">
       <div class="col-lg-8 mx-auto">
         <h2 class="section-title text-center mb-5">Order Processing</h2>
-        
+
         <div class="timeline">
           <div class="timeline-item">
             <div class="timeline-year">1-2 Days</div>
             <h4>Processing Time</h4>
-            <p>Most orders are processed and shipped within 1-2 business days. During peak seasons or promotions, processing may take slightly longer.</p>
+            <p>
+              Most orders are processed and shipped within 1-2 business days.
+              During peak seasons or promotions, processing may take slightly
+              longer.
+            </p>
           </div>
           <div class="timeline-item">
             <div class="timeline-year">Email</div>
             <h4>Order Confirmation</h4>
-            <p>You'll receive an order confirmation email immediately after placing your order with all the details.</p>
+            <p>
+              You'll receive an order confirmation email immediately after
+              placing your order with all the details.
+            </p>
           </div>
           <div class="timeline-item">
             <div class="timeline-year">Email</div>
             <h4>Shipping Notification</h4>
-            <p>When your order ships, you'll receive another email with tracking information so you can follow your package's journey.</p>
+            <p>
+              When your order ships, you'll receive another email with tracking
+              information so you can follow your package's journey.
+            </p>
           </div>
         </div>
       </div>
@@ -405,13 +485,16 @@
     <div class="row">
       <div class="col-lg-8 mx-auto">
         <h2 class="section-title text-center mb-5">International Shipping</h2>
-        
+
         <div class="row g-4">
           <div class="col-md-6">
             <div class="card h-100 border-0 shadow-sm">
               <div class="card-body">
                 <h4><i class="bi bi-globe me-2"></i> Global Delivery</h4>
-                <p>We ship to most countries worldwide. Shipping costs and delivery times vary by destination.</p>
+                <p>
+                  We ship to most countries worldwide. Shipping costs and
+                  delivery times vary by destination.
+                </p>
               </div>
             </div>
           </div>
@@ -419,14 +502,21 @@
             <div class="card h-100 border-0 shadow-sm">
               <div class="card-body">
                 <h4><i class="bi bi-receipt me-2"></i> Duties & Taxes</h4>
-                <p>International customers are responsible for all customs fees, import duties, and taxes which may be charged upon delivery.</p>
+                <p>
+                  International customers are responsible for all customs fees,
+                  import duties, and taxes which may be charged upon delivery.
+                </p>
               </div>
             </div>
           </div>
         </div>
-        
+
         <div class="alert alert-info mt-4">
-          <p class="mb-0"><strong>Note:</strong> Some product restrictions may apply based on international shipping regulations. Delivery times are estimates and not guaranteed due to customs processing.</p>
+          <p class="mb-0">
+            <strong>Note:</strong> Some product restrictions may apply based on
+            international shipping regulations. Delivery times are estimates and
+            not guaranteed due to customs processing.
+          </p>
         </div>
       </div>
     </div>
@@ -439,7 +529,10 @@
     <div class="row">
       <div class="col-lg-8 mx-auto text-center">
         <h2 class="section-title mb-5">Track Your Order</h2>
-        <p class="lead mb-4">Once your order has shipped, you'll receive a tracking number to monitor your package's progress.</p>
+        <p class="lead mb-4">
+          Once your order has shipped, you'll receive a tracking number to
+          monitor your package's progress.
+        </p>
         <a href="/track-order" class="btn btn-dark px-4">Track Order</a>
       </div>
     </div>
@@ -450,15 +543,19 @@
   <div class="container">
     <div class="row gy-4">
       <div class="col-lg-5">
-        <a href="/" class="footer-logo text-white">18-CREW<span class="footer-logo-dot">.</span></a>
+        <a href="/" class="footer-logo text-white"
+          >18-CREW<span class="footer-logo-dot">.</span></a
+        >
         <p class="footer-about">
-          We're dedicated to providing you with the very best fashion experience, with an emphasis on quality, style, and exceptional service.
+          We're dedicated to providing you with the very best fashion
+          experience, with an emphasis on quality, style, and exceptional
+          service.
         </p>
       </div>
       <div class="col-lg-2 col-md-4">
         <h6 class="footer-title">COMPANY</h6>
         <ul class="footer-links list-unstyled">
-          <li><a href="/home" class="footer-link">Home</a></li>
+          <li><a href="/" class="footer-link">Home</a></li>
           <li><a href="/about" class="footer-link">About us</a></li>
           <li><a href="/shop" class="footer-link">Shop</a></li>
           <li><a href="/contact" class="footer-link">Contact</a></li>
@@ -497,7 +594,9 @@
       </div>
     </div>
     <div class="footer-bottom text-center mt-5 pt-4">
-      <p class="text-muted mb-0">Copyright © 2024 18-CREW. All Rights Reserved.</p>
+      <p class="text-muted mb-0">
+        Copyright © 2024 18-CREW. All Rights Reserved.
+      </p>
     </div>
   </div>
 </footer>

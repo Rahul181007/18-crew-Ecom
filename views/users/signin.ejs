@@ -1,36 +1,45 @@
 <%- include("../layouts/header.ejs") %>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
 
 <style>
   :root {
-    --primary-color: #C586A5;
+    --primary-color: #c586a5;
     --secondary-color: #1a1517;
     --accent-color: #e60039;
     --light-bg: #f8f9fa;
     --dark-text: #212529;
     --muted-text: #6c757d;
     --transition-speed: 0.3s;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
   }
-  
+
   body {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     background-color: var(--light-bg);
     color: var(--dark-text);
   }
-  
+
   .auth-container {
     min-height: 100vh;
     display: flex;
     align-items: center;
     padding: 2rem 0;
   }
-  
+
   .auth-card {
     width: 100%;
     max-width: 400px;
@@ -39,13 +48,13 @@
     box-shadow: var(--shadow-lg);
     overflow: hidden;
   }
-  
+
   .auth-header {
     padding: 1.5rem;
     background-color: white;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   }
-  
+
   .auth-title {
     font-weight: 700;
     font-size: 1.5rem;
@@ -54,7 +63,7 @@
     margin-bottom: 0;
     position: relative;
   }
-  
+
   .auth-title::after {
     content: "";
     display: block;
@@ -63,24 +72,24 @@
     background: var(--primary-color);
     margin: 0.5rem auto 0;
   }
-  
+
   .auth-body {
     padding: 1.5rem;
     background-color: white;
   }
-  
+
   .form-control {
     height: 48px;
     border-radius: 8px;
     border: 1px solid #e0e0e0;
     padding: 0.5rem 1rem;
   }
-  
+
   .form-control:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 0.25rem rgba(197, 134, 165, 0.1);
   }
-  
+
   .btn-auth {
     height: 48px;
     border-radius: 8px;
@@ -89,12 +98,12 @@
     position: relative;
     overflow: hidden;
   }
-  
+
   .btn-auth .btn-text {
     display: block;
     transition: all var(--transition-speed);
   }
-  
+
   .btn-auth .hover-text {
     position: absolute;
     top: 50%;
@@ -103,26 +112,26 @@
     opacity: 0;
     transition: all var(--transition-speed);
   }
-  
+
   .btn-auth:hover .btn-text {
     opacity: 0;
   }
-  
+
   .btn-auth:hover .hover-text {
     opacity: 1;
   }
-  
+
   .btn-primary-auth {
     background-color: var(--secondary-color);
     border: none;
     color: white;
   }
-  
+
   .btn-primary-auth:hover {
     background-color: var(--primary-color);
     transform: translateY(-2px);
   }
-  
+
   .btn-google {
     border: 1px solid #e0e0e0;
     display: flex;
@@ -130,12 +139,12 @@
     justify-content: center;
     gap: 0.75rem;
   }
-  
+
   .btn-google:hover {
     background-color: #f8f9fa;
     border-color: #d0d0d0;
   }
-  
+
   .divider {
     display: flex;
     align-items: center;
@@ -143,45 +152,45 @@
     color: var(--muted-text);
     font-size: 0.875rem;
   }
-  
+
   .divider::before,
   .divider::after {
     content: "";
     flex: 1;
     border-bottom: 1px solid #e0e0e0;
   }
-  
+
   .divider::before {
     margin-right: 1rem;
   }
-  
+
   .divider::after {
     margin-left: 1rem;
   }
-  
+
   .auth-footer {
     text-align: center;
     margin-top: 1.5rem;
     font-size: 0.875rem;
   }
-  
+
   .auth-link {
     color: var(--primary-color);
     font-weight: 600;
     text-decoration: none;
   }
-  
+
   .auth-link:hover {
     text-decoration: underline;
   }
-  
+
   .error-message {
     font-size: 0.75rem;
     color: var(--accent-color);
     margin-top: 0.25rem;
     display: block;
   }
-  
+
   .flash-message {
     position: fixed;
     top: 1rem;
@@ -195,12 +204,53 @@
     z-index: 1000;
     animation: fadeInOut 3s ease-in-out forwards;
   }
-  
+
+  /* Updated Logo styles for round shape */
+  .auth-logo {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .auth-logo a {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-color);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-speed);
+  }
+
+  .auth-logo a:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+  }
+
+  .auth-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   @keyframes fadeInOut {
-    0% { opacity: 0; top: 0; }
-    10% { opacity: 1; top: 1rem; }
-    90% { opacity: 1; top: 1rem; }
-    100% { opacity: 0; top: 0; }
+    0% {
+      opacity: 0;
+      top: 0;
+    }
+    10% {
+      opacity: 1;
+      top: 1rem;
+    }
+    90% {
+      opacity: 1;
+      top: 1rem;
+    }
+    100% {
+      opacity: 0;
+      top: 0;
+    }
   }
 </style>
 
@@ -210,31 +260,60 @@
     <div class="row justify-content-center">
       <div class="col-md-8 col-lg-6">
         <div class="auth-card mx-auto">
+          <!-- Logo with round shape and link to home -->
+          <div class="auth-logo">
+            <a href="/">
+              <img
+                src="/images/WhatsApp_Image_2025-04-27_at_18.33.57_039c6fd7-removebg-preview.png"
+                alt="Company Logo"
+              />
+            </a>
+          </div>
+
           <div class="auth-header">
             <h1 class="auth-title">Sign In</h1>
           </div>
-          
+
           <div class="auth-body">
             <% if (locals.message && message.length > 0) { %>
-              <div class="flash-message"><%= message %></div>
+            <div class="flash-message"><%= message %></div>
             <% } %>
 
             <form action="/signin" method="post" id="signform">
               <div class="mb-3">
-                <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  name="email"
+                  placeholder="Email address"
+                  required
+                />
                 <div id="error2" class="error-message"></div>
               </div>
 
               <div class="mb-3">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  placeholder="Password"
+                  required
+                />
                 <div id="error3" class="error-message"></div>
               </div>
 
               <div class="text-end mb-4">
-                <a href="/forgot-Password" class="small text-decoration-none">Forgot password?</a>
+                <a href="/forgot-Password" class="small text-decoration-none"
+                  >Forgot password?</a
+                >
               </div>
 
-              <button type="submit" class="btn btn-primary-auth btn-auth w-100 mb-3">
+              <button
+                type="submit"
+                class="btn btn-primary-auth btn-auth w-100 mb-3"
+              >
                 <span class="btn-text">Sign In</span>
                 <span class="hover-text">Welcome Back!</span>
               </button>
@@ -242,12 +321,18 @@
               <div class="divider">OR</div>
 
               <a href="/auth/google" class="btn btn-google btn-auth w-100 mb-4">
-                <img src="/images/googlesignup.png" alt="Google Logo" width="20" height="20">
+                <img
+                  src="/images/googlesignup.png"
+                  alt="Google Logo"
+                  width="20"
+                  height="20"
+                />
                 <span>Continue with Google</span>
               </a>
 
               <div class="auth-footer">
-                Don't have an account? <a href="/register" class="auth-link">Sign up</a>
+                Don't have an account?
+                <a href="/register" class="auth-link">Sign up</a>
               </div>
             </form>
           </div>
@@ -267,7 +352,7 @@
   function emailValidateChecking() {
     const emailVal = emailId.value.trim();
     const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-  
+
     if (!emailPattern.test(emailVal)) {
       error2.style.display = "block";
       error2.innerHTML = "Please enter a valid email address";
@@ -276,7 +361,7 @@
       error2.innerHTML = "";
     }
   }
-  
+
   function passwordValidateChecking() {
     const passval = passwordId.value;
     error3.style.display = "none";
@@ -284,13 +369,13 @@
   }
 
   // Add event listeners
-  emailId.addEventListener('blur', emailValidateChecking);
-  passwordId.addEventListener('blur', passwordValidateChecking);
-  
-  signform.addEventListener('submit', function(e) {
+  emailId.addEventListener("blur", emailValidateChecking);
+  passwordId.addEventListener("blur", passwordValidateChecking);
+
+  signform.addEventListener("submit", function (e) {
     emailValidateChecking();
     passwordValidateChecking();
-    
+
     if (error2.innerHTML) {
       e.preventDefault();
     }

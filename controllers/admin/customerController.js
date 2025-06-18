@@ -1,6 +1,6 @@
 const User = require("../../models/userSchema");
 
-const customerInfo = async (req, res,next) => {
+const customerInfo = async (req, res, next) => {
   try {
     let search = "";
     if (req.query.search) {
@@ -35,47 +35,41 @@ const customerInfo = async (req, res,next) => {
 
     // Pass data to view
     res.render("customers", {
-      activePage: "users",  // or "customers" depending on your sidebar naming
+      activePage: "users", // or "customers" depending on your sidebar naming
       data: userData,
       totalPages,
       currentPage: page,
-      search,  // optional: useful for keeping search value in the input
+      search, // optional: useful for keeping search value in the input
     });
-
   } catch (error) {
-    // console.log(error);
-    // res.status(500).send("Internal Server Error");
-    next(error)
+    
+    next(error);
   }
 };
 
 // ............customer blocked............
-const customerBlocked=async(req,res,next)=>{
-    try {
-     let id= req.query.id;
-     await User.updateOne({_id:id},{$set:{isBlocked:true}});  
-     res.redirect("/admin/users")
-     
-    } catch (error) {
-       next(error)
-    }
-        
-}
+const customerBlocked = async (req, res, next) => {
+  try {
+    let id = req.query.id;
+    await User.updateOne({ _id: id }, { $set: { isBlocked: true } });
+    res.redirect("/admin/users");
+  } catch (error) {
+    next(error);
+  }
+};
 // .................customer-unblocked............
-const customerunBlocked=async(req,res,next)=>{
-    try {
-        let id=req.query.id;
-        await User.updateOne({_id:id},{$set:{isBlocked:false}});
-        res.redirect("/admin/users");
-    } catch (error) {
-        next(error)
-    }
-}
+const customerunBlocked = async (req, res, next) => {
+  try {
+    let id = req.query.id;
+    await User.updateOne({ _id: id }, { $set: { isBlocked: false } });
+    res.redirect("/admin/users");
+  } catch (error) {
+    next(error);
+  }
+};
 
-
-
-module.exports={
-    customerInfo,
-    customerBlocked,
-    customerunBlocked
-}
+module.exports = {
+  customerInfo,
+  customerBlocked,
+  customerunBlocked,
+};
