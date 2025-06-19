@@ -109,46 +109,71 @@
   }
 
   /* Hero Section */
-  .hero-section {
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-      url("/images/hero_img.png") no-repeat center center;
-    background-size: cover;
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-  }
+.hero-section {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6));
+  background-size: cover;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  /* Add these properties to prevent repeating */
+  background-repeat: no-repeat;
+  background-position: center center;
+  
+}
 
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    animation: fadeInUp 1s ease;
+@media (max-width: 768px) {
+    .hero-section {
+    min-height: 60vh;
+    background-attachment: scroll; /* Better for mobile performance */
   }
+}
 
+.hero-content {
+  position: relative;
+  z-index: 2;
+  animation: fadeInUp 1s ease;
+  /* Add padding for better mobile spacing */
+  padding: 2rem 1rem;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  /* Add responsive font sizes */
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive font sizes */
+@media (max-width: 992px) {
   .hero-title {
-    font-size: 3.5rem;
-    font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-size: 2.8rem;
   }
+}
 
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.2rem;
+  }
   .hero-subtitle {
-    font-weight: 400;
-    letter-spacing: 1px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    font-size: 1rem;
   }
+}
 
-  .btn-outline-light {
-    border-width: 2px;
-    transition: all var(--transition-speed);
+@media (max-width: 576px) {
+  .hero-title {
+    font-size: 1.8rem;
   }
-
-  .btn-outline-light:hover {
-    background: white;
-    color: var(--dark-text);
-    transform: translateY(-2px);
-  }
-
+}
   /* Category Section */
   .section-title {
     position: relative;
@@ -491,37 +516,7 @@
     }
   }
 
-  /* Responsive Adjustments */
-  @media (max-width: 992px) {
-    .hero-title {
-      font-size: 2.8rem;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .hero-title {
-      font-size: 2.2rem;
-    }
-
-    .hero-subtitle {
-      font-size: 1rem;
-    }
-
-    .section-title {
-      font-size: 1.8rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .hero-title {
-      font-size: 1.8rem;
-    }
-
-    .category-img-container,
-    .product-img-container {
-      height: 220px;
-    }
-  }
+  
 </style>
 
 <!-- Navigation -->
@@ -530,6 +525,32 @@
     <a href="/" class="navbar-brand d-flex align-items-center">
       18-CREW<span class="brand-dot"></span>
     </a>
+
+    <!-- Cart & Wishlist Icons - Always Visible on Mobile -->
+    <div class="d-flex d-lg-none align-items-center gap-3 ms-auto me-3">
+      <a
+        href="/wishlist"
+        class="text-dark position-relative fs-5"
+        title="Wishlist"
+        aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>"
+      >
+        <i class="bi bi-heart"></i>
+        <% if (wishlistCount > 0) { %>
+        <span class="badge-dot"></span>
+        <% } %>
+      </a>
+      <a
+        href="/getCartPage"
+        class="text-dark position-relative fs-5"
+        title="Cart"
+        aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>"
+      >
+        <i class="bi bi-bag"></i>
+        <% if (cartCount > 0) { %>
+        <span class="badge-dot"></span>
+        <% } %>
+      </a>
+    </div>
 
     <button
       class="navbar-toggler"
@@ -572,6 +593,7 @@
           >
         </li>
 
+        <!-- User Dropdown for Mobile -->
         <% if (locals?.user || user) { %>
         <li class="nav-item dropdown d-lg-none">
           <a
@@ -581,7 +603,7 @@
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            <%= user.name %>
+            <i class="bi bi-person-circle me-2"></i><%= user.name %>
           </a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
@@ -600,6 +622,7 @@
         <% } %>
       </ul>
 
+      <!-- Desktop View Icons -->
       <div class="d-none d-lg-flex align-items-center gap-3">
         <% if (locals?.user || user) { %>
         <div class="dropdown">
@@ -659,29 +682,21 @@
 </nav>
 
 <!-- Hero Section -->
+<!-- Hero Section -->
 <section
   class="hero-section"
-  style="
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-      url('/uploads/banner/<%= banner ? banner.image : 'default.png' %>')
-        no-repeat center center;
-    background-size: cover;
-  "
+  style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/uploads/banner/<%= banner ? banner.image : 'default.png' %>');"
 >
   <div class="container">
     <div class="hero-content text-center text-white">
       <% if (banner) { %>
       <h5 class="hero-subtitle text-uppercase mb-3"><%= banner.title %></h5>
       <h1 class="hero-title mb-4"><%= banner.description %></h1>
-      <a href="/shop" class="btn btn-outline-light btn-lg px-4 py-2"
-        >Shop Now</a
-      >
+      <a href="/shop" class="btn btn-outline-light btn-lg px-4 py-2">Shop Now</a>
       <% } else { %>
       <h5 class="hero-subtitle text-uppercase mb-3">Our Bestseller</h5>
       <h1 class="hero-title mb-4">Latest Arrivals</h1>
-      <a href="/shop" class="btn btn-outline-light btn-lg px-4 py-2"
-        >Shop Now</a
-      >
+      <a href="/shop" class="btn btn-outline-light btn-lg px-4 py-2">Shop Now</a>
       <% } %>
     </div>
   </div>

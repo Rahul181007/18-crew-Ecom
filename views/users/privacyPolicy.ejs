@@ -224,6 +224,32 @@
       18-CREW<span class="brand-dot"></span>
     </a>
 
+    <!-- Cart & Wishlist Icons - Always Visible on Mobile -->
+    <div class="d-flex d-lg-none align-items-center gap-3 ms-auto me-3">
+      <a
+        href="/wishlist"
+        class="text-dark position-relative fs-5"
+        title="Wishlist"
+        aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>"
+      >
+        <i class="bi bi-heart"></i>
+        <% if (wishlistCount > 0) { %>
+        <span class="badge-dot"></span>
+        <% } %>
+      </a>
+      <a
+        href="/getCartPage"
+        class="text-dark position-relative fs-5"
+        title="Cart"
+        aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>"
+      >
+        <i class="bi bi-bag"></i>
+        <% if (cartCount > 0) { %>
+        <span class="badge-dot"></span>
+        <% } %>
+      </a>
+    </div>
+
     <button
       class="navbar-toggler"
       type="button"
@@ -265,6 +291,7 @@
           >
         </li>
 
+        <!-- User Dropdown for Mobile -->
         <% if (locals?.user || user) { %>
         <li class="nav-item dropdown d-lg-none">
           <a
@@ -274,7 +301,7 @@
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            <%= user.name %>
+            <i class="bi bi-person-circle me-2"></i><%= user.name %>
           </a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
@@ -293,6 +320,7 @@
         <% } %>
       </ul>
 
+      <!-- Desktop View Icons -->
       <div class="d-none d-lg-flex align-items-center gap-3">
         <% if (locals?.user || user) { %>
         <div class="dropdown">
@@ -567,4 +595,5 @@
     </div>
   </div>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <%- include("../layouts/footer.ejs") %>

@@ -618,77 +618,160 @@
   }
 </style>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3 sticky-top">
   <div class="container">
     <a href="/" class="navbar-brand d-flex align-items-center">
       18-CREW<span class="brand-dot"></span>
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+    <!-- Cart & Wishlist Icons - Always Visible on Mobile -->
+    <div class="d-flex d-lg-none align-items-center gap-3 ms-auto me-3">
+      <a
+        href="/wishlist"
+        class="text-dark position-relative fs-5"
+        title="Wishlist"
+        aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>"
+      >
+        <i class="bi bi-heart"></i>
+        <% if (wishlistCount > 0) { %>
+        <span class="badge-dot"></span>
+        <% } %>
+      </a>
+      <a
+        href="/getCartPage"
+        class="text-dark position-relative fs-5"
+        title="Cart"
+        aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>"
+      >
+        <i class="bi bi-bag"></i>
+        <% if (cartCount > 0) { %>
+        <span class="badge-dot"></span>
+        <% } %>
+      </a>
+    </div>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarContent"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarContent">
       <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>" href="/">HOME</a>
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>"
+            href="/"
+            >HOME</a
+          >
         </li>
         <li class="nav-item">
-          <a class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>" href="/shop">COLLECTION</a>
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>"
+            href="/shop"
+            >COLLECTION</a
+          >
         </li>
         <li class="nav-item">
-          <a class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>" href="/about">ABOUT</a>
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>"
+            href="/about"
+            >ABOUT</a
+          >
         </li>
         <li class="nav-item">
-          <a class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>" href="/contact">CONTACT</a>
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>"
+            href="/contact"
+            >CONTACT</a
+          >
         </li>
 
+        <!-- User Dropdown for Mobile -->
         <% if (locals?.user || user) { %>
-          <li class="nav-item dropdown d-lg-none">
-            <a class="nav-link dropdown-toggle text-uppercase fw-bold" href="#" role="button" data-bs-toggle="dropdown">
-              <%= user.name %>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-            </ul>
-          </li>
+        <li class="nav-item dropdown d-lg-none">
+          <a
+            class="nav-link dropdown-toggle text-uppercase fw-bold"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-person-circle me-2"></i><%= user.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item text-danger" href="/logout">Logout</a>
+            </li>
+          </ul>
+        </li>
         <% } else { %>
-          <li class="nav-item d-lg-none">
-            <a class="nav-link" href="/signin"><i class="bi bi-person me-2"></i>Sign In</a>
-          </li>
+        <li class="nav-item d-lg-none">
+          <a class="nav-link" href="/signin"
+            ><i class="bi bi-person me-2"></i>Sign In</a
+          >
+        </li>
         <% } %>
       </ul>
 
-      <div class="d-none d-lg-flex align-items-center gap-4">
+      <!-- Desktop View Icons -->
+      <div class="d-none d-lg-flex align-items-center gap-3">
         <% if (locals?.user || user) { %>
-          <div class="dropdown">
-            <a class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-              <i class="bi bi-person-circle me-2"></i>
-              <%= user.name %>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-            </ul>
-          </div>
-        <% } else { %>
-          <a href="/signin" class="text-dark fs-5" title="Account">
-            <i class="bi bi-person"></i>
+        <div class="dropdown">
+          <a
+            class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-person-circle me-2"></i>
+            <%= user.name %>
           </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item text-danger" href="/logout">Logout</a>
+            </li>
+          </ul>
+        </div>
+        <% } else { %>
+        <a
+          href="/signin"
+          class="text-dark fs-5"
+          title="Account"
+          aria-label="Account"
+        >
+          <i class="bi bi-person"></i>
+        </a>
         <% } %>
-        <a href="/wishlist" class="text-dark position-relative fs-5" title="Wishlist" aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>">
+        <a
+          href="/wishlist"
+          class="text-dark position-relative fs-5"
+          title="Wishlist"
+          aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>"
+        >
           <i class="bi bi-heart"></i>
           <% if (wishlistCount > 0) { %>
-            <span class="badge-dot"></span>
+          <span class="badge-dot"></span>
           <% } %>
         </a>
-        <a href="/getCartPage" class="text-dark position-relative fs-5" title="Cart" aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>">
+        <a
+          href="/getCartPage"
+          class="text-dark position-relative fs-5"
+          title="Cart"
+          aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>"
+        >
           <i class="bi bi-bag"></i>
           <% if (cartCount > 0) { %>
-            <span class="badge-dot"></span>
+          <span class="badge-dot"></span>
           <% } %>
         </a>
       </div>
@@ -1082,9 +1165,10 @@ async function toggleWishlist(productId) {
     const endpoint = isInWishlist ? '/removeFromWishlist' : '/addToWishlist';
     
     try {
-        // Show processing state with animation
+        // Show processing state
         wishlistHeart.classList.add('processing');
-        wishlistHeart.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+        const originalClasses = wishlistHeart.className;
+        wishlistHeart.className = 'bi bi-arrow-repeat wishlist-heart processing';
         
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -1095,7 +1179,17 @@ async function toggleWishlist(productId) {
         const data = await response.json();
         
         if (response.ok && data.status) {
-            // Premium success toast with animation
+            // Toggle heart state
+            wishlistHeart.classList.remove('bi-heart', 'bi-heart-fill', 'processing');
+            wishlistHeart.classList.add(isInWishlist ? 'bi-heart' : 'bi-heart-fill');
+            wishlistHeart.classList.toggle('active');
+            wishlistHeart.setAttribute('aria-label', isInWishlist ? 'Add to wishlist' : 'Remove from wishlist');
+            
+            // Bounce animation
+            wishlistHeart.classList.add('animate-bounce');
+            setTimeout(() => wishlistHeart.classList.remove('animate-bounce'), 1000);
+            
+            // Success toast
             Toastify({
                 text: `<div class="toast-premium-content">
                         <div class="toast-tick-animation">
@@ -1113,31 +1207,23 @@ async function toggleWishlist(productId) {
                 escapeMarkup: false
             }).showToast();
             
-            // Toggle heart state with animation
-            wishlistHeart.classList.remove('processing');
-            wishlistHeart.innerHTML = isInWishlist ? '<i class="bi bi-heart"></i>' : '<i class="bi bi-heart-fill"></i>';
-            wishlistHeart.classList.toggle('active');
-            wishlistHeart.setAttribute('aria-label', isInWishlist ? 'Add to wishlist' : 'Remove from wishlist');
-            
-            // Add bounce animation
-            wishlistHeart.classList.add('animate-bounce');
-            setTimeout(() => wishlistHeart.classList.remove('animate-bounce'), 1000);
-            
-            // Update wishlist badge
+            // Update wishlist badge count
             const wishlistLink = document.querySelector('a[href="/wishlist"]');
             if (wishlistLink) {
                 let wishlistBadge = wishlistLink.querySelector('.badge-dot');
-                if (!wishlistBadge && data.wishlistCount > 0) {
-                    wishlistBadge = document.createElement('span');
-                    wishlistBadge.className = 'badge-dot';
-                    wishlistLink.appendChild(wishlistBadge);
-                }
-                if (data.wishlistCount === 0 && wishlistBadge) {
+                if (data.wishlistCount > 0) {
+                    if (!wishlistBadge) {
+                        wishlistBadge = document.createElement('span');
+                        wishlistBadge.className = 'badge-dot';
+                        wishlistLink.appendChild(wishlistBadge);
+                    }
+                } else if (wishlistBadge) {
                     wishlistBadge.remove();
                 }
             }
+            
         } else if (response.status === 401) {
-            // Premium auth required toast
+            // Auth required toast
             Toastify({
                 text: `<div class="toast-premium-content">
                         <div class="toast-icon">🔒</div>
@@ -1150,12 +1236,15 @@ async function toggleWishlist(productId) {
                 escapeMarkup: false,
                 onClick: () => window.location.href = '/signin'
             }).showToast();
+            
+            // Reset heart to original state
+            wishlistHeart.className = originalClasses;
         } else {
-            // Premium error toast
+            // Error toast
             Toastify({
                 text: `<div class="toast-premium-content">
                         <div class="toast-icon">✕</div>
-                        <span>${data.message || `Could not ${isInWishlist ? 'remove from' : 'add to'} wishlist`}</span>
+                        <span>${data.message || 'Operation failed'}</span>
                     </div>`,
                 duration: 3000,
                 gravity: "top",
@@ -1163,9 +1252,12 @@ async function toggleWishlist(productId) {
                 className: "toast-premium-error",
                 escapeMarkup: false
             }).showToast();
+            
+            // Reset heart to original state
+            wishlistHeart.className = originalClasses;
         }
     } catch (error) {
-        // Premium network error toast
+        // Network error toast
         Toastify({
             text: `<div class="toast-premium-content">
                     <div class="toast-icon">⚠</div>
@@ -1177,6 +1269,9 @@ async function toggleWishlist(productId) {
             className: "toast-premium-error",
             escapeMarkup: false
         }).showToast();
+        
+        // Reset heart to original state
+        wishlistHeart.className = originalClasses;
     } finally {
         wishlistHeart.classList.remove('processing');
     }

@@ -9,6 +9,7 @@ const Cart = require("../../models/cartSchema");
 const { isValidObjectId } = mongoose;
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
+const WishList=require("../../models/wishlistSchema")
 const { logWalletTransaction } = require("../../utils/wallet");
 const {
   WalletSources,
@@ -26,6 +27,8 @@ const loadCheckout = async (req, res, next) => {
     const userId = req.session.user || req.session.user._id;
     const { productId, size, buyNow, orderId } = req.query;
     console.log("Query parameters:", req.query);
+      const wishlist = await WishList.findOne({ userId: userId });
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
 
     if (!userId) {
       return res.status(401).redirect("/signin");
@@ -227,7 +230,7 @@ const loadCheckout = async (req, res, next) => {
       couponDiscount,
       Coupon: findCoupons,
       cartCount: isCart ? products.length : 0,
-      wishlistCount: findUser.wishlist?.length || 0,
+      wishlistCount,
       buyNowData,
       orderId: orderId || null,
       title: "Checkout",

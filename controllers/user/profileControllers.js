@@ -440,6 +440,8 @@ const addAddress = async (req, res, next) => {
     const cart = await Cart.findOne({ userId });
     let cartCount = 0;
     cartCount = cart && cart.items ? cart.items.length : 0;
+      const wishlist = await WishList.findOne({ userId: userId });
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
     if (!userId) {
       return res.redirect("/signin"); //
     }
@@ -452,8 +454,7 @@ const addAddress = async (req, res, next) => {
     res.render("add-address", {
       user: userData,
       cartCount,
-      wishlistCount:
-        userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
+      wishlistCount,
       title: "Address-add",
     });
   } catch (error) {
@@ -542,7 +543,8 @@ const editAddress = async (req, res, next) => {
     const cart = await Cart.findOne({ userId });
     let cartCount = 0;
     cartCount = cart && cart.items ? cart.items.length : 0;
-
+      const wishlist = await WishList.findOne({ userId: userId });
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
     const userData = await User.findById(userId);
     if (!userData) {
       return res.redirect("/pageNotFound");
@@ -575,8 +577,7 @@ const editAddress = async (req, res, next) => {
       addressIndex,
       user: userData,
       cartCount,
-      wishlistCount:
-        userData?.wishlist?.length ?? req.user?.wishlist?.length ?? 0,
+      wishlistCount,
       source,
       title: "Address-edit",
     });

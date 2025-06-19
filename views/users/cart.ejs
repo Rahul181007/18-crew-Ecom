@@ -189,17 +189,44 @@
 </style>
 
 <!-- Navbar (unchanged) -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3 sticky-top">
   <div class="container">
     <a href="/" class="navbar-brand d-flex align-items-center">
       18-CREW<span class="brand-dot"></span>
     </a>
+
+    <!-- Cart & Wishlist Icons - Always Visible on Mobile -->
+    <div class="d-flex d-lg-none align-items-center gap-3 ms-auto me-3">
+      <a
+        href="/wishlist"
+        class="text-dark position-relative fs-5"
+        title="Wishlist"
+        aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>"
+      >
+        <i class="bi bi-heart"></i>
+        <% if (wishlistCount > 0) { %>
+        <span class="badge-dot"></span>
+        <% } %>
+      </a>
+      <a
+        href="/getCartPage"
+        class="text-dark position-relative fs-5"
+        title="Cart"
+        aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>"
+      >
+        <i class="bi bi-bag"></i>
+        <% if (cartCount > 0) { %>
+        <span class="badge-dot"></span>
+        <% } %>
+      </a>
+    </div>
 
     <button
       class="navbar-toggler"
       type="button"
       data-bs-toggle="collapse"
       data-bs-target="#navbarContent"
+      aria-label="Toggle navigation"
     >
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -235,6 +262,7 @@
           >
         </li>
 
+        <!-- User Dropdown for Mobile -->
         <% if (locals?.user || user) { %>
         <li class="nav-item dropdown d-lg-none">
           <a
@@ -242,8 +270,9 @@
             href="#"
             role="button"
             data-bs-toggle="dropdown"
+            aria-expanded="false"
           >
-            <%= user.name %>
+            <i class="bi bi-person-circle me-2"></i><%= user.name %>
           </a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
@@ -262,7 +291,8 @@
         <% } %>
       </ul>
 
-      <div class="d-none d-lg-flex align-items-center gap-4">
+      <!-- Desktop View Icons -->
+      <div class="d-none d-lg-flex align-items-center gap-3">
         <% if (locals?.user || user) { %>
         <div class="dropdown">
           <a
@@ -270,6 +300,7 @@
             href="#"
             role="button"
             data-bs-toggle="dropdown"
+            aria-expanded="false"
           >
             <i class="bi bi-person-circle me-2"></i>
             <%= user.name %>
@@ -283,7 +314,12 @@
           </ul>
         </div>
         <% } else { %>
-        <a href="/signin" class="text-dark fs-5" title="Account">
+        <a
+          href="/signin"
+          class="text-dark fs-5"
+          title="Account"
+          aria-label="Account"
+        >
           <i class="bi bi-person"></i>
         </a>
         <% } %>
