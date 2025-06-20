@@ -1112,6 +1112,9 @@ async function addToCart(productId) {
         }).showToast();
       }
     } catch (error) {
+      if (error.response?.status === 401) {
+        window.location.href = '/signin';
+    }else{
       // Premium network error toast
       Toastify({
         text: `<div class="toast-premium-content">
@@ -1126,6 +1129,7 @@ async function addToCart(productId) {
         escapeMarkup: false
       }).showToast();
     }
+  }
 }
   async function buyNow(productId) {
     const sizeInput = document.querySelector('input[name="size"]:checked');
@@ -1159,7 +1163,7 @@ async function addToCart(productId) {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Could not verify stock availability'
+        text: 'Could not verify stock availability or login & try'
       });
     }
   }

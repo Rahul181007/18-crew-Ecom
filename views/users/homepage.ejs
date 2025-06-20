@@ -932,6 +932,10 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId }),
       });
+      if(response.status===401){
+        window.location.href='/signin'
+      }
+
       const data = await response.json();
 
       if (response.ok && data.status) {
