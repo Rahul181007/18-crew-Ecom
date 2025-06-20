@@ -785,7 +785,7 @@
     <!-- Thumbnails Column -->
     <div class="col-md-1 order-md-1 d-flex flex-md-column thumbnail-container">
       <% product.productImage.forEach((image, index) => { %>
-        <img src="/Uploads/re-image/<%= image %>" 
+        <img src="/uploads/re-image/<%= image %>" 
              class="thumbnail-img <%= index === 0 ? 'active' : '' %>" 
              alt="Thumbnail <%= index + 1 %>"
              onclick="changeMainImage(this, '<%= image %>')">
@@ -795,7 +795,7 @@
     <!-- Main Image Column -->
     <div class="col-md-5 order-md-2">
       <div class="zoom-container rounded-3 overflow-hidden">
-        <img src="/Uploads/re-image/<%= product.productImage[0] %>" 
+        <img src="/uploads/re-image/<%= product.productImage[0] %>" 
              class="img-fluid main-product-image zoom-image" 
              alt="<%= product.productName %>"
              id="mainProductImage">
@@ -935,7 +935,7 @@
           <div class="col-6 col-md-3 mb-3">
             <a href="/productDetails?id=<%= relatedProducts[i]._id %>" class="text-decoration-none text-dark">
               <div class="card related-product-card h-100">
-                <img src="/Uploads/re-image/<%= relatedProducts[i].productImage[0] || 'default.jpg' %>" 
+                <img src="/uploads/re-image/<%= relatedProducts[i].productImage[0] || 'default.jpg' %>" 
                      class="card-img-top" 
                      alt="<%= relatedProducts[i].productName %>">
                 <div class="card-body">

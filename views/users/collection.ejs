@@ -904,7 +904,7 @@ body {
             <% products.forEach(product => { %>
               <div class="product-card">
                 <a href="/productDetails?id=<%= product._id %>" class="text-decoration-none text-reset">
-                  <img src="/Uploads/re-image/<%= product.productImage[0] || 'default.jpg' %>" alt="<%= product.productName %>" class="img-fluid" loading="lazy" />
+                  <img src="/uploads/re-image/<%= product.productImage[0] || 'default.jpg' %>" alt="<%= product.productName %>" class="img-fluid" loading="lazy" />
                   <div class="product-details">
                     <h5 class="product-title"><%= product.productName %></h5>
                     <p class="product-brand">Brand: <%= product.brand && product.brand.brandName ? product.brand.brandName : product.brand %></p>

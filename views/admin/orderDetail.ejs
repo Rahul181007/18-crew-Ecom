@@ -276,7 +276,7 @@
               <li class="list-group-item d-flex align-items-center">
                 <div class="d-flex align-items-center me-3">
                   <% if (item.product?.productImage) { %>
-                    <img src="/Uploads/re-image/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>" class="product-image me-2">
+                    <img src="/uploads/re-image/<%= item.product.productImage[0] %>" alt="<%= item.product.productName %>" class="product-image me-2">
                   <% } %>
                   <span class="order-status status-<%= item.returnStatus ? item.returnStatus.toLowerCase() : (item.status || 'pending').toLowerCase().replace(' ', '-') %>">
                     <%= item.returnStatus ? 
