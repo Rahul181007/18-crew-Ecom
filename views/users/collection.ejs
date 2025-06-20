@@ -919,7 +919,7 @@ body {
                   </div>
                 </a>
                 <div class="product-actions">
-                  <button class="btn btn-quick-view" onclick="showQuickView('<%= product._id %>', '<%= product.productName %>', '<%= product.brand && product.brand.brandName ? product.brand.brandName : product.brand %>', '<%= product.salePrice %>', '<%= product.regularPrice %>', '/Uploads/re-image/<%= product.productImage[0] %>')" aria-label="Quick view for <%= product.productName %>">
+                  <button class="btn btn-quick-view" onclick="showQuickView('<%= product._id %>', '<%= product.productName %>', '<%= product.brand && product.brand.brandName ? product.brand.brandName : product.brand %>', '<%= product.salePrice %>', '<%= product.regularPrice %>', '/uploads/re-image/<%= product.productImage[0] %>')" aria-label="Quick view for <%= product.productName %>">
                     <i class="bi bi-eye"></i> Quick View
                   </button>
                   <a href="#" class="wishlist-icon" onclick="toggleWishlist('<%= product._id %>', this)" title="Add to Wishlist" aria-label="Add <%= product.productName %> to wishlist" data-product-id="<%= product._id %>">
@@ -1166,7 +1166,10 @@ body {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ productId }),
         });
-        
+        if (response.status === 401) {
+      window.location.href = '/signin'; 
+      return;
+    }
         const data = await response.json();
         
         if (response.ok && data.status) {

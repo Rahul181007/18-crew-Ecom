@@ -41,10 +41,11 @@ const addToWishlist = async (req, res, next) => {
   try {
     const userId = req.session.user;
      if (!userId) {
-      const error = new Error("unauthorised access");
-      error.statusCode = 404;
-      return next(error);
-    }
+  return res.status(401).json({
+    status: false,
+    message: "Please log in to add to wishlist",
+  });
+}
     const productId = req.body.productId;
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res
@@ -87,6 +88,12 @@ const removeFromWishlist = async (req, res, next) => {
   try {
     const { productId } = req.body;
     const userId = req.session.user;
+    if (!userId) {
+  return res.status(401).json({
+    status: false,
+    message: "Please log in to add to wishlist",
+  });
+}
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res

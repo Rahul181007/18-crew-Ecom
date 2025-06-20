@@ -25,6 +25,7 @@ const razorpay = new Razorpay({
 const loadCheckout = async (req, res, next) => {
   try {
     const userId = req.session.user || req.session.user._id;
+    
     const { productId, size, buyNow, orderId } = req.query;
     console.log("Query parameters:", req.query);
       const wishlist = await WishList.findOne({ userId: userId });

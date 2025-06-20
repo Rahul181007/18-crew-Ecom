@@ -252,6 +252,7 @@
     <h3 class="mb-4 text-center">Create User Address</h3>
     <div class="form-card p-4 p-md-5">
         <form id="addressForm" method="POST" action="/addAddress">
+          <input type="hidden" name="source" value="<%= source %>">
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
                     <label for="addressType" class="form-label">Address Type:</label>

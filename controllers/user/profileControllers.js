@@ -437,6 +437,7 @@ const updateProfile = async (req, res, next) => {
 const addAddress = async (req, res, next) => {
   try {
     const userId = req.session.user;
+    const source = req.query.source || "userProfile";
     const cart = await Cart.findOne({ userId });
     let cartCount = 0;
     cartCount = cart && cart.items ? cart.items.length : 0;
@@ -455,6 +456,7 @@ const addAddress = async (req, res, next) => {
       user: userData,
       cartCount,
       wishlistCount,
+      source,
       title: "Address-add",
     });
   } catch (error) {
@@ -483,6 +485,7 @@ const postAddAddress = async (req, res, next) => {
       pincode,
       mobile,
       altMobile,
+      source,
     } = req.body;
 
     // Validate required fields
@@ -492,6 +495,7 @@ const postAddAddress = async (req, res, next) => {
         cartCount: userData?.cart?.length ?? 0,
         wishlistCount: userData?.wishlist?.length ?? 0,
         error: "Please fill in all required fields.",
+        source: source || "userProfile",
         title: "Address-add",
       });
     }
@@ -528,7 +532,11 @@ const postAddAddress = async (req, res, next) => {
     }
 
     await userAddress.save();
-    res.redirect("/userProfile");
+      if (source === "checkout") {
+      return res.redirect("/checkout");
+    } else {
+      return res.redirect("/userProfile");
+    }
   } catch (error) {
     next(error);
   }
