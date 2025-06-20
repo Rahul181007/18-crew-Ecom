@@ -25,7 +25,7 @@ const razorpay = new Razorpay({
 const loadCheckout = async (req, res, next) => {
   try {
     const userId = req.session.user || req.session.user._id;
-    
+
     const { productId, size, buyNow, orderId } = req.query;
     console.log("Query parameters:", req.query);
       const wishlist = await WishList.findOne({ userId: userId });
@@ -319,13 +319,6 @@ const checkStock = async (req, res, next) => {
 
     const userId = req.session.user?._id;
     
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Please login first",
-      });
-    }
 
     const user = await User.findById(userId);
     if (!user) {
