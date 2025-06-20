@@ -1053,6 +1053,7 @@ async function addToCart(productId) {
       const response = await fetch("/addToCart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ productId, size })
       });
       
@@ -1093,7 +1094,7 @@ async function addToCart(productId) {
         }
       } else {
         if (response.status === 401) {
-         window.location.href = '/sigin';
+         window.location.href = '/signin';
         return;
        }
         // Premium error toast
@@ -1138,7 +1139,9 @@ async function addToCart(productId) {
     
     // First check stock availability
     try {
-      const stockCheck = await fetch(`/checkStock?productId=${productId}&size=${size}`);
+       const stockCheck = await fetch(`/checkStock?productId=${productId}&size=${size}`, {
+      credentials: 'include' // 🔧 IMPORTANT!
+    });
        if (stockCheck.status === 401) {
       window.location.href = '/signin'; 
       return;
