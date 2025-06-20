@@ -932,9 +932,14 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId }),
       });
-      if(response.status===401){
-        window.location.href='/signin'
-        return
+      if (response.status === 401) {
+        showToast({
+          message: "Please log in to add to wishlist",
+          type: "error",
+          icon: "✕",
+        });
+        window.location.href = '/signin';
+        return;
       }
 
       const data = await response.json();
@@ -959,7 +964,7 @@
         icon: "⚠",
       });
     }
-  }
+}
 
   function showToast({ message, type, icon }) {
     const colors = {
