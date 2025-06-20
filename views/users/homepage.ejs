@@ -934,6 +934,7 @@
       });
       if(response.status===401){
         window.location.href='/signin'
+        return
       }
 
       const data = await response.json();

@@ -1024,93 +1024,173 @@ function updatePlaceOrderButtonState() {
 }
 
 async function placeOrder(userId) {
-  const selectedAddress = document.querySelector("input[name='selectedAddress']:checked");
-  const paymentMethod = document.querySelector("input[name='payment_option']:checked");
+    // Get all required elements
+    const selectedAddress = document.querySelector("input[name='selectedAddress']:checked");
+    const paymentMethod = document.querySelector("input[name='payment_option']:checked");
+    const addressCards = document.querySelectorAll('.address-card');
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
 
-  if (!selectedAddress) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Address Required',
-      text: 'Please select a delivery address',
-    });
-    return;
-  }
+    // Validate address selection
+    if (!selectedAddress) {
+        // Highlight all address cards to show they need selection
+        addressCards.forEach(card => {
+            card.style.borderColor = 'var(--error)';
+            card.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.2)';
+        });
 
-  if (!paymentMethod) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Payment Method Required',
-      text: 'Please select a payment method',
-    });
-    return;
-  }
-
-  const { addressId, addressIndex } = JSON.parse(selectedAddress.value);
-  const payment = paymentMethod.value;
-  const finalAmount = parseFloat(document.getElementById('totalValue').textContent.replace(/[^\d.]/g, ''));
-  const isBuyNow = document.getElementById('buyNow')?.value === 'true';
-
-  const swal = Swal.fire({
-    title: 'Processing Order',
-    html: 'Please wait while we process your order...',
-    allowOutsideClick: false,
-    didOpen: () => Swal.showLoading(),
-  });
-
-  try {
-    const orderData = {
-      userId,
-      addressId,
-      addressIndex,
-      payment,
-      couponCode: couponState.applied,
-      generalDiscount,
-      couponDiscount: couponState.discount,
-      finalAmount,
-      buyNow: isBuyNow,
-      totalPrice: cartTotal,
-    };
-
-    if (isBuyNow) {
-      orderData.productId = document.getElementById('buyNowProductId')?.value;
-      orderData.size = document.getElementById('buyNowSize')?.value;
+        Swal.fire({
+            icon: 'error',
+            title: 'Address Required',
+            text: 'Please select a delivery address to continue',
+            didClose: () => {
+                // Scroll to address section
+                document.querySelector('.section-card h4').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        });
+        return;
     }
 
-    console.log('Order Data:', orderData);
+    // Validate payment method
+    if (!paymentMethod) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Method Required',
+            text: 'Please select a payment method to continue',
+            didClose: () => {
+                // Scroll to payment section
+                document.querySelector('.payment_method').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        });
+        return;
+    }
 
-    const response = await fetch('/orderPlaced', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData),
+    // Parse address data
+    let addressData;
+    try {
+        addressData = JSON.parse(selectedAddress.value);
+        if (!addressData.addressId || typeof addressData.addressIndex === 'undefined') {
+            throw new Error('Invalid address data');
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Address',
+            text: 'The selected address appears to be invalid. Please select another address or add a new one.',
+            didClose: () => {
+                document.querySelector('.section-card h4').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        });
+        return;
+    }
+
+    // Validate wallet balance if wallet payment selected
+    if (paymentMethod.value === 'wallet') {
+        const walletBalance = parseFloat('<%= user.wallet || 0 %>');
+        const totalAmount = parseFloat(document.getElementById('totalValue').textContent.replace(/[^\d.]/g, ''));
+        
+        if (walletBalance < totalAmount) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Insufficient Wallet Balance',
+                html: `Your wallet balance (₹${walletBalance.toFixed(2)}) is less than the order total (₹${totalAmount.toFixed(2)}).<br>Please choose another payment method.`,
+                didClose: () => {
+                    document.querySelector('.payment_method').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            });
+            return;
+        }
+    }
+
+    // Validate COD availability for orders > 1000
+    if (paymentMethod.value === 'cod') {
+        const totalAmount = parseFloat(document.getElementById('totalValue').textContent.replace(/[^\d.]/g, ''));
+        if (totalAmount > 1000) {
+            Swal.fire({
+                icon: 'error',
+                title: 'COD Not Available',
+                text: 'Cash on Delivery is not available for orders above ₹1000. Please choose another payment method.',
+                didClose: () => {
+                    document.querySelector('.payment_method').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            });
+            return;
+        }
+    }
+
+    // If all validations pass, proceed with order placement
+    const swal = Swal.fire({
+        title: 'Processing Order',
+        html: 'Please wait while we process your order...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
     });
 
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const errorText = await response.text();
-      throw new Error(`Server returned HTML: ${errorText.substring(0, 100)}`);
-    }
+    try {
+        const orderData = {
+            userId,
+            addressId: addressData.addressId,
+            addressIndex: addressData.addressIndex,
+            payment: paymentMethod.value,
+            couponCode: couponState.applied,
+            generalDiscount,
+            couponDiscount: couponState.discount,
+            finalAmount: parseFloat(document.getElementById('totalValue').textContent.replace(/[^\d.]/g, '')),
+            buyNow: document.getElementById('buyNow')?.value === 'true',
+            totalPrice: cartTotal,
+        };
 
-    const data = await response.json();
+        if (orderData.buyNow) {
+            const productId = document.getElementById('buyNowProductId')?.value;
+            const size = document.getElementById('buyNowSize')?.value;
+            
+            if (!productId || !size) {
+                throw new Error('Product information missing for Buy Now order');
+            }
+            
+            orderData.productId = productId;
+            orderData.size = size;
+        }
 
-    if (!data.status) {
-      throw new Error(data.message || 'Order placement failed');
-    }
+        const response = await fetch('/orderPlaced', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData),
+        });
 
-    if (data.razorpayOrder) {
-      handleRazorpayPayment(data.razorpayOrder, data.order._id);
-    } else {
-      Swal.close();
-      window.location.href = `/successPage?id=${data.order._id}`;
+        const data = await response.json();
+
+        if (!response.ok || !data.status) {
+            throw new Error(data.message || 'Order placement failed');
+        }
+
+        if (data.razorpayOrder) {
+            handleRazorpayPayment(data.razorpayOrder, data.order._id);
+        } else {
+            Swal.close();
+            window.location.href = `/successPage?id=${data.order._id}`;
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Order Failed',
+            text: error.message,
+        });
     }
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Order Failed',
-      text: error.message,
-    }).then(() => {
-      window.location.href = `/failedPage?message=${encodeURIComponent(error.message)}`;
-    });
-  }
 }
 
 function handleRazorpayPayment(razorpayOrder, orderId) {
