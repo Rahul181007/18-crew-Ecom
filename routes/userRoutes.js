@@ -56,7 +56,8 @@ user_route.get(
   passport.authenticate("google", { failureRedirect: "/register" }),
   async (req, res) => {
     try {
-      req.session.user = req.user;
+      req.session.user = req.user._id;
+
       
 
       // Check if user already redeemed referral
