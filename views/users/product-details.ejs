@@ -1057,10 +1057,29 @@ async function addToCart(productId) {
         body: JSON.stringify({ productId, size })
       });
       
-      if (response.status === 401) {
-         window.location.href = '/signin';
+      if (response.status === 401 || response.headers.get("content-type")?.includes("text/html")) {
+        let data;
+        try {
+          data = await response.json();
+        } catch {
+          data = { message: "User not authenticated" };
+        }
+        Toastify({
+          text: `<div class="toast-premium-content">
+                  <div class="toast-icon">✕</div>
+                  <span>${data.message || 'User not authenticated'}</span>
+                </div>`,
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          className: "toast-premium-error",
+          stopOnFocus: true,
+          escapeMarkup: false
+        }).showToast();
+        window.location.href = '/signin';
         return;
-       }
+      }
+      
       const data = await response.json();
       
       if (response.ok && data.status) { 
@@ -1112,9 +1131,7 @@ async function addToCart(productId) {
         }).showToast();
       }
     } catch (error) {
-      if (error.response?.status === 401) {
-        window.location.href = '/signin';
-    }else{
+      console.error("Fetch error:", error); // Debug log
       // Premium network error toast
       Toastify({
         text: `<div class="toast-premium-content">
@@ -1129,7 +1146,6 @@ async function addToCart(productId) {
         escapeMarkup: false
       }).showToast();
     }
-  }
 }
   async function buyNow(productId) {
     const sizeInput = document.querySelector('input[name="size"]:checked');
