@@ -1,39 +1,29 @@
 <%- include("../layouts/header.ejs") %>
 
-<link
-  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
-  rel="stylesheet"
-  crossorigin="anonymous"
-/>
-<link
-  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
-  rel="stylesheet"
-/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+
 <style>
   body {
     font-family: "Poppins", sans-serif;
     background-color: #f4f6f9;
-    margin: 0;
-    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    margin: 0;
+    padding: 0;
   }
 
   .otp-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     padding: 30px;
-    border: none;
     border-radius: 12px;
     background-color: #ffffff;
-    width: 100%;
     max-width: 450px;
     margin: 20px auto;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
   }
 
   .otp-container:hover {
@@ -74,25 +64,21 @@
     border-radius: 8px;
     font-size: 14px;
     color: #2d3748;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   .form-control:focus {
-    outline: none;
     border-color: #3182ce;
     box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    outline: none;
   }
 
   .btn {
-    display: inline-block;
     padding: 12px 24px;
     border: none;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
-    text-align: center;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
   }
 
   .btn-dark {
@@ -121,22 +107,20 @@
   .otp-timer-wrapper {
     display: flex;
     justify-content: center;
-    align-items: center;
     margin-bottom: 20px;
-    width: 100%;
   }
 
   .otp-timer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background-color: #edf2f7;
     font-size: 14px;
     font-weight: 500;
     color: #2d3748;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     border: 1px solid #e2e8f0;
   }
 
@@ -178,16 +162,13 @@
       max-width: 100%;
       margin: 10px;
     }
-
     .heading_s1 h3 {
       font-size: 20px;
     }
-
     .form-control {
       padding: 10px;
       font-size: 13px;
     }
-
     .btn {
       padding: 10px 20px;
       font-size: 13px;
@@ -209,13 +190,15 @@
     </div>
   </form>
   <div class="form-group otp-timer-wrapper">
-    <div class="otp-timer" id="otpTimer"></div>
+    <div class="otp-timer" id="otpTimer">1:00</div>
   </div>
   <div class="form-group">
     <button
       type="button"
       class="btn btn-link resend-button"
       onclick="resendOtp()"
+      id="resendOtpBtn"
+      disabled
     >
       Resend OTP
     </button>
@@ -228,6 +211,10 @@
   </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
 <script>
   let otpTimerInterval;
   let timer = 60;
@@ -235,30 +222,30 @@
   function updateTimerColor(percentage) {
     const timerElement = document.getElementById("otpTimer");
     if (percentage > 50) {
-      timerElement.style.backgroundColor = "#28a745";
+      timerElement.style.backgroundColor = "#28a745"; // green
     } else if (percentage > 25) {
-      timerElement.style.backgroundColor = "#ffc107";
+      timerElement.style.backgroundColor = "#ffc107"; // yellow
     } else {
-      timerElement.style.backgroundColor = "#dc3545";
+      timerElement.style.backgroundColor = "#dc3545"; // red
     }
   }
 
   function startOtpTimer() {
     const timerElement = document.getElementById("otpTimer");
+    const resendBtn = document.getElementById("resendOtpBtn");
+    resendBtn.disabled = true;
 
     otpTimerInterval = setInterval(() => {
       const minutes = Math.floor(timer / 60);
       const seconds = timer % 60;
-
-      timerElement.textContent = `${minutes}:${
-        seconds < 10 ? "0" : ""
-      }${seconds}`;
+      timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
       updateTimerColor((timer / 60) * 100);
 
       if (--timer < 0) {
         clearInterval(otpTimerInterval);
         timerElement.textContent = "Expired";
         timerElement.style.backgroundColor = "red";
+        resendBtn.disabled = false;
       }
     }, 1000);
   }
@@ -271,7 +258,6 @@
 
   initializeOtpTimer();
 
-  // ✅ JavaScript form handling
   document.getElementById("otpForm").addEventListener("submit", validOtpForm);
 
   async function validOtpForm(event) {
@@ -323,6 +309,9 @@
       timer = 60;
       startOtpTimer();
 
+      const resendBtn = document.getElementById("resendOtpBtn");
+      resendBtn.disabled = true;
+
       const response = await fetch("/resend-forgot-otp", {
         method: "POST",
         headers: {
@@ -354,11 +343,5 @@
   }
 </script>
 
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script
-  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
-  crossorigin="anonymous"
-></script>
-
 <%- include("../layouts/footer.ejs") %>
+
