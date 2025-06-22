@@ -925,16 +925,23 @@
     }
   });
 
-  async function addToWishlist(productId) {
+async function addToWishlist(productId) {
     try {
       const response = await fetch("/addToWishlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId }),
       });
+
       if (response.status === 401) {
+        let data;
+        try {
+          data = await response.json();
+        } catch {
+          data = { message: "Please log in to add to wishlist" };
+        }
         showToast({
-          message: "Please log in to add to wishlist",
+          message: data.message || "Please log in to add to wishlist",
           type: "error",
           icon: "✕",
         });
@@ -957,7 +964,8 @@
           icon: "✕",
         });
       }
-    } catch {
+    } catch (error) {
+      console.error("Fetch error:", error); // Debug log
       showToast({
         message: "Network error - please try again",
         type: "error",
