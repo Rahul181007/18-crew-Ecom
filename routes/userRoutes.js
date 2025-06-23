@@ -57,7 +57,6 @@ user_route.get(
   async (req, res) => {
     try {
       req.session.user = req.user._id;
-
       
 
       // Check if user already redeemed referral
@@ -166,7 +165,5 @@ user_route.get("/privacy",userContoller.loadPrivacyPage)
 // .........pagenot found.........
 user_route.get("/pageNotFound",userContoller.pageNotFound);
 
-user_route.get('*', (req, res) => {
-  res.status(404).render('page-404', { title: 'error' });
-});
+
 module.exports=user_route;
