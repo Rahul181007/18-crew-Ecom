@@ -99,5 +99,11 @@ admin_route.get("/banners", adminAuth, bannerControlleer.getBanners);
 admin_route.get("/banners/add", adminAuth, bannerControlleer.addBannerPage)
 admin_route.post("/banners/add", adminAuth, bannerUpload.single("image"), adminAuth, bannerControlleer.addBanner);
 admin_route.get("/banners/delete/:id", adminAuth, bannerControlleer.deleteBanner);
+
+admin_route.get('*', (req, res) => {
+  res.status(404).render("admin-error", {
+    activePage: "admin-error",
+  });
+});
 module.exports = admin_route;
 

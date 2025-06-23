@@ -166,5 +166,7 @@ user_route.get("/privacy",userContoller.loadPrivacyPage)
 // .........pagenot found.........
 user_route.get("/pageNotFound",userContoller.pageNotFound);
 
-
+user_route.get('*', (req, res) => {
+  res.status(404).render('page-404', { title: 'error' });
+});
 module.exports=user_route;
