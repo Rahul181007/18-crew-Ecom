@@ -687,25 +687,21 @@ const mongoose = require("mongoose");
 
 const deleteAddress = async (req, res, next) => {
   try {
-    const { addressId, index,source } = req.params;
-    console.log(req.params);
-    console.log("Address ID:", addressId);
+    const { addressId, index } = req.params;
+    const source = req.query.source;
 
     const objectId = new mongoose.Types.ObjectId(addressId);
 
-    // Check if address exists
     const findAddress = await Address.findOne({ "address._id": objectId });
     if (!findAddress) {
       return res.status(404).send("Address not found");
     }
 
-    // Perform delete
     await Address.updateOne(
       { "address._id": objectId },
       { $pull: { address: { _id: objectId } } }
     );
 
-        // Redirect based on source
     if (source === "checkout") {
       return res.redirect("/checkout");
     } else {
@@ -715,6 +711,7 @@ const deleteAddress = async (req, res, next) => {
     next(error);
   }
 };
+
 
 const deleteAccn = async (req, res, next) => {
   try {

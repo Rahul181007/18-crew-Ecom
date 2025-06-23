@@ -707,11 +707,12 @@ body {
                                         <div class="mt-2">
                                             <a href="/editAddress?id=<%= userAddress._id %>&index=<%= index %>&source=checkout" 
                                                class="btn btn-sm btn-outline-primary">Edit</a>
-                                            <a href="/deleteAddress/<%= address._id %>/<%= index %>source=checkout" 
-                                               class="btn btn-sm btn-outline-danger ms-2" 
-                                               onclick="return confirm('Are you sure you want to delete this address?')">
+                                            <a href="/deleteAddress/<%= address._id %>/<%= index %>?source=checkout"
+                                                class="btn btn-sm btn-outline-danger ms-2"
+                                                >
                                                 Delete
-                                            </a>
+                                             </a>
+
                                         </div>
                                     </div>
                                 </div>
