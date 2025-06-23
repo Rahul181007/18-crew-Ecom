@@ -687,7 +687,7 @@ const mongoose = require("mongoose");
 
 const deleteAddress = async (req, res, next) => {
   try {
-    const { addressId, index } = req.params;
+    const { addressId, index,source } = req.params;
     console.log(req.params);
     console.log("Address ID:", addressId);
 
@@ -705,7 +705,12 @@ const deleteAddress = async (req, res, next) => {
       { $pull: { address: { _id: objectId } } }
     );
 
-    res.redirect("/userProfile");
+        // Redirect based on source
+    if (source === "checkout") {
+      return res.redirect("/checkout");
+    } else {
+      return res.redirect("/userProfile");
+    }
   } catch (error) {
     next(error);
   }
