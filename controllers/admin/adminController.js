@@ -14,7 +14,7 @@ const loadLogin = async (req, res, next) => {
   try {
     if (req.session.admin) {
       // If session exists, redirect to dashboard
-      return res.redirect("/admin");
+      return res.redirect("/admin/dashboard");
     } else {
       // Otherwise, render the login page
       res.render("admin-login", { message: null, title: "Admin-login" });
