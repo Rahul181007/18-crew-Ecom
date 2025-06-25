@@ -134,7 +134,9 @@ const loadOrderDetail = async (req, res, next) => {
       .populate("orderedItems.product", "productName productImage");
 
     if (!order) {
-      return res.status(404).redirect("/admin/pageError");
+      const error = new Error("Order not found");
+      error.statusCode = 404;
+      return next(error);
     }
     res.render("orderDetail", {
       order,

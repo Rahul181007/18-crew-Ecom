@@ -172,6 +172,11 @@ const geteditCategory = async (req, res, next) => {
   try {
     const id = req.query.id;
     const category = await Category.findOne({ _id: id });
+    if(!category){
+      const error = new Error("category not found");
+      error.statusCode = 404;
+      return next(error);
+    }
     res.render("edit-category", { category: category, activePage: "category" });
   } catch (error) {
     next(error);
