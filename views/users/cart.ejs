@@ -477,37 +477,34 @@
           </div>
         </div>
 
-        <!-- Price Summary -->
-        <div class="col-lg-3">
-          <div class="border p-4 rounded shadow-sm">
-            <h5 class="mb-3">PRICE DETAILS</h5>
-            <ul class="list-unstyled">
-              <li class="d-flex justify-content-between py-2">
-                <span>Subtotal</span>
-                <span id="subTotal<%= item._id %>">₹<%= grandTotal.toFixed(2) %></span>
-              </li>
-              <li class="d-flex justify-content-between py-2">
-                <span>Shipping</span>
-                <span>Free</span>
-              </li>
-              <li class="d-flex justify-content-between py-2 border-top mt-2">
-                <strong>Total</strong>
-                <strong
-                  >₹<span id="total"><%= grandTotal.toFixed(2) %></span></strong
-                >
-              </li>
-            </ul>
-            <% if (data.length > 0) { %>
-            <button id="proceed-to-checkout" class="btn btn-dark w-100 mt-3">
-              Proceed to Checkout
-            </button>
-            <% } else { %>
-            <a href="/shop" class="btn btn-dark w-100 mt-3"
-              >Continue Shopping</a
-            >
-            <% } %>
-          </div>
-        </div>
+       
+  <!-- Price Summary -->
+<div class="col-lg-3">
+  <div class="border p-4 rounded shadow-sm">
+    <h5 class="mb-3">PRICE DETAILS</h5>
+    <ul class="list-unstyled">
+      <li class="d-flex justify-content-between py-2">
+        <span>Subtotal</span>
+        <span id="cart-subtotal">₹<%= grandTotal.toFixed(2) %></span>
+      </li>
+      <li class="d-flex justify-content-between py-2">
+        <span>Shipping</span>
+        <span>Free</span>
+      </li>
+      <li class="d-flex justify-content-between py-2 border-top mt-2">
+        <strong>Total</strong>
+        <strong>₹<span id="total"><%= grandTotal.toFixed(2) %></span></strong>
+      </li>
+    </ul>
+    <% if (data.length > 0) { %>
+    <button id="proceed-to-checkout" class="btn btn-dark w-100 mt-3">
+      Proceed to Checkout
+    </button>
+    <% } else { %>
+    <a href="/shop" class="btn btn-dark w-100 mt-3">Continue Shopping</a>
+    <% } %>
+  </div>
+</div>
       </div>
     </div>
   </section>
@@ -522,43 +519,46 @@
 
     if (newQuantity < 1) return;
     if (newQuantity > 3) {
-      Swal.fire(
-        "Limit Exceeded",
-        "You can order maximum 3 items of each product.",
-        "error"
-      );
-      return;
+        Swal.fire(
+            "Limit Exceeded",
+            "You can order maximum 3 items of each product.",
+            "error"
+        );
+        return;
     }
 
     $.ajax({
-      url: "/changeQuantity",
-      method: "POST",
-      data: {
-        cartItemId,
-        newQuantity,
-        price,
-      },
-      success: (response) => {
-        if (response.success) {
-          quantityInput.value = newQuantity;
-          document.getElementById(`subTotal${cartItemId}`).textContent =
-            response.newSubTotal.toFixed(2);
-          document.getElementById("total").textContent =
-            response.newGrandTotal.toFixed(2);
-        } else {
-          Swal.fire("Error", response.message, "error");
-        }
-      },
-      error: (xhr) => {
-        Swal.fire(
-          "Error",
-          xhr.responseJSON?.message ||
-            "Failed to update quantity. Please try again.",
-          "error"
-        );
-      },
+        url: "/changeQuantity",
+        method: "POST",
+        data: {
+            cartItemId,
+            newQuantity,
+            price,
+        },
+        success: (response) => {
+            if (response.success) {
+                quantityInput.value = newQuantity;
+                document.getElementById(`subTotal${cartItemId}`).textContent = 
+                    response.newSubTotal.toFixed(2);
+                // Update both subtotal and total
+                document.getElementById("cart-subtotal").textContent = 
+                    "₹" + response.newGrandTotal.toFixed(2);
+                document.getElementById("total").textContent = 
+                    response.newGrandTotal.toFixed(2);
+            } else {
+                Swal.fire("Error", response.message, "error");
+            }
+        },
+        error: (xhr) => {
+            Swal.fire(
+                "Error",
+                xhr.responseJSON?.message ||
+                "Failed to update quantity. Please try again.",
+                "error"
+            );
+        },
     });
-  }
+}
 
   function confirmRemove(cartItemId) {
     // Create a loading indicator
