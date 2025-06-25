@@ -253,6 +253,11 @@ const geteditProduct = async (req, res, next) => {
   try {
     const id = req.query.id;
     const findProduct = await Product.findOne({ _id: id }).populate("category");
+    if(!findProduct){
+      const error = new Error("Product not found");
+      error.statusCode = 404;
+      return next(error);
+    }
     const category = await Category.find({});
     const brand = await Brand.find({});
     res.render("edit-product", {
