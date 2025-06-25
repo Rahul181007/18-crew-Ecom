@@ -183,7 +183,7 @@ const userProfile = async (req, res, next) => {
       createdOn: -1,
     });
     const cart = await Cart.findOne({ userId: userId });
-    const walletTransactions = await WalletTransaction.find({ userId });
+    const walletTransactions = await WalletTransaction.find({ userId }).sort({createdAt:-1});
     console.log("1", walletTransactions);
     let cartCount = 0;
     const wishlist = await WishList.findOne({ userId: userId });

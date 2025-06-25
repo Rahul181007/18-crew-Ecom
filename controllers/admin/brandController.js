@@ -29,8 +29,8 @@ const getBrandPage = async (req, res, next) => {
 const addBrand = async (req, res, next) => {
   try {
     const brandName = req.body.name;
-
-    const existBrand = await Brand.findOne({ brandName: brandName });
+    
+    const existBrand = await Brand.findOne({ brandName: { $regex: `^${brandName}$`, $options: "i" } });
     if (existBrand) {
       const page = parseInt(req.query.page) || 1;
       const limit = 4;
