@@ -13,7 +13,7 @@ passport.use(new GoogleStrategy({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: "https://18-crew.shop/auth/google/callback",
   passReqToCallback: true,
-},
+}, 
 async (req, accessToken, refreshToken, profile, done) => {
   let user = await User.findOne({ googleId: profile.id });
 

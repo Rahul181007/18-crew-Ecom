@@ -96,7 +96,7 @@ user_route.get("/search", userContoller.searchProduct);
 user_route.get("/search/suggestions", userContoller.getSearchSuggestions);
 user_route.get("/about",userContoller.loadAboutPage);
 user_route.get("/contact",userContoller.loadContactpage);
-user_route.post("/sendMessage",userContoller.recieveMessage);
+user_route.post("/sendMessage",userAuth,userContoller.recieveMessage);
 // profileMangement
 user_route.get("/forgot-password",profileController.getForgotPassPage)
 user_route.post("/forgotEmailValid",profileController.forgotEmailValid);
