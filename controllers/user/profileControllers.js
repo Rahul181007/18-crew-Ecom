@@ -403,26 +403,29 @@ const changePassValid = async (req, res, next) => {
   }
 };
 
-//  update profile
 const updateProfile = async (req, res, next) => {
   try {
     const { name, mobile } = req.body;
-    console.log(req.file);
     const id = req.session.user;
     const image = req.file ? req.file.filename : null;
 
-    const findUser = await User.findOne({ _id: id });
+    const findUser = await User.findById(id);
+
     if (findUser) {
       const updateData = {
-        name: name,
-        mobile: mobile,
+        name,
       };
+
+      if (mobile && mobile.trim() !== "") {
+        updateData.mobile = mobile.trim();
+      }
 
       if (image) {
         updateData.image = image;
       }
 
       await User.findByIdAndUpdate(id, { $set: updateData });
+
       res.redirect("/userProfile");
     } else {
       res.redirect("/pageNotFound");
