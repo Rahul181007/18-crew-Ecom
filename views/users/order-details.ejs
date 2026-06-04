@@ -5,6 +5,15 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
+    :root {
+    --primary-color: #c586a5;
+    --secondary-color: #1a1517;
+    --accent-color: #e60039;
+    --light-bg: #f8f9fa;
+    --dark-text: #212529;
+    --muted-text: #6c757d;
+    --transition-speed: 0.3s;
+  }
 /* General Styling */
 body {
     font-family: 'Inter', sans-serif;
@@ -12,84 +21,76 @@ body {
     color: #1e293b;
 }
 
-/* ========== NAVBAR STYLES (ADDED FROM YOUR SECOND CODE) ========== */
-.navbar {
+  .navbar {
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-}
+    transition: all var(--transition-speed) ease;
+  }
 
-.navbar.scrolled {
+  .navbar.scrolled {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
+  }
 
-.navbar-brand {
+  .navbar-brand {
     font-weight: 700;
     font-size: 1.6rem;
-    color: #1a1517;
+    color: var(--secondary-color);
     letter-spacing: 0.5px;
     position: relative;
-    transition: color 0.2s ease;
-}
+  }
 
-.navbar-brand:hover {
-    color:#a3305e;
-}
-
-.brand-dot {
+  .brand-dot {
     width: 10px;
     height: 10px;
-    background: #c586a5;
+    background: var(--primary-color);
     border-radius: 50%;
     display: inline-block;
     margin-left: 4px;
-}
+  }
 
-.navbar-nav {
+  .navbar-nav {
     gap: 1.5rem;
-}
+  }
 
-.navbar-nav .nav-link {
+  .navbar-nav .nav-link {
     font-weight: 500;
-    font-size: 1rem;
-    color: #212529;
-    transition: color 0.3s ease;
+    color: var(--dark-text);
+    transition: color var(--transition-speed);
     position: relative;
     padding: 0.5rem 0;
-}
+  }
 
-.navbar-nav .nav-link::after {
+  .navbar-nav .nav-link::after {
     content: "";
     position: absolute;
     bottom: 0;
     left: 0;
     width: 0;
     height: 2px;
-    background: #c586a5;
-    transition: width 0.3s ease;
-}
+    background: var(--primary-color);
+    transition: width var(--transition-speed);
+  }
 
-.navbar-nav .nav-link:hover::after,
-.navbar-nav .nav-link.active::after {
+  .navbar-nav .nav-link:hover::after,
+  .navbar-nav .nav-link.active::after {
     width: 100%;
-}
+  }
 
-.navbar-nav .nav-link:hover,
-.navbar-nav .nav-link.active {
-    color: #c586a5;
-}
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    color: var(--primary-color);
+  }
 
-/* Badge dot for cart/wishlist */
-.badge-dot {
+  /* Badge */
+  .badge-dot {
     position: absolute;
     top: -5px;
     right: -5px;
     width: 10px;
     height: 10px;
-    background-color: #e60039;
+    background-color: var(--accent-color);
     border-radius: 50%;
     border: 1px solid white;
-}
-/* ========== END OF NAVBAR STYLES ========== */
+  }
 
 /* Card Styling */
 .card {
@@ -386,6 +387,7 @@ body {
 </style>
 
 <!-- Navigation -->
+<!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 sticky-top">
   <div class="container">
     <a href="/" class="navbar-brand d-flex align-items-center">
@@ -394,13 +396,23 @@ body {
 
     <!-- Cart & Wishlist Icons - Always Visible on Mobile -->
     <div class="d-flex d-lg-none align-items-center gap-3 ms-auto me-3">
-      <a href="/wishlist" class="text-dark position-relative fs-5" title="Wishlist">
+      <a
+        href="/wishlist"
+        class="text-dark position-relative fs-5"
+        title="Wishlist"
+        aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>"
+      >
         <i class="bi bi-heart"></i>
         <% if (wishlistCount > 0) { %>
         <span class="badge-dot"></span>
         <% } %>
       </a>
-      <a href="/getCartPage" class="text-dark position-relative fs-5" title="Cart">
+      <a
+        href="/getCartPage"
+        class="text-dark position-relative fs-5"
+        title="Cart"
+        aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>"
+      >
         <i class="bi bi-bag"></i>
         <% if (cartCount > 0) { %>
         <span class="badge-dot"></span>
@@ -408,49 +420,130 @@ body {
       </a>
     </div>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-label="Toggle navigation">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarContent"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarContent">
       <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" href="/">HOME</a>
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>"
+            href="/"
+            >HOME</a
+          >
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/shop">COLLECTION</a>
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'shop' ? 'active' : '' %>"
+            href="/shop"
+            >COLLECTION</a
+          >
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/about">ABOUT</a>
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'about' ? 'active' : '' %>"
+            href="/about"
+            >ABOUT</a
+          >
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/contact">CONTACT</a>
+          <a
+            class="nav-link <%= typeof page !== 'undefined' && page === 'contact' ? 'active' : '' %>"
+            href="/contact"
+            >CONTACT</a
+          >
         </li>
+
+        <!-- User Dropdown for Mobile -->
+        <% if (locals?.user || user) { %>
+        <li class="nav-item dropdown d-lg-none">
+          <a
+            class="nav-link dropdown-toggle text-uppercase fw-bold"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-person-circle me-2"></i><%= user.name %>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item text-danger" href="/logout">Logout</a>
+            </li>
+          </ul>
+        </li>
+        <% } else { %>
+        <li class="nav-item d-lg-none">
+          <a class="nav-link" href="/signin"
+            ><i class="bi bi-person me-2"></i>Sign In</a
+          >
+        </li>
+        <% } %>
       </ul>
 
       <!-- Desktop View Icons -->
       <div class="d-none d-lg-flex align-items-center gap-3">
-        <!-- Search Icon -->
-        <a href="/search" class="text-dark fs-5" title="Search">
-          <i class="bi bi-search"></i>
-        </a>
-        
         <% if (locals?.user || user) { %>
         <div class="dropdown">
-          <a class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <%= user.name.split(' ')[0] %>
+          <a
+            class="nav-link dropdown-toggle text-uppercase fw-bold d-flex align-items-center"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-person-circle me-2"></i>
+            <%= user.name %>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
             <li><hr class="dropdown-divider" /></li>
-            <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            <li>
+              <a class="dropdown-item text-danger" href="/logout">Logout</a>
+            </li>
           </ul>
         </div>
         <% } else { %>
-        <a href="/signin" class="text-dark fs-5" title="Account">
+        <a
+          href="/signin"
+          class="text-dark fs-5"
+          title="Account"
+          aria-label="Account"
+        >
           <i class="bi bi-person"></i>
         </a>
         <% } %>
+        <a
+          href="/wishlist"
+          class="text-dark position-relative fs-5"
+          title="Wishlist"
+          aria-label="Wishlist<%= wishlistCount > 0 ? ` with ${wishlistCount} items` : '' %>"
+        >
+          <i class="bi bi-heart"></i>
+          <% if (wishlistCount > 0) { %>
+          <span class="badge-dot"></span>
+          <% } %>
+        </a>
+        <a
+          href="/getCartPage"
+          class="text-dark position-relative fs-5"
+          title="Cart"
+          aria-label="Cart<%= cartCount > 0 ? ` with ${cartCount} items` : '' %>"
+        >
+          <i class="bi bi-bag"></i>
+          <% if (cartCount > 0) { %>
+          <span class="badge-dot"></span>
+          <% } %>
+        </a>
       </div>
     </div>
   </div>
