@@ -15,35 +15,53 @@ passport.use(new GoogleStrategy({
   passReqToCallback: true,
 }, 
 async (req, accessToken, refreshToken, profile, done) => {
-  let user = await User.findOne({ googleId: profile.id });
+  try {
+    console.log("Google strategy started");
+    console.log("Profile ID:", profile.id);
 
-  if (!user) {
-    const referralCode = await generateReferralCode();
+    let user = await User.findOne({ googleId: profile.id });
 
-    user = new User({
-      name: profile.displayName,
-      email: profile.emails[0].value,
-      googleId: profile.id,
-      referralCode: referralCode,
-      wallet: 0,
-    });
+    console.log("User found:", !!user);
 
-    if (req.session.referralCode) {
-      const referrer = await User.findOne({ referralCode: req.session.referralCode });
-      if (referrer) {
-        user.redeemed = true;
-        user.redeemedUser = referrer._id;
+    if (!user) {
+      const referralCode = await generateReferralCode();
 
-        // optionally credit wallet both sides
-        referrer.wallet += 100;
-        await referrer.save();
+      user = new User({
+        name: profile.displayName,
+        email: profile.emails[0].value,
+        googleId: profile.id,
+        referralCode,
+        wallet: 0,
+      });
+
+      console.log("Creating new user");
+
+      if (req.session.referralCode) {
+        console.log("Referral code:", req.session.referralCode);
+
+        const referrer = await User.findOne({
+          referralCode: req.session.referralCode,
+        });
+
+        if (referrer) {
+          referrer.wallet += 100;
+          await referrer.save();
+
+          user.redeemed = true;
+          user.redeemedUser = referrer._id;
+        }
       }
+
+      await user.save();
+      console.log("User saved");
     }
 
-    await user.save();
-  }
+    return done(null, user);
 
-  return done(null, user);
+  } catch (error) {
+    console.error("GOOGLE STRATEGY ERROR:", error);
+    return done(error, null);
+  }
 }));
 
 
