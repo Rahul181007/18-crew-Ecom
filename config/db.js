@@ -10,7 +10,7 @@ const connectDB=  async ()=>{
         console.log("DB Connected")
         //MONGODB_URI- its database port and db name and it ios mentioned in .env
     } catch (error) {
-        console.log("DB Connection error",error.meassage)
+        console.log("DB Connection error",error.message)
         process.exit(1);
     }
 } 
