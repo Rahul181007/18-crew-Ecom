@@ -9,7 +9,7 @@ const Cart = require("../../models/cartSchema");
 const { isValidObjectId } = mongoose;
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
-const WishList=require("../../models/wishlistSchema")
+const WishList = require("../../models/wishlistSchema")
 const { logWalletTransaction } = require("../../utils/wallet");
 const {
   WalletSources,
@@ -28,7 +28,7 @@ const loadCheckout = async (req, res, next) => {
 
     const { productId, size, buyNow, orderId } = req.query;
     console.log("Query parameters:", req.query);
-      const wishlist = await WishList.findOne({ userId: userId });
+    const wishlist = await WishList.findOne({ userId: userId });
     const wishlistCount = wishlist ? wishlist.products.length : 0;
 
     if (!userId) {
@@ -57,12 +57,12 @@ const loadCheckout = async (req, res, next) => {
 
     // Handle retry flow for existing order
     if (orderId && isValidObjectId(orderId)) {
-      
+
       const order = await Order.findById(orderId).populate(
         "orderedItems.product"
       );
       if (!order || order.userId.toString() !== userId.toString()) {
-       
+
         return res.redirect("/shop");
       }
 
@@ -244,7 +244,7 @@ const loadCheckout = async (req, res, next) => {
 const checkStockBeforeCheckout = async (req, res, next) => {
   try {
     const userId = req.session.user;
-    
+
     if (!userId) {
       return res
         .status(401)
@@ -318,7 +318,7 @@ const checkStock = async (req, res, next) => {
     const { productId, size } = req.query;
 
     const userId = req.session.user?._id;
-    
+
 
     const user = await User.findById(userId);
     if (!user) {
@@ -801,6 +801,10 @@ const successPage = async (req, res, next) => {
 };
 const orderDetails = async (req, res, next) => {
   try {
+    const userId = req.session.user;
+    const user = await User.findById(userId);
+    const wishlist = await WishList.findOne({ userId });
+    const cart = await Cart.findOne({ userId });
     const orderId = req.params.orderId;
     const order = await Order.findOne({ orderId }).populate({
       path: "orderedItems.product",
@@ -812,7 +816,13 @@ const orderDetails = async (req, res, next) => {
       return res.redirect("/pageNotFound");
     }
 
-    res.render("order-details", { order, title: "Order-Details" });
+    res.render("order-details", {
+      order,
+      user,
+      wishlistCount: wishlist ? wishlist.products.length : 0,
+      cartCount: cart && cart.items ? cart.items.length : 0,
+      title: "Order Details",
+    });
   } catch (error) {
     next(error);
   }
@@ -903,9 +913,8 @@ const cancelOrder = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: `Order cancelled successfully${
-        order.isPaid ? " and refund processed" : ""
-      }`,
+      message: `Order cancelled successfully${order.isPaid ? " and refund processed" : ""
+        }`,
     });
   } catch (error) {
     next(error);
@@ -1005,9 +1014,8 @@ const cancelOrderItem = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: `Item cancelled successfully${
-        refundProcessed ? " and refund processed" : ""
-      }`,
+      message: `Item cancelled successfully${refundProcessed ? " and refund processed" : ""
+        }`,
       orderStatus: order.status,
     });
   } catch (error) {
@@ -1185,12 +1193,10 @@ const downloadInvoice = async (req, res, next) => {
     if (order.selectedAddress) {
       doc.text(`Name: ${order.selectedAddress.name || "N/A"}`);
       doc.text(
-        `Address: ${
-          order.selectedAddress.landMark
-            ? order.selectedAddress.landMark + ", "
-            : ""
-        }${order.selectedAddress.city || ""}, ${
-          order.selectedAddress.state || ""
+        `Address: ${order.selectedAddress.landMark
+          ? order.selectedAddress.landMark + ", "
+          : ""
+        }${order.selectedAddress.city || ""}, ${order.selectedAddress.state || ""
         } ${order.selectedAddress.pincode || ""}`
       );
       doc.text(`Mobile: ${order.selectedAddress.mobile || "N/A"}`);
@@ -1234,10 +1240,9 @@ const downloadInvoice = async (req, res, next) => {
         { width: 50 }
       );
       doc.text(
-        `₹${
-          item.quantity && item.price
-            ? (item.quantity * item.price).toFixed(2)
-            : "0.00"
+        `₹${item.quantity && item.price
+          ? (item.quantity * item.price).toFixed(2)
+          : "0.00"
         }`,
         400,
         currentY,
@@ -1251,8 +1256,7 @@ const downloadInvoice = async (req, res, next) => {
     doc
       .font("Helvetica-Bold")
       .text(
-        `Total Amount: ₹${
-          order.finalAmount ? order.finalAmount.toFixed(2) : "0.00"
+        `Total Amount: ₹${order.finalAmount ? order.finalAmount.toFixed(2) : "0.00"
         }`,
         { align: "right" }
       );

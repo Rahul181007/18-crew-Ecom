@@ -685,7 +685,7 @@
 <!-- Hero Section -->
 <section
   class="hero-section"
-  style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/uploads/banner/<%= banner ? banner.image : 'default.png' %>');"
+  style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/uploads/banner/<%= banner ? banner.image: "default.png" %>')"
 >
   <div class="container">
     <div class="hero-content text-center text-white">
@@ -1011,4 +1011,4 @@ async function addToWishlist(productId) {
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
-<%-include("../layouts/footer.ejs") %>
+<%-include("../layouts/footer.ejs")  %>
