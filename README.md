@@ -2,38 +2,56 @@
 
 A full-stack E-Commerce application built with **Node.js**, **Express.js**, **MongoDB**, **EJS**, and **JavaScript**.
 
-The platform provides a complete online shopping experience, allowing customers to browse products, manage their carts and wishlists, place orders, make secure payments, and track purchases. It also includes an administrative dashboard for managing products, inventory, customers, and orders.
+The platform provides a complete online shopping experience, allowing customers to browse products, manage carts and wishlists, apply coupons, place orders, make secure payments, track purchases, and earn referral rewards. It also includes a comprehensive admin dashboard for managing products, inventory, offers, banners, customers, orders, and sales analytics.
 
 ---
 
 ## 🚀 Features
 
-### Authentication
+### Authentication & Security
 
-- User Registration
+- User Registration with OTP Verification
+- OTP Resend Functionality
 - User Login & Logout
 - Google OAuth Authentication
+- Forgot Password & Password Reset
 - Session-Based Authentication
-- Password Encryption
 - Protected Routes
 - Role-Based Access Control
-- Authentication Persistence
+- Secure Password Encryption
+
+### User Account Management
+
+- Profile Management
+- Profile Picture Upload
+- Change Email with Verification
+- Change Password
+- Address Management
+- Account Deletion
+
+### Referral System
+
+- Unique Referral Codes
+- Referral Reward System
+- Referral Tracking
+- Referral Redemption During Signup
 
 ### Product Management
 
 - Browse Products
 - Product Details Page
-- Category-Based Filtering
 - Product Search
+- Search Suggestions
+- Category Filtering
+- Price Filtering
 - Product Availability Tracking
-- Dynamic Product Rendering
 
 ### Cart Management
 
 - Add Products to Cart
 - Update Product Quantity
 - Remove Products from Cart
-- Cart Summary & Checkout
+- Cart Summary
 
 ### Wishlist Management
 
@@ -41,18 +59,32 @@ The platform provides a complete online shopping experience, allowing customers 
 - Remove Products from Wishlist
 - Move Wishlist Items to Cart
 
-### Order Management
+### Checkout & Orders
 
-- Place Orders
-- View Order History
-- Order Details Page
-- Order Status Tracking
+- Address Selection
+- Stock Validation Before Checkout
+- Order Placement
+- Order History
+- Order Tracking
+- Order Cancellation
+- Item-Level Order Cancellation
+- Return Requests
+- Invoice Download
+
+### Coupon & Offer System
+
+- Coupon Application
+- Coupon Removal
+- Product Offers
+- Category Offers
+- Discount Management
 
 ### Payment System
 
 - Secure Payment Gateway Integration
 - Online Payment Processing
 - Payment Verification
+- Failed Payment Retry
 - Order Confirmation
 
 ### Inventory Management
@@ -62,15 +94,22 @@ The platform provides a complete online shopping experience, allowing customers 
 - Product Availability Control
 - Stock Management
 
-### Admin Features
+### Admin Dashboard
 
-- Admin Authentication
+- Dashboard Analytics
+- Sales Reports
+- Downloadable Reports
+- Best Selling Products
+- Best Selling Categories
+- Best Selling Brands
+- Customer Management
 - Product Management
 - Category Management
-- Order Management
-- Customer Management
+- Brand Management
+- Banner Management
+- Coupon Management
 - Inventory Monitoring
-- Dashboard Analytics
+- Order Management
 
 ---
 
@@ -98,7 +137,7 @@ The platform provides a complete online shopping experience, allowing customers 
 
 ### Payments
 
-- Payment Gateway Integration
+- Razorpay Payment Gateway
 
 ### Architecture
 
@@ -138,7 +177,7 @@ The platform provides a complete online shopping experience, allowing customers 
 ```text
 User Registration
         ↓
-Input Validation
+OTP Verification
         ↓
 Password Encryption
         ↓
@@ -171,14 +210,20 @@ Create/Login User
 Redirect to Dashboard
 ```
 
-### Protected Routes
+---
+
+## 🎁 Referral Flow
 
 ```text
-User Request
-      ↓
-Authentication Middleware
-      ↓
-Authorized Access
+User Shares Referral Code
+            ↓
+New User Registers
+            ↓
+Referral Code Applied
+            ↓
+Reward Generated
+            ↓
+Referral Tracked
 ```
 
 ---
@@ -188,9 +233,13 @@ Authorized Access
 ```text
 Browse Products
         ↓
+Search / Filter Products
+        ↓
 View Product Details
         ↓
 Add to Cart / Wishlist
+        ↓
+Apply Coupon
         ↓
 Proceed to Checkout
         ↓
@@ -242,6 +291,8 @@ Stock Availability Reflected
 ```text
 Checkout
     ↓
+Apply Coupon
+    ↓
 Payment Gateway
     ↓
 Payment Verification
@@ -249,6 +300,26 @@ Payment Verification
 Order Creation
     ↓
 Confirmation
+```
+
+---
+
+## 📊 Admin Dashboard
+
+```text
+Admin Login
+      ↓
+Dashboard Analytics
+      ↓
+Manage Products
+      ↓
+Manage Inventory
+      ↓
+Manage Orders
+      ↓
+Manage Coupons & Offers
+      ↓
+Generate Sales Reports
 ```
 
 ---
@@ -261,13 +332,14 @@ Confirmation
 - Login
 - Profile Management
 - Address Management
+- Referral System
 
 ### Product Module
 
 - Product Listing
 - Product Details
 - Category Filtering
-- Search Functionality
+- Search & Suggestions
 
 ### Cart Module
 
@@ -286,6 +358,14 @@ Confirmation
 - Create Orders
 - Order History
 - Order Tracking
+- Returns & Cancellations
+- Invoice Generation
+
+### Coupon Module
+
+- Apply Coupons
+- Remove Coupons
+- Discount Calculation
 
 ### Inventory Module
 
@@ -295,16 +375,19 @@ Confirmation
 
 ### Payment Module
 
-- Payment Processing
-- Verification
-- Order Confirmation
+- Razorpay Integration
+- Payment Verification
+- Retry Failed Payments
 
 ### Admin Module
 
 - Product Management
 - Inventory Control
+- Banner Management
+- Coupon Management
 - Order Management
 - User Management
+- Sales Analytics
 
 ---
 
@@ -338,8 +421,8 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_CALLBACK_URL=
 
-PAYMENT_GATEWAY_KEY=
-PAYMENT_GATEWAY_SECRET=
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
 ```
 
 ### Start Development Server
@@ -354,17 +437,18 @@ npm start
 
 ### Authentication
 
-- [x] User Registration
-- [x] User Login
-- [x] User Logout
+- [x] Registration with OTP
+- [x] Login & Logout
+- [x] Forgot Password
 - [x] Google Authentication
 - [x] Protected Routes
 
 ### Shopping Features
 
 - [x] Product Browsing
-- [x] Product Search
+- [x] Search & Suggestions
 - [x] Category Filtering
+- [x] Price Filtering
 - [x] Cart Management
 
 ### Wishlist
@@ -377,8 +461,19 @@ npm start
 
 - [x] Checkout Flow
 - [x] Payment Processing
+- [x] Payment Verification
+- [x] Retry Failed Payments
 - [x] Order Creation
 - [x] Order Tracking
+- [x] Order Cancellation
+- [x] Return Requests
+
+### Coupons & Offers
+
+- [x] Coupon Application
+- [x] Coupon Removal
+- [x] Product Offers
+- [x] Category Offers
 
 ### Inventory
 
@@ -390,8 +485,12 @@ npm start
 
 - [x] Product Management
 - [x] Category Management
+- [x] Brand Management
+- [x] Banner Management
+- [x] Coupon Management
 - [x] Inventory Management
 - [x] Order Management
+- [x] Sales Reports
 
 ---
 
@@ -402,17 +501,21 @@ Register/Login
       ↓
 Browse Products
       ↓
-View Product Details
+Search & Filter
       ↓
-Add to Cart or Wishlist
+Add to Cart/Wishlist
+      ↓
+Apply Coupon
       ↓
 Checkout
       ↓
-Complete Payment
+Payment
       ↓
 Order Confirmation
       ↓
-Track Orders
+Track Order
+      ↓
+Download Invoice
 ```
 
 ---
