@@ -417,25 +417,6 @@ Track Orders
 
 ---
 
-## 🤖 AI Assistance Disclosure
-
-This project was developed with assistance from ChatGPT.
-
-ChatGPT was used for:
-
-- System Design Discussions
-- Authentication Flow Guidance
-- MVC Architecture Planning
-- Database Modeling Discussions
-- Payment Integration Guidance
-- Debugging Assistance
-- Refactoring Suggestions
-- Code Review Support
-
-All implementation, testing, debugging, and final technical decisions were performed manually.
-
----
-
 ## 👨‍💻 Author
 
 **Rahul R**
