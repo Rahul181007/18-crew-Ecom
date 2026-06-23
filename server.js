@@ -20,8 +20,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(nocache());
 
 app.use(cookieParser());
-app.set("trust proxy", 1);
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -32,9 +30,8 @@ app.use(
       ttl: 72 * 60 * 60,
     }),
     cookie: {
-      secure: true,
+      secure: false,
       httpOnly: true,
-      sameSite: "lax",
       maxAge: 72 * 60 * 60 * 1000,
     },
   })
