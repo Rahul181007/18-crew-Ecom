@@ -61,7 +61,7 @@ user_route.get(
       if (!req.user.redeemed) {
         return res.redirect("/referral");
       }
-
+      console.log("Google callback returnTo:", req.session.returnTo);
       const redirectUrl = req.session.returnTo || "/";
       delete req.session.returnTo;
 

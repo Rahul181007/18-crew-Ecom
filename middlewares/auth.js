@@ -6,6 +6,7 @@ const userAuth = async (req, res, next) => {
     try {
         if (!req.session.user) {
             req.session.returnTo = req.get("Referer") || req.originalUrl;
+              console.log("Stored returnTo:", req.session.returnTo);
             return res.redirect("/signin");
         }
 
