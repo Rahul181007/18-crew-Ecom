@@ -263,7 +263,7 @@ const resendOTP = async (req, res, next) => {
 
     const emailSent = await sendVerificationEmail(email, otp);
     if (emailSent) {
-      
+
       res
         .status(200)
         .json({ success: true, message: "OTP resend successfully" });
@@ -294,6 +294,7 @@ const loadLogin = async (req, res, next) => {
         title: "Signin",
       });
     } else {
+
       res.redirect("/");
     }
   } catch (error) {
@@ -338,17 +339,23 @@ const login = async (req, res, next) => {
     }
 
     // Session and redirect
-    req.session.user = findUser._id;
-    req.session.save((err) => {
-      if (err) {
-        console.error("Session save error:", err);
-        return res.render("signin", {
-          message: "Session error. Please try again.",
-          title: "Signin",
-        });
-      }
-      res.redirect("/");
+   req.session.user = findUser._id;
+
+const redirectUrl = req.session.returnTo || "/";
+
+delete req.session.returnTo;
+
+req.session.save((err) => {
+  if (err) {
+    console.error("Session save error:", err);
+    return res.render("signin", {
+      message: "Session error. Please try again.",
+      title: "Signin",
     });
+  }
+
+  res.redirect(redirectUrl);
+});
   } catch (error) {
     next(error);
   }
@@ -559,8 +566,8 @@ const filterPrice = async (req, res, next) => {
       wishlistCount,
       page: "shop",
       selectedSort: sort,
-      selectedCategories: categoryIds, 
-      selectedBrands: brandIds, 
+      selectedCategories: categoryIds,
+      selectedBrands: brandIds,
       title: "Collection",
     });
   } catch (error) {
@@ -595,22 +602,22 @@ const searchProduct = async (req, res, next) => {
     let searchResult =
       req.session.filteredProducts?.length > 0
         ? req.session.filteredProducts.filter((p) =>
-            p.productName.toLowerCase().includes(search.toLowerCase())
-          )
+          p.productName.toLowerCase().includes(search.toLowerCase())
+        )
         : await Product.find({
-            $or: [
-              { productName: { $regex: search, $options: "i" } },
-              { description: { $regex: search, $options: "i" } },
-              { "brand.brandName": { $regex: search, $options: "i" } },
-            ],
-            isBlocked: false,
-            category:
-              selectedCategories.length > 0
-                ? { $in: selectedCategories }
-                : { $in: categories.map((c) => c._id) },
-          })
-            .populate("brand", "brandName")
-            .lean();
+          $or: [
+            { productName: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+            { "brand.brandName": { $regex: search, $options: "i" } },
+          ],
+          isBlocked: false,
+          category:
+            selectedCategories.length > 0
+              ? { $in: selectedCategories }
+              : { $in: categories.map((c) => c._id) },
+        })
+          .populate("brand", "brandName")
+          .lean();
 
     // Sort by relevance
     searchResult.sort((a, b) => {
