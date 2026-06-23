@@ -45,6 +45,8 @@ user_route.post("/register", userContoller.insertUser);
 user_route.post("/verify-otp", userContoller.verifyOtp)
 user_route.post("/resend-otp", userContoller.resendOTP)
 user_route.get('/auth/google', (req, res, next) => {
+  console.log("Google start returnTo:", req.session.returnTo);
+
   if (req.query.ref) {
     req.session.referralCode = req.query.ref;
   }
