@@ -45,8 +45,6 @@ user_route.post("/register", userContoller.insertUser);
 user_route.post("/verify-otp", userContoller.verifyOtp)
 user_route.post("/resend-otp", userContoller.resendOTP)
 user_route.get('/auth/google', (req, res, next) => {
-    console.log("Session ID start:", req.sessionID);
-  console.log("Google start returnTo:", req.session.returnTo);
 
   if (req.query.ref) {
     req.session.referralCode = req.query.ref;
@@ -59,8 +57,7 @@ user_route.get(
   passport.authenticate("google", { failureRedirect: "/register" }),
   async (req, res) => {
     try {
-          console.log("Session ID callback:", req.sessionID);
-    console.log("Google callback returnTo:", req.session.returnTo);
+
       req.session.user = req.user._id;
 
       if (!req.user.redeemed) {

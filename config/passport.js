@@ -16,12 +16,9 @@ passport.use(new GoogleStrategy({
 }, 
 async (req, accessToken, refreshToken, profile, done) => {
   try {
-    console.log("Google strategy started");
-    console.log("Profile ID:", profile.id);
 
     let user = await User.findOne({ googleId: profile.id });
 
-    console.log("User found:", !!user);
 
     if (!user) {
       const referralCode = await generateReferralCode();
@@ -34,10 +31,8 @@ async (req, accessToken, refreshToken, profile, done) => {
         wallet: 0,
       });
 
-      console.log("Creating new user");
 
       if (req.session.referralCode) {
-        console.log("Referral code:", req.session.referralCode);
 
         const referrer = await User.findOne({
           referralCode: req.session.referralCode,
@@ -53,7 +48,7 @@ async (req, accessToken, refreshToken, profile, done) => {
       }
 
       await user.save();
-      console.log("User saved");
+
     }
 
     return done(null, user);
