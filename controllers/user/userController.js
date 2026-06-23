@@ -289,6 +289,7 @@ const pageNotFound = async (req, res, next) => {
 
 const loadLogin = async (req, res, next) => {
   try {
+    console.log("Signin page returnTo:", req.session.returnTo);
     if (!req.session.user) {
       return res.render("signin", {
         title: "Signin",

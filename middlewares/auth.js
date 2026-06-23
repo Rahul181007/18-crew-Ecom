@@ -7,11 +7,14 @@ const userAuth = async (req, res, next) => {
         if (!req.session.user) {
             req.session.returnTo = req.get("Referer") || req.originalUrl;
 
-            req.session.save((err) => {
+            console.log("Stored returnTo:", req.session.returnTo);
+
+            return req.session.save((err) => {
                 if (err) {
                     console.error("Session save error:", err);
                 }
-                return res.redirect("/signin");
+
+                res.redirect("/signin");
             });
         }
 
