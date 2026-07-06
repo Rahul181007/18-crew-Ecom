@@ -7,7 +7,7 @@ const loadCouponPage = async (req, res, next) => {
       activePage: "coupon",
     });
   } catch (error) {
-    
+
     next(error);
   }
 };
@@ -34,8 +34,14 @@ const addCoupon = async (req, res) => {
       ),
     body("offerPercentage")
       .if(body("discountType").equals("percentage"))
-      .isFloat({ min: 0.01, max: 100 })
-      .withMessage("Offer percentage must be between 0.01 and 100"),
+      .isFloat({ min: 0.01, max: 90 })
+      .withMessage("Offer percentage must be between 0.01 and 90"),
+    body("maxDiscount")
+      .if(body("discountType").equals("percentage"))
+      .isFloat({ min: 1 })
+      .withMessage(
+        "Maximum discount amount must be at least ₹1 for percentage discounts"
+      ),
     body("minimumPrice")
       .isFloat({ min: 0 })
       .withMessage("Minimum purchase amount cannot be negative"),
@@ -63,7 +69,7 @@ const addCoupon = async (req, res) => {
   ];
 
   try {
-    
+
     await Promise.all(
       couponValidationRules.map((validation) => validation.run(req))
     );
@@ -81,6 +87,7 @@ const addCoupon = async (req, res) => {
       maxUsage,
       expireOn,
       islist,
+      maxDiscount,
     } = req.body;
 
     const coupon = new Coupon({
@@ -89,6 +96,7 @@ const addCoupon = async (req, res) => {
       offerPrice: discountType === "price" ? parseFloat(offerPrice) : null,
       offerPercentage:
         discountType === "percentage" ? parseFloat(offerPercentage) : null,
+      maxDiscount: discountType === "percentage" ? parseFloat(maxDiscount) : null,
       minimumPrice: parseFloat(minimumPrice),
       maxUsage: parseInt(maxUsage),
       expireOn: new Date(expireOn),
@@ -101,7 +109,7 @@ const addCoupon = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Coupon created successfully" });
   } catch (error) {
-    
+
     if (error.code === 11000) {
       return res
         .status(400)
@@ -128,7 +136,7 @@ const getCoupons = async (req, res, next) => {
       .populate("usedBy.userId", "name email");
     res.status(200).json(coupons);
   } catch (error) {
-    
+
     next(error);
   }
 };
@@ -142,7 +150,7 @@ const deleteCoupon = async (req, res, next) => {
     }
     res.status(200).json({ message: "Coupon successfully deleted" });
   } catch (error) {
-    
+
     next(error);
   }
 };
@@ -161,8 +169,14 @@ const updateCoupon = async (req, res) => {
       ),
     body("offerPercentage")
       .if(body("discountType").equals("percentage"))
-      .isFloat({ min: 0.01, max: 100 })
-      .withMessage("Offer percentage must be between 0.01 and 100"),
+      .isFloat({ min: 0.01, max: 90 })
+      .withMessage("Offer percentage must be between 0.01 and 90"),
+    body("maxDiscount")
+      .if(body("discountType").equals("percentage"))
+      .isFloat({ min: 1 })
+      .withMessage(
+        "Maximum discount amount must be at least ₹1 for percentage discounts"
+      ),
     body("minimumPrice")
       .isFloat({ min: 0 })
       .withMessage("Minimum purchase amount cannot be negative"),
@@ -189,7 +203,7 @@ const updateCoupon = async (req, res) => {
   ];
 
   try {
-    
+
     await Promise.all(
       couponValidationRules.map((validation) => validation.run(req))
     );
@@ -200,7 +214,7 @@ const updateCoupon = async (req, res) => {
     }
 
     const { name } = req.params;
-    
+
     const {
       discountType,
       offerPrice,
@@ -208,6 +222,7 @@ const updateCoupon = async (req, res) => {
       minimumPrice,
       maxUsage,
       expireOn,
+      maxDiscount,
     } = req.body;
 
     const updateData = {
@@ -218,9 +233,10 @@ const updateCoupon = async (req, res) => {
       minimumPrice: parseFloat(minimumPrice),
       maxUsage: parseInt(maxUsage),
       expireOn: new Date(expireOn),
+      maxDiscount: discountType === "percentage" ? parseFloat(maxDiscount) : null,
     };
 
-    
+
 
     const coupon = await Coupon.findOneAndUpdate(
       { name: name.toUpperCase() },
@@ -229,11 +245,11 @@ const updateCoupon = async (req, res) => {
     );
 
     if (!coupon) {
-      
+
       return res.status(404).json({ errors: [{ msg: "Coupon not found" }] });
     }
 
-    
+
     res.status(200).json({ message: "Coupon updated successfully", coupon });
   } catch (error) {
     console.error("Error updating coupon:", error.stack);
@@ -261,9 +277,9 @@ const getCouponsUsers = async (req, res, next) => {
         model: "User",
       })
       .exec();
-    
+
     if (!coupon) {
-      
+
       return res.status(404).json({ errors: [{ msg: "Coupon not found" }] });
     }
 
@@ -275,11 +291,11 @@ const getCouponsUsers = async (req, res, next) => {
         email: entry.userId.email || "N/A",
         usageDate: entry.usageDate || null,
       }));
-    
+
 
     res.status(200).json(users);
   } catch (error) {
-    
+
     next(error);
   }
 };

@@ -38,7 +38,14 @@ const couponSchema = new mongoose.Schema({
       return this.discountType === 'percentage';
     },
     min: [0.01, 'Discount percentage must be at least 0.01%'],
-    max: [100, 'Discount percentage cannot exceed 100%'],
+    max: [90, 'Discount percentage cannot exceed 90%'],
+  },
+  maxDiscount: {
+    type: Number,
+    required: function () {
+      return this.discountType === 'percentage';
+    },
+    min: [1, 'Maximum discount must be at least ₹1'],
   },
   minimumPrice: {
     type: Number,
@@ -50,11 +57,11 @@ const couponSchema = new mongoose.Schema({
     required: true,
     min: [1, 'Usage limit must be at least 1'],
   },
-  isActive: {                  
+  isActive: {
     type: Boolean,
     default: true,
   },
-  
+
   usedBy: [
     {
       userId: {
