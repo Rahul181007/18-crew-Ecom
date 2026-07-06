@@ -170,13 +170,15 @@
                             <!-- Brand -->
                             <div class="mb-4">
                                 <label class="form-label">Brand*</label>
-                                <select class="form-select border" name="brand" required>
-                                    <% for(let i=0; i < brand.length; i++) { %>
-                                    <option value="<%= brand[i].brandName %>">
-                                        <%= brand[i].brandName %>
-                                    </option>
-                                    <% } %>
-                                </select>
+<select class="form-select border" name="brand" required>
+    <option value="" selected disabled>Select Brand</option>
+   <% brand.forEach(item => { %>
+    <option value="<%= item.brandName %>">
+        <%= item.brandName %>
+    </option>
+   <% }); %>
+
+</select>
                                 <div id="brand-error" class="error-message"></div>
                             </div>
 
@@ -234,11 +236,12 @@
                             <div class="mb-4">
                                 <label class="form-label">Category*</label>
                                 <select class="form-select border" name="category" required>
-                                    <% for(let i=0; i < cat.length; i++) { %>
-                                    <option value="<%= cat[i].name %>">
-                                        <%= cat[i].name %>
-                                    </option>
-                                    <% } %>
+                                    <option value="" selected disabled>Select Category</option>
+    <% cat.forEach(item => { %>
+        <option value="<%= item.name %>">
+            <%= item.name %>
+        </option>
+    <% }) %>
                                 </select>
                                 <div id="category-error" class="error-message"></div>
                             </div>
@@ -378,59 +381,109 @@
     }
 
     // Form Validation
-    function validateForm() {
-        let isValid = true;
-        clearErrorMessages();
+function validateForm() {
+    let isValid = true;
+    clearErrorMessages();
 
-        // Validate required fields
-        const requiredFields = [
-            { id: 'product_name', errorId: 'productName-error' },
-            { id: 'descriptionid', errorId: 'description-error' },
-            { name: 'regularPrice', errorId: 'regularPrice-error' },
-            { name: 'salePrice', errorId: 'salePrice-error' },
-            { name: 'color', errorId: 'color-error' }
-        ];
+    // Product Name
+    const productName = document.getElementById('product_name');
+    if (!productName.value.trim()) {
+        document.getElementById('productName-error').textContent =
+            'Product name is required';
+        isValid = false;
+    } else if (productName.value.trim().length < 3) {
+        document.getElementById('productName-error').textContent =
+            'Product name must be at least 3 characters';
+        isValid = false;
+    }
 
-        requiredFields.forEach(field => {
-            const element = field.id ? document.getElementById(field.id) : 
-                          document.querySelector(`[name="${field.name}"]`);
-            if (!element.value.trim()) {
-                document.getElementById(field.errorId).textContent = 'This field is required';
+    // Description
+    const description = document.getElementById('descriptionid');
+    if (!description.value.trim()) {
+        document.getElementById('description-error').textContent =
+            'Product description is required';
+        isValid = false;
+    } else if (description.value.trim().length < 20) {
+        document.getElementById('description-error').textContent =
+            'Description must contain at least 20 characters';
+        isValid = false;
+    }
+
+    // Regular Price
+    const regularPrice = document.querySelector('[name="regularPrice"]');
+    if (!regularPrice.value) {
+        document.getElementById('regularPrice-error').textContent =
+            'Regular price is required';
+        isValid = false;
+    } else if (+regularPrice.value <= 0) {
+        document.getElementById('regularPrice-error').textContent =
+            'Regular price must be greater than zero';
+        isValid = false;
+    }
+
+    // Sale Price
+    const salePrice = document.querySelector('[name="salePrice"]');
+    if (!salePrice.value) {
+        document.getElementById('salePrice-error').textContent =
+            'Sale price is required';
+        isValid = false;
+    } else if (+salePrice.value <= 0) {
+        document.getElementById('salePrice-error').textContent =
+            'Sale price must be greater than zero';
+        isValid = false;
+    } else if (+salePrice.value > +regularPrice.value) {
+        document.getElementById('salePrice-error').textContent =
+            'Sale price cannot exceed regular price';
+        isValid = false;
+    }
+
+    // Color
+    const color = document.querySelector('[name="color"]');
+    if (!color.value.trim()) {
+        document.getElementById('color-error').textContent =
+            'Color is required';
+        isValid = false;
+    }
+
+    // Size Validation
+    const selectedSizes = document.querySelectorAll('.size-checkbox:checked');
+
+    if (selectedSizes.length === 0) {
+        document.getElementById('size-error').textContent =
+            'Please select at least one size';
+        isValid = false;
+    } else {
+        selectedSizes.forEach(checkbox => {
+            const stockInput = checkbox
+                .closest('.size-option')
+                .querySelector('.size-stock-input');
+
+            if (!stockInput.value || parseInt(stockInput.value) <= 0) {
+                document.getElementById('size-error').textContent =
+                    `Please enter a valid stock for size ${checkbox.value}`;
                 isValid = false;
             }
         });
-
-        // Validate at least one size is selected with valid stock
-        const selectedSizes = document.querySelectorAll('.size-checkbox:checked');
-        if (selectedSizes.length === 0) {
-            document.getElementById('size-error').textContent = 'Please select at least one size';
-            isValid = false;
-        } else {
-            selectedSizes.forEach(checkbox => {
-                const size = checkbox.value;
-                const stockInput = checkbox.closest('.size-option').querySelector('.size-stock-input');
-                if (!stockInput.value || parseInt(stockInput.value) <= 0) {
-                    document.getElementById('size-error').textContent = `Please enter valid stock for size ${size}`;
-                    isValid = false;
-                }
-            });
-        }
-
-        // Validate at least one image is uploaded
-        let hasImages = false;
-        for (let i = 1; i <= 4; i++) {
-            if (document.getElementById(`input${i}`).files.length > 0) {
-                hasImages = true;
-                break;
-            }
-        }
-        if (!hasImages) {
-            document.getElementById('images-error').textContent = 'Please upload at least one image';
-            isValid = false;
-        }
-
-        return isValid;
     }
+
+    // Image Validation
+    let hasImages = false;
+
+    for (let i = 1; i <= 4; i++) {
+        if (document.getElementById(`input${i}`).files.length > 0) {
+            hasImages = true;
+            break;
+        }
+    }
+
+    if (!hasImages) {
+        document.getElementById('images-error').textContent =
+            'Please upload at least one product image';
+        isValid = false;
+    }
+
+    return isValid;
+}
 
     function clearErrorMessages() {
         document.querySelectorAll('.error-message').forEach(el => {
