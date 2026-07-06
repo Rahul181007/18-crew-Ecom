@@ -164,10 +164,25 @@ const addProductOffer = async (req, res, next) => {
     const productId = req.body.productId;
 
     // Validate inputs
-    if (!productId || isNaN(percentage) || percentage < 0) {
-      return res
-        .status(400)
-        .json({ status: false, message: "Invalid product ID or percentage" });
+    if (!productId) {
+      return res.status(400).json({
+        status: false,
+        message: "Product ID is required",
+      });
+    }
+
+    if (isNaN(percentage)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid offer percentage",
+      });
+    }
+
+    if (percentage < 1 || percentage > 90) {
+      return res.status(400).json({
+        status: false,
+        message: "Offer percentage must be between 1% and 90%",
+      });
     }
 
     const findProduct = await Product.findOne({ _id: productId });
@@ -253,7 +268,7 @@ const geteditProduct = async (req, res, next) => {
   try {
     const id = req.query.id;
     const findProduct = await Product.findOne({ _id: id }).populate("category");
-    if(!findProduct){
+    if (!findProduct) {
       const error = new Error("Product not found");
       error.statusCode = 404;
       return next(error);

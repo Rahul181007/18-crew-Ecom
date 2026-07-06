@@ -153,12 +153,31 @@
  
 <script>
   async function addOffer(productId){
-    const {value:amount}=await Swal.fire({
-      title:"Offer in percentage",
-      input:"number",
-      inputLabel:"percentage",
-      inputPlaceholder:"%"
-    })
+   const { value: amount } = await Swal.fire({
+        title: "Offer in percentage",
+        input: "number",
+        inputLabel: "Percentage",
+        inputPlaceholder: "%",
+        inputAttributes: {
+            min: 1,
+            max: 90
+        },
+        inputValidator: (value) => {
+            if (!value) {
+                return "Please enter an offer percentage";
+            }
+
+            const percentage = Number(value);
+
+            if (percentage <= 0) {
+                return "Offer must be greater than 0%";
+            }
+
+            if (percentage > 90) {
+                return "Maximum allowed offer is 90%";
+            }
+        }
+    });
     if(amount){
      try {
       const response=await fetch("/admin/addProductOffer",{

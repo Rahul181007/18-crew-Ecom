@@ -32,7 +32,7 @@ const categoryInfo = async (req, res, next) => {
       searchQuery: searchQuery,
     });
   } catch (error) {
-    
+
     next(error);
   }
 };
@@ -69,11 +69,28 @@ const addCategoryOffer = async (req, res, next) => {
     const percentage = parseInt(req.body.percentage);
     const categoryId = req.body.categoryId;
 
-    // Validate inputs
-    if (!categoryId || isNaN(percentage) || percentage < 0) {
-      return res
-        .status(400)
-        .json({ status: false, message: "Invalid category ID or percentage" });
+    const MIN_OFFER = 1;
+    const MAX_OFFER = 90;
+
+    if (!categoryId) {
+      return res.status(400).json({
+        status: false,
+        message: "Category ID is required",
+      });
+    }
+
+    if (isNaN(percentage)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid offer percentage",
+      });
+    }
+
+    if (percentage < MIN_OFFER || percentage > MAX_OFFER) {
+      return res.status(400).json({
+        status: false,
+        message: `Offer percentage must be between ${MIN_OFFER}% and ${MAX_OFFER}%`,
+      });
     }
 
     const category = await Category.findById(categoryId);
@@ -107,7 +124,7 @@ const addCategoryOffer = async (req, res, next) => {
 
     return res.json({ status: true });
   } catch (error) {
-    
+
     next(error);
   }
 };
@@ -172,7 +189,7 @@ const geteditCategory = async (req, res, next) => {
   try {
     const id = req.query.id;
     const category = await Category.findOne({ _id: id });
-    if(!category){
+    if (!category) {
       const error = new Error("category not found");
       error.statusCode = 404;
       return next(error);
