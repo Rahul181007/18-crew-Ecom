@@ -443,7 +443,7 @@
       <% if (currentPage > 1) { %>
         <li class="page-item">
           <a class="page-link"
-             href="/admin/orders?page=<%= currentPage - 1 %>">
+             href="/admin/orderList?page=<%= currentPage - 1 %>">
             Previous
           </a>
         </li>
@@ -452,7 +452,7 @@
       <% for(let i = 1; i <= totalPages; i++) { %>
         <li class="page-item <%= currentPage === i ? 'active' : '' %>">
           <a class="page-link"
-             href="/admin/orders?page=<%= i %>">
+             href="/admin/orderList?page=<%= i %>">
             <%= i %>
           </a>
         </li>
@@ -461,7 +461,7 @@
       <% if (currentPage < totalPages) { %>
         <li class="page-item">
           <a class="page-link"
-             href="/admin/orders?page=<%= currentPage + 1 %>">
+             href="/admin/orderList?page=<%= currentPage + 1 %>">
             Next
           </a>
         </li>
