@@ -1,6 +1,6 @@
 const Brand = require("../../models/brandSchema");
 const Product = require("../../models/productSchema");
-const STATUS_CODE=require("../../constants/httpStatus");
+const STATUS_CODE = require("../../constants/httpStatus");
 
 const getBrandPage = async (req, res, next) => {
   try {
@@ -22,15 +22,37 @@ const getBrandPage = async (req, res, next) => {
       activePage: "brands",
     });
   } catch (error) {
-    
+
     next(error);
   }
 };
 
 const addBrand = async (req, res, next) => {
   try {
-    const brandName = req.body.name;
-    
+    const brandName = req.body.name?.trim();
+
+    if (!brandName) {
+      const page = parseInt(req.query.page) || 1;
+      const limit = 4;
+      const skip = (page - 1) * limit;
+
+      const brandData = await Brand.find({})
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+      const totalBrands = await Brand.countDocuments();
+
+      return res.render("brands", {
+        brands: brandData,
+        currentPage: page,
+        totalPages: Math.ceil(totalBrands / limit),
+        totalBrands,
+        activePage: "brands",
+        error: "Brand name is required!",
+      });
+    }
+
     const existBrand = await Brand.findOne({ brandName: { $regex: `^${brandName}$`, $options: "i" } });
     if (existBrand) {
       const page = parseInt(req.query.page) || 1;
@@ -53,6 +75,28 @@ const addBrand = async (req, res, next) => {
       });
     }
 
+    if (!req.file) {
+      const page = parseInt(req.query.page) || 1;
+      const limit = 4;
+      const skip = (page - 1) * limit;
+
+      const brandData = await Brand.find({})
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+      const totalBrands = await Brand.countDocuments();
+
+      return res.render("brands", {
+        brands: brandData,
+        currentPage: page,
+        totalPages: Math.ceil(totalBrands / limit),
+        totalBrands,
+        activePage: "brands",
+        error: "Brand image is required!",
+      });
+    }
+
     const image = req.file.filename;
     const newBrand = new Brand({
       brandName: brandName,
@@ -61,7 +105,7 @@ const addBrand = async (req, res, next) => {
     await newBrand.save();
     res.redirect("/admin/brands");
   } catch (error) {
-  
+
     next(error);
   }
 };
@@ -73,7 +117,7 @@ const blockBrand = async (req, res, next) => {
     await Brand.updateOne({ _id: id }, { $set: { isBlocked: true } });
     res.redirect("/admin/brands");
   } catch (error) {
-    
+
     next(error);
   }
 };
@@ -85,7 +129,7 @@ const unblockBrand = async (req, res, next) => {
     await Brand.updateOne({ _id: id }, { $set: { isBlocked: false } });
     res.redirect("/admin/brands");
   } catch (error) {
-    
+
     next(error);
   }
 };
