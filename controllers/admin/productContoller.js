@@ -4,7 +4,7 @@ const Brand = require("../../models/brandSchema");
 const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp"); // it is used for image resizing and image setting
-
+const STATUS_CODE=require("../../constants/httpStatus");
 const getProductAddPage = async (req, res, next) => {
   try {
     const category = await Category.find({ isListed: true });
@@ -52,7 +52,7 @@ const addProducts = async (req, res, next) => {
 
       const categoryId = await Category.findOne({ name: products.category });
       if (!categoryId) {
-        return res.status(400).json("Invalid category name");
+        return res.status(STATUS_CODE.BAD_REQUEST).json("Invalid category name");
       }
 
       let sizesWithStock = [];
@@ -91,7 +91,7 @@ const addProducts = async (req, res, next) => {
       await newProduct.save();
       res.redirect("/admin/addProducts");
     } else {
-      return res.status(400).json("Product already exists, try another name.");
+      return res.status(STATUS_CODE.BAD_REQUEST).json("Product already exists, try another name.");
     }
   } catch (error) {
     next(error);
@@ -165,21 +165,21 @@ const addProductOffer = async (req, res, next) => {
 
     // Validate inputs
     if (!productId) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: "Product ID is required",
       });
     }
 
     if (isNaN(percentage)) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: "Invalid offer percentage",
       });
     }
 
     if (percentage < 1 || percentage > 90) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: "Offer percentage must be between 1% and 90%",
       });
@@ -188,20 +188,20 @@ const addProductOffer = async (req, res, next) => {
     const findProduct = await Product.findOne({ _id: productId });
     if (!findProduct) {
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ status: false, message: "Product not found" });
     }
 
     const findCategory = await Category.findOne({ _id: findProduct.category });
     if (!findCategory) {
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ status: false, message: "Category not found" });
     }
 
     if (findCategory.categoryOffer > percentage) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({
           status: false,
           message: "This product category already has a higher offer",
@@ -301,7 +301,7 @@ const editProduct = async (req, res, next) => {
 
     if (existingProduct) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({
           error:
             "Product with this name already exists. Please try a different name.",
@@ -375,14 +375,14 @@ const updateProductImage = async (req, res, next) => {
 
     if (!req.file) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "No image file uploaded." });
     }
 
     const product = await Product.findById(productId);
     if (!product) {
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ status: false, message: "Product not found" });
     }
 
@@ -392,7 +392,7 @@ const updateProductImage = async (req, res, next) => {
     await product.save();
 
     return res
-      .status(200)
+      .status(STATUS_CODE.OK)
       .json({ status: true, message: "Image updated successfully" });
   } catch (error) {
     next(error);

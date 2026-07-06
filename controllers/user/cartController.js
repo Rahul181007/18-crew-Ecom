@@ -4,16 +4,16 @@ const User = require("../../models/userSchema");
 const mongoose = require("mongoose");
 const mongodb = require("mongodb");
 const WishList = require("../../models/wishlistSchema");
-
+const STATUS_CODE=require("../../constants/httpStatus");
 const getCartPage = async (req, res, next) => {
   try {
     const userId = req.session.user?._id || req.session.user;
     if (!userId) {
-      return res.status(401).redirect("/signin");
+      return res.status(STATUS_CODE.UNAUTHORIZED).redirect("/signin");
     }
 
     const user = await User.findById(userId).select("name email");
-    if (!user) return res.status(401).redirect("/signin");
+    if (!user) return res.status(STATUS_CODE.UNAUTHORIZED).redirect("/signin");
 
     const wishlist = await WishList.findOne({ userId });
     const wishlistCount = wishlist ? wishlist.products.length : 0;
@@ -85,25 +85,25 @@ const addToCart = async (req, res, next) => {
     const userId = req.session.user?._id || req.session.user;
     if (!userId)
       return res
-        .status(401)
+        .status(STATUS_CODE.UNAUTHORIZED)
         .json({ status: false, message: "User not authenticated" });
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "Invalid product ID" });
     }
 
     const product = await Product.findById(productId);
     if (!product)
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ status: false, message: "Product not found" });
 
     const sizeObj = product.sizes.find((s) => s.size === size);
     if (!sizeObj || sizeObj.stock <= 0) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "Selected size is out of stock" });
     }
 
@@ -119,7 +119,7 @@ const addToCart = async (req, res, next) => {
     if (existingItem) {
       const newQuantity = existingItem.quantity + 1;
       if (newQuantity > 3 || newQuantity > sizeObj.stock) {
-        return res.status(400).json({
+        return res.status(STATUS_CODE.BAD_REQUEST).json({
           status: false,
           message: `Maximum ${Math.min(
             3,
@@ -181,37 +181,37 @@ const changeQuantity = async (req, res, next) => {
 
     if (!userId)
       return res
-        .status(401)
+        .status(STATUS_CODE.UNAUTHORIZED)
         .json({ success: false, message: "User not authenticated" });
 
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart)
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "Cart not found" });
 
     const item = cart.items.id(cartItemId);
     if (!item)
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "Cart item not found" });
 
     let product = item.productId;
     let sizeStock = product.sizes.find((s) => s.size === item.size);
     if (!sizeStock) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: `Selected size not available for this product`,
       });
     }
     if (newQuantity > sizeStock.stock) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: `Only ${sizeStock.stock} items in stock for size ${item.size}`,
       });
     }
     if (newQuantity < 1) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "Quantity must be at least 1",
       });
@@ -244,13 +244,13 @@ const deleteProduct = async (req, res, next) => {
 
     if (!userId)
       return res
-        .status(401)
+        .status(STATUS_CODE.UNAUTHORIZED)
         .json({ success: false, message: "User not authenticated" });
 
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart)
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "Cart not found" });
 
     const itemIndex = cart.items.findIndex(
@@ -258,7 +258,7 @@ const deleteProduct = async (req, res, next) => {
     );
     if (itemIndex === -1)
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "Cart item not found" });
 
     // Remove the item from the array

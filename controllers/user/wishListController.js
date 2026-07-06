@@ -4,13 +4,13 @@ const Product = require("../../models/productSchema");
 const Cart = require("../../models/cartSchema");
 const mongoose = require("mongoose");
 const Wishlist = require("../../models/wishlistSchema");
-
+const STATUS_CODE=require("../../constants/httpStatus");
 const loadWishlist = async (req, res, next) => {
   try {
     const userId = req.session.user;
     if (!userId) {
       const error = new Error("unauthorised access");
-      error.statusCode = 404;
+      error.statusCode = STATUS_CODE.NOT_FOUND;
       return next(error);
     }
     const wishlist = await Wishlist.findOne({ userId }).populate({
@@ -41,15 +41,15 @@ const addToWishlist = async (req, res, next) => {
   try {
     const userId = req.session.user;
      if (!userId) {
-  return res.status(401).json({
-    status: false,
-    message: "Please log in to add to wishlist",
-  });
-}
+      return res.status(STATUS_CODE.UNAUTHORIZED).json({
+        status: false,
+        message: "Please log in to add to wishlist",
+      });
+    }
     const productId = req.body.productId;
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "Invalid product ID" });
     }
     let wishlist = await Wishlist.findOne({ userId: userId });
@@ -89,22 +89,22 @@ const removeFromWishlist = async (req, res, next) => {
     const { productId } = req.body;
     const userId = req.session.user;
     if (!userId) {
-  return res.status(401).json({
-    status: false,
-    message: "Please log in to add to wishlist",
-  });
-}
+      return res.status(STATUS_CODE.UNAUTHORIZED).json({
+        status: false,
+        message: "Please log in to add to wishlist",
+      });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "Invalid product ID" });
     }
 
     const wishlist = await Wishlist.findOne({ userId });
     if (!wishlist) {
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ status: false, message: "Wishlist not found" });
     }
 
@@ -114,7 +114,7 @@ const removeFromWishlist = async (req, res, next) => {
     );
     if (index === -1) {
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ status: false, message: "Product not in wishlist" });
     }
 
@@ -122,7 +122,7 @@ const removeFromWishlist = async (req, res, next) => {
     wishlist.products.splice(index, 1);
     await wishlist.save();
 
-    return res.status(200).json({
+    return res.status(STATUS_CODE.OK).json({
       status: true,
       message: "Product removed from wishlist",
       wishlistCount: wishlist.products.length,

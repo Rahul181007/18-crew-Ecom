@@ -9,7 +9,7 @@ const Order = require("../../models/orderSchema");
 const Cart = require("../../models/cartSchema");
 const WalletTransaction = require("../../models/walletSchema");
 const WishList = require("../../models/wishlistSchema");
-
+const STATUS_CODE=require("../../constants/httpStatus");
 // GENERATE OTP
 function generateOtp() {
   const digits = "1234567890";
@@ -174,7 +174,7 @@ const userProfile = async (req, res, next) => {
     const userId = req.session.user;
     if (!userId) {
       const error = new Error("Unauthorized access — please login.");
-      error.statusCode = 401;
+      error.statusCode = STATUS_CODE.UNAUTHORIZED;
       return next(error);
     }
     const userData = await User.findById(userId);
@@ -254,7 +254,7 @@ const changeEmailValid = async (req, res, next) => {
         res.render("change-email-otp", { title: "change-email-otp" });
       } else {
         return res
-          .status(500)
+          .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
           .json({
             status: false,
             message: "Failed to send OTP. Please try again later",
@@ -274,7 +274,7 @@ const verifyChangeEmailOtp = async (req, res, next) => {
 
     if (!sessionOtp) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({
           status: false,
           message: "No OTP found in session. Please request a new OTP.",
@@ -282,10 +282,10 @@ const verifyChangeEmailOtp = async (req, res, next) => {
     }
 
     if (otpInput === sessionOtp) {
-      return res.status(200).json({ status: true });
+      return res.status(STATUS_CODE.OK).json({ status: true });
     } else {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "OTP does not match." });
     }
   } catch (error) {
@@ -339,7 +339,7 @@ const changePassValid = async (req, res, next) => {
 
     // Validate all fields are present
     if (!currentPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "All fields are required",
       });
@@ -347,7 +347,7 @@ const changePassValid = async (req, res, next) => {
 
     // Check if new passwords match
     if (newPassword !== confirmPassword) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "New passwords do not match",
       });
@@ -355,7 +355,7 @@ const changePassValid = async (req, res, next) => {
 
     // Check if new password is different from current
     if (currentPassword === newPassword) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "New password must be different from current password",
       });
@@ -364,7 +364,7 @@ const changePassValid = async (req, res, next) => {
     // Find user and verify current password
     const findUser = await User.findById(userId);
     if (!findUser) {
-      return res.status(404).json({
+      return res.status(STATUS_CODE.NOT_FOUND).json({
         success: false,
         message: "User not found",
       });
@@ -372,7 +372,7 @@ const changePassValid = async (req, res, next) => {
 
     const isMatch = await bcrypt.compare(currentPassword, findUser.password);
     if (!isMatch) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "Current password is incorrect",
       });
@@ -380,7 +380,7 @@ const changePassValid = async (req, res, next) => {
 
     // Validate new password strength
     if (newPassword.length < 8) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "Password must be at least 8 characters long",
       });
@@ -390,13 +390,13 @@ const changePassValid = async (req, res, next) => {
     const hashPassword = await securePassword(newPassword);
     await User.updateOne({ _id: userId }, { $set: { password: hashPassword } });
 
-    return res.status(200).json({
+    return res.status(STATUS_CODE.OK).json({
       success: true,
       message: "Password changed successfully",
     });
   } catch (error) {
     console.error("Password change error:", error);
-    return res.status(500).json({
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "An error occurred during password change",
     });
@@ -493,7 +493,7 @@ const postAddAddress = async (req, res, next) => {
 
     // Validate required fields
     if (!addressType || !name || !city || !state || !pincode || !mobile) {
-      return res.status(400).render("add-address", {
+      return res.status(STATUS_CODE.BAD_REQUEST).render("add-address", {
         user: userData,
         cartCount: userData?.cart?.length ?? 0,
         wishlistCount: userData?.wishlist?.length ?? 0,
@@ -628,7 +628,7 @@ const postEditAddress = async (req, res, next) => {
       if (!userData) {
         return res.redirect("/pageNotFound");
       }
-      return res.status(400).render("edit-address", {
+      return res.status(STATUS_CODE.BAD_REQUEST).render("edit-address", {
         address: {
           addressType,
           name,
@@ -697,7 +697,7 @@ const deleteAddress = async (req, res, next) => {
 
     const findAddress = await Address.findOne({ "address._id": objectId });
     if (!findAddress) {
-      return res.status(404).send("Address not found");
+      return res.status(STATUS_CODE.NOT_FOUND).send("Address not found");
     }
 
     await Address.updateOne(
@@ -723,7 +723,7 @@ const deleteAccn = async (req, res, next) => {
 
     if (!user) {
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "User not found." });
     }
 
@@ -732,20 +732,20 @@ const deleteAccn = async (req, res, next) => {
       await Address.deleteMany({ userId: user._id });
       await Order.deleteMany({ userId: user._id });
       req.session.destroy(); // Destroy the session
-      return res.status(200).json({ success: true });
+      return res.status(STATUS_CODE.OK).json({ success: true });
     }
 
     // Verify password for non-Google users
     if (!password) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ success: false, message: "Password is required." });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res
-        .status(401)
+        .status(STATUS_CODE.UNAUTHORIZED)
         .json({ success: false, message: "Incorrect password." });
     }
 
@@ -759,10 +759,10 @@ const deleteAccn = async (req, res, next) => {
       if (err) {
         console.error("Error destroying session:", err);
         return res
-          .status(500)
+          .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
           .json({ success: false, message: "Failed to log out." });
       }
-      return res.status(200).json({ success: true });
+      return res.status(STATUS_CODE.OK).json({ success: true });
     });
   } catch (error) {
     next(error);
@@ -780,7 +780,7 @@ const copyReferralCode = async (req, res, next) => {
     }
     if (!user.referralCode) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ success: false, message: "No referral code found" });
     }
     res.json({ success: true, referralCode: user.referralCode });

@@ -1,7 +1,7 @@
 const User = require("../../models/userSchema");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
-
+const STATUS_CODE=require("../../constants/httpStatus");
 // ............pageerror..................
 const pageError = async (req, res) => {
   res.render("admin-error", {
@@ -32,7 +32,7 @@ const login = async (req, res, next) => {
 
     if (!admin) {
       return res
-        .status(401)
+        .status(STATUS_CODE.UNAUTHORIZED)
         .render("admin-login", {
           message: "Invalid credentials, please try again.",
         });
@@ -41,7 +41,7 @@ const login = async (req, res, next) => {
     const passwordMatch = await bcrypt.compare(password, admin.password);
     if (!passwordMatch) {
       return res
-        .status(401)
+        .status(STATUS_CODE.UNAUTHORIZED)
         .render("admin-login", {
           message: "Invalid credentials, please try again.",
         });
@@ -51,7 +51,7 @@ const login = async (req, res, next) => {
     req.session.save((err) => {
       if (err) {
         console.error("Admin session save error:", err);
-        return res.status(500).redirect("/admin/login");
+        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect("/admin/login");
       }
       res.redirect("/admin/dashboard");
     });

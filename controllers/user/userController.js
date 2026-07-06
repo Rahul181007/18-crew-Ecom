@@ -19,6 +19,7 @@ const {
 } = require("../../constants/walletConstants");
 const WishList = require("../../models/wishlistSchema");
 const Banner = require("../../models/bannerSchema");
+const STATUS_CODE=require("../../constants/httpStatus");
 
 // generate unique referal code
 function generateRefferalcode() {
@@ -157,7 +158,7 @@ const insertUser = async (req, res, next) => {
     const emailSent = await sendVerificationEmail(email, otp);
     if (!emailSent) {
       return res
-        .status(500)
+        .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
         .json({ success: false, message: "Failed to send verification email" });
     }
     req.session.userOtp = otp;
@@ -240,7 +241,7 @@ const verifyOtp = async (req, res, next) => {
       res.json({ success: true, redirectUrl: "/" });
     } else {
       res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ success: false, message: "Invalid OTP: please try again" });
     }
   } catch (error) {
@@ -254,7 +255,7 @@ const resendOTP = async (req, res, next) => {
     const { email } = req.session.userData;
     if (!email) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ success: false, message: "Email not found in session" });
     }
 
@@ -265,12 +266,12 @@ const resendOTP = async (req, res, next) => {
     if (emailSent) {
 
       res
-        .status(200)
+        .status(STATUS_CODE.OK)
         .json({ success: true, message: "OTP resend successfully" });
     } else {
-      res.status(500).json({
+      res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: "Failed to recent otp. please try again",
+        message: "Failed to resend otp. please try again",
       });
     }
   } catch (error) {
@@ -889,7 +890,7 @@ const checkUserBlock = async (req, res) => {
     res.json({ isBlocked: false });
   } catch (error) {
     console.error("Error in block check route:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ error: "Server error" });
   }
 };
 

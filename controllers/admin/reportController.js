@@ -4,7 +4,7 @@ const moment = require("moment");
 const exceljs = require("exceljs");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
-
+const STATUS_CODE=require("../../constants/httpStatus");
 const salesReportPage = async (req, res, next) => {
   try {
     res.render("admin/sales-report", { title: "Sales Report" });
@@ -23,12 +23,12 @@ const getSalesData = async (req, res, next) => {
       !["daily", "weekly", "monthly", "yearly", "custom"].includes(period)
     ) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ success: false, message: "Invalid or missing period" });
     }
     if (period !== "custom" && !specificDate) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({
           success: false,
           message: "Specific date is required for non-custom periods",
@@ -36,7 +36,7 @@ const getSalesData = async (req, res, next) => {
     }
     if (period === "custom" && (!startDate || !endDate)) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({
           success: false,
           message: "Start and end dates are required for custom period",
@@ -44,7 +44,7 @@ const getSalesData = async (req, res, next) => {
     }
     if (period === "custom" && new Date(endDate) < new Date(startDate)) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({
           success: false,
           message: "End date cannot be before start date",
@@ -204,26 +204,26 @@ const downloadReport = async (req, res, next) => {
 
     // Input validation
     if (!format || !["pdf", "excel", "csv"].includes(format)) {
-      return res.status(400).send("Invalid or missing format");
+      return res.status(STATUS_CODE.BAD_REQUEST).send("Invalid or missing format");
     }
     if (
       !period ||
       !["daily", "weekly", "monthly", "yearly", "custom"].includes(period)
     ) {
-      return res.status(400).send("Invalid or missing period");
+      return res.status(STATUS_CODE.BAD_REQUEST).send("Invalid or missing period");
     }
     if (period !== "custom" && !specificDate) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .send("Specific date is required for non-custom periods");
     }
     if (period === "custom" && (!startDate || !endDate)) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .send("Start and end dates are required for custom period");
     }
     if (period === "custom" && new Date(endDate) < new Date(startDate)) {
-      return res.status(400).send("End date cannot be before start date");
+      return res.status(STATUS_CODE.BAD_REQUEST).send("End date cannot be before start date");
     }
 
     // Get sales data
@@ -270,7 +270,7 @@ const downloadReport = async (req, res, next) => {
     }
   } catch (error) {
     console.error("Error generating report:", error);
-    res.status(500).send("Error generating report");
+    res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).send("Error generating report");
   }
 };
 

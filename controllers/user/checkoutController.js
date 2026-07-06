@@ -11,6 +11,7 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const WishList = require("../../models/wishlistSchema")
 const { logWalletTransaction } = require("../../utils/wallet");
+const STATUS_CODE=require("../../constants/httpStatus");
 const {
   WalletSources,
   TransactionTypes,
@@ -32,12 +33,12 @@ const loadCheckout = async (req, res, next) => {
     const wishlistCount = wishlist ? wishlist.products.length : 0;
 
     if (!userId) {
-      return res.status(401).redirect("/signin");
+      return res.status(STATUS_CODE.UNAUTHORIZED).redirect("/signin");
     }
 
     const findUser = await User.findById(userId);
     if (!findUser) {
-      return res.status(404).redirect("/shop");
+      return res.status(STATUS_CODE.NOT_FOUND).redirect("/shop");
     }
 
     const addressData = await Address.findOne({ userId });
@@ -129,7 +130,7 @@ const loadCheckout = async (req, res, next) => {
 
         if (!sizeVariant || sizeVariant.stock < 1) {
           console.log("Size not found or out of stock:", size, productId);
-          return res.status(400).redirect("/shop");
+          return res.status(STATUS_CODE.BAD_REQUEST).redirect("/shop");
         }
 
         products = [
@@ -167,7 +168,7 @@ const loadCheckout = async (req, res, next) => {
               item.productId._id,
               item.size
             );
-            return res.status(400).redirect("/shop");
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect("/shop");
           }
         }
 
@@ -247,13 +248,13 @@ const checkStockBeforeCheckout = async (req, res, next) => {
 
     if (!userId) {
       return res
-        .status(401)
+        .status(STATUS_CODE.UNAUTHORIZED)
         .json({ success: false, message: "Please signin proceed" });
     }
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart || cart.items.length === 0) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ success: false, message: "your cart is empty" });
     }
     const outOfStockItems = [];
@@ -281,7 +282,7 @@ const checkStockBeforeCheckout = async (req, res, next) => {
       }
     }
     if (outOfStockItems.length > 0) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message:
           "Some items in your cart are out of stock or have insufficient quantity.",
@@ -289,7 +290,7 @@ const checkStockBeforeCheckout = async (req, res, next) => {
       });
     }
     return res
-      .status(200)
+      .status(STATUS_CODE.OK)
       .json({
         success: true,
         message: "All items are in stock. Proceeding to checkout.",
@@ -322,7 +323,7 @@ const checkStock = async (req, res, next) => {
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(401).json({
+      return res.status(STATUS_CODE.UNAUTHORIZED).json({
         success: false,
         message: "User not found",
       });
@@ -331,7 +332,7 @@ const checkStock = async (req, res, next) => {
     // Validate product exists
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({
+      return res.status(STATUS_CODE.NOT_FOUND).json({
         success: false,
         message: "Product Not Found",
       });
@@ -340,7 +341,7 @@ const checkStock = async (req, res, next) => {
     // Check size availability
     const sizeVariant = product.sizes.find((s) => s.size === size);
     if (!sizeVariant) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: `Size ${size} not available for ${product.productName}`,
       });
@@ -349,7 +350,7 @@ const checkStock = async (req, res, next) => {
     // Check stock (default quantity to 1 for buy-now)
     const quantity = 1; // Or get from request if needed
     if (sizeVariant.stock < quantity) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: `Insufficient stock for ${product.productName} in size ${size}`,
         availableStock: sizeVariant.stock,
@@ -402,27 +403,27 @@ const placeOrder = async (req, res, next) => {
     const userId = req.session.user || req.session.user._id;
     if (!userId) {
       return res
-        .status(401)
+        .status(STATUS_CODE.UNAUTHORIZED)
         .json({ status: false, message: "User not authenticated" });
     }
 
     const isBuyNowOrder = buyNow === "true" || buyNow === true;
 
     if (!totalPrice || !addressId || !payment) {
-      return res.status(400).json({ status: false, message: "Missing fields" });
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ status: false, message: "Missing fields" });
     }
 
     const validPayments = ["cod", "wallet", "razorpay"];
     if (!validPayments.includes(payment)) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "Invalid payment method" });
     }
 
     const address = await Address.findOne({ _id: addressId, userId });
     if (!address || !address.address?.[addressIndex]) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "Invalid address" });
     }
 
@@ -433,14 +434,14 @@ const placeOrder = async (req, res, next) => {
       const product = await Product.findById(productId);
       if (!product)
         return res
-          .status(404)
+          .status(STATUS_CODE.NOT_FOUND)
           .json({ status: false, message: "Product not found" });
 
       const sizeVariant = product.sizes.find(
         (s) => String(s.size).toUpperCase() === String(size).toUpperCase()
       );
       if (!sizeVariant || sizeVariant.stock < 1) {
-        return res.status(400).json({ status: false, message: "Out of stock" });
+        return res.status(STATUS_CODE.BAD_REQUEST).json({ status: false, message: "Out of stock" });
       }
 
       orderedItems.push({
@@ -452,7 +453,7 @@ const placeOrder = async (req, res, next) => {
     } else {
       const cart = await Cart.findOne({ userId }).populate("items.productId");
       if (!cart || cart.items.length === 0) {
-        return res.status(400).json({ status: false, message: "Cart empty" });
+        return res.status(STATUS_CODE.BAD_REQUEST).json({ status: false, message: "Cart empty" });
       }
 
       for (const item of cart.items) {
@@ -465,7 +466,7 @@ const placeOrder = async (req, res, next) => {
 
         if (!sizeVariant || sizeVariant.stock < quantity) {
           return res
-            .status(400)
+            .status(STATUS_CODE.BAD_REQUEST)
             .json({
               status: false,
               message: `${product.productName} size ${item.size} is out of stock`,
@@ -529,7 +530,7 @@ const placeOrder = async (req, res, next) => {
         );
       } catch (error) {
         await Order.findByIdAndDelete(order._id);
-        return res.status(400).json({ status: false, message: error.message });
+        return res.status(STATUS_CODE.BAD_REQUEST).json({ status: false, message: error.message });
       }
     }
 
@@ -594,7 +595,7 @@ const verifyPayment = async (req, res) => {
 
     if (generatedSignature !== razorpay_signature) {
       // Invalid payment, no order saved
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: "Invalid payment signature",
         redirect: `/failedPage?message=${encodeURIComponent(
@@ -606,7 +607,7 @@ const verifyPayment = async (req, res) => {
     // Retrieve temp order from session
     const tempOrder = req.session.tempOrder;
     if (!tempOrder) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: "No pending order found",
         redirect: `/failedPage?message=${encodeURIComponent(
@@ -622,7 +623,7 @@ const verifyPayment = async (req, res) => {
         (s) => String(s.size).toUpperCase() === String(item.size).toUpperCase()
       );
       if (!sizeVariant || sizeVariant.stock < item.quantity) {
-        return res.status(400).json({
+        return res.status(STATUS_CODE.BAD_REQUEST).json({
           status: false,
           message: `${product.productName} size ${item.size} is out of stock`,
           redirect: `/failedPage?message=${encodeURIComponent(
@@ -722,7 +723,7 @@ const failedPage = async (req, res, next) => {
 
     const tempOrder = req.session.tempOrder;
     if (!tempOrder || tempOrder.paymentMethod !== "razorpay") {
-      return res.status(400).render("failedPage", {
+      return res.status(STATUS_CODE.BAD_REQUEST).render("failedPage", {
         message: message || "No pending order found",
         orderId: null,
         productId: null,
@@ -742,7 +743,7 @@ const failedPage = async (req, res, next) => {
 
       if (!productId || !size) {
         console.log("Missing productId or size in Buy Now temp order");
-        return res.status(400).render("failedPage", {
+        return res.status(STATUS_CODE.BAD_REQUEST).render("failedPage", {
           message: "Invalid Buy Now order details",
           orderId: null,
           productId: null,
@@ -776,7 +777,7 @@ const successPage = async (req, res, next) => {
     // Validate orderId
     if (!orderId || !isValidObjectId(orderId)) {
       console.log("Invalid or missing orderId:", orderId);
-      return res.status(400).render("error", { message: "Invalid order ID" });
+      return res.status(STATUS_CODE.BAD_REQUEST).render("error", { message: "Invalid order ID" });
     }
 
     // Fetch order and verify ownership
@@ -791,10 +792,10 @@ const successPage = async (req, res, next) => {
 
     if (!order) {
       console.log("Order not found for orderId:", orderId);
-      return res.status(404).redirect("/pageNotFound");
+      return res.status(STATUS_CODE.NOT_FOUND).redirect("/pageNotFound");
     }
     // Render success page with order details
-    res.render("successPage", { order, title: "SuccessPage" });
+    res.status(STATUS_CODE.OK).render("successPage", { order, title: "SuccessPage" });
   } catch (error) {
     next(error);
   }
@@ -838,17 +839,17 @@ const cancelOrder = async (req, res, next) => {
     );
     if (!order)
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "Order not found" });
 
     if (order.userId.toString() !== userId.toString())
-      return res.status(403).json({ success: false, message: "Unauthorized" });
+      return res.status(STATUS_CODE.FORBIDDEN).json({ success: false, message: "Unauthorized" });
 
     if (
       !["Pending", "Processing", "Partially Cancelled"].includes(order.status)
     )
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({
           success: false,
           message: "Order cannot be cancelled in current status",
@@ -911,7 +912,7 @@ const cancelOrder = async (req, res, next) => {
     order.isFullyRefunded = order.isPaid;
     await order.save();
 
-    return res.status(200).json({
+    return res.status(STATUS_CODE.OK).json({
       success: true,
       message: `Order cancelled successfully${order.isPaid ? " and refund processed" : ""
         }`,
@@ -931,15 +932,15 @@ const cancelOrderItem = async (req, res, next) => {
     );
     if (!order)
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "Order not found" });
 
     if (order.userId.toString() !== userId.toString())
-      return res.status(403).json({ success: false, message: "Unauthorized" });
+      return res.status(STATUS_CODE.FORBIDDEN).json({ success: false, message: "Unauthorized" });
 
     if (!["Pending", "Processing"].includes(order.status))
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({
           success: false,
           message: "Order cannot be cancelled in current status",
@@ -948,12 +949,12 @@ const cancelOrderItem = async (req, res, next) => {
     const item = order.orderedItems.find((i) => i._id.toString() === itemId);
     if (!item)
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "Item not found in order" });
 
     if (item.status === "Cancelled")
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ success: false, message: "Item is already cancelled" });
 
     const validSizes = ["S", "M", "L", "XL", "XXL"];
@@ -1012,7 +1013,7 @@ const cancelOrderItem = async (req, res, next) => {
 
     await order.save();
 
-    return res.status(200).json({
+    return res.status(STATUS_CODE.OK).json({
       success: true,
       message: `Item cancelled successfully${refundProcessed ? " and refund processed" : ""
         }`,
@@ -1034,7 +1035,7 @@ const returnOrder = async (req, res, next) => {
     );
     if (!order) {
       console.error(`Order ${orderId} not found`);
-      return res.status(404).json({
+      return res.status(STATUS_CODE.NOT_FOUND).json({
         success: false,
         message: "Order not found",
       });
@@ -1042,7 +1043,7 @@ const returnOrder = async (req, res, next) => {
 
     if (order.userId.toString() !== userId.toString()) {
       console.error(`User ${userId} not authorized to return order ${orderId}`);
-      return res.status(403).json({
+      return res.status(STATUS_CODE.FORBIDDEN).json({
         success: false,
         message: "You are not authorized to return this order",
       });
@@ -1053,7 +1054,7 @@ const returnOrder = async (req, res, next) => {
       console.error(
         `Order ${orderId} cannot be returned in status ${order.status}`
       );
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message:
           "Order must be in Delivered or Partially Returned status to request a return",
@@ -1069,7 +1070,7 @@ const returnOrder = async (req, res, next) => {
       console.error(
         `Return window expired for order ${orderId}. Delivered ${daysSinceDelivery} days ago.`
       );
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "Return window has expired (7 days after delivery)",
       });
@@ -1078,7 +1079,7 @@ const returnOrder = async (req, res, next) => {
     const item = order.orderedItems.find((i) => i._id.toString() === itemId);
     if (!item) {
       console.error(`Item ${itemId} not found in order ${orderId}`);
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "Item not found in order",
       });
@@ -1088,7 +1089,7 @@ const returnOrder = async (req, res, next) => {
       console.log(
         `Return already requested for item ${itemId} in order ${orderId}`
       );
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "Return request already submitted for this item",
       });
@@ -1096,7 +1097,7 @@ const returnOrder = async (req, res, next) => {
 
     if (item.returnStatus === "Returned") {
       console.log(`Item ${itemId} in order ${orderId} already returned`);
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "Item has already been returned",
       });
@@ -1122,7 +1123,7 @@ const returnOrder = async (req, res, next) => {
     await order.save();
     console.log(`Return requested for item ${itemId} in order ${orderId}`);
 
-    res.status(200).json({
+    res.status(STATUS_CODE.OK).json({
       success: true,
       message: "Return request submitted successfully",
     });
@@ -1158,7 +1159,7 @@ const downloadInvoice = async (req, res, next) => {
       .populate("selectedAddress");
 
     if (!order) {
-      return res.status(404).send("Order not found");
+      return res.status(STATUS_CODE.NOT_FOUND).send("Order not found");
     }
 
     // Create a new PDF document

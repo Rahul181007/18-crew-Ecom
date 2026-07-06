@@ -1,5 +1,6 @@
 const Brand = require("../../models/brandSchema");
 const Product = require("../../models/productSchema");
+const STATUS_CODE=require("../../constants/httpStatus");
 
 const getBrandPage = async (req, res, next) => {
   try {
@@ -95,7 +96,7 @@ const deleteBrand = async (req, res, next) => {
   try {
     const id = req.query.id;
     if (!id) {
-      return res.status(404).redirect("/admin/pageError");
+      return res.status(STATUS_CODE.NOT_FOUND).redirect("/admin/pageError");
     }
 
     await Brand.deleteOne({ _id: id });

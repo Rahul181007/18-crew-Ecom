@@ -1,6 +1,6 @@
 const Coupon = require("../../models/couponSchema");
 const Order = require("../../models/orderSchema");
-
+const STATUS_CODE=require("../../constants/httpStatus");
 const applyCoupon = async (req, res, next) => {
   try {
     const { couponCode, cartTotal } = req.body;
@@ -13,19 +13,19 @@ const applyCoupon = async (req, res, next) => {
 
     if (!coupon) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "Invalid coupon code" });
     }
 
     if (coupon.expireOn && coupon.expireOn < new Date()) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "Coupon has expired" });
     }
 
     if (coupon.maxUsage && coupon.usedBy.length >= coupon.maxUsage) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "Coupon usage limit reached" });
     }
 
@@ -37,12 +37,12 @@ const applyCoupon = async (req, res, next) => {
 
     if (userUsedInPaidOrder) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ status: false, message: "You have already used this coupon" });
     }
 
     if (cartTotal < coupon.minimumPrice) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: `Minimum order amount is ₹${coupon.minimumPrice}`,
       });
@@ -63,7 +63,7 @@ const applyCoupon = async (req, res, next) => {
       discount: parseFloat(discount.toFixed(2)),
     };
 
-    return res.status(200).json({
+    return res.status(STATUS_CODE.OK).json({
       status: true,
       message: "Coupon applied successfully",
       discount: parseFloat(discount.toFixed(2)),
@@ -76,14 +76,14 @@ const applyCoupon = async (req, res, next) => {
 const removeCoupon = async (req, res, next) => {
   try {
     if (!req.session.appliedCoupon) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: "No coupon applied",
       });
     }
 
     req.session.appliedCoupon = null;
-    return res.status(200).json({
+    return res.status(STATUS_CODE.OK).json({
       status: true,
       message: "Coupon removed successfully",
     });

@@ -1,7 +1,7 @@
 const { error } = require("console");
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
-
+const STATUS_CODE=require("../../constants/httpStatus");
 // categoryinfo
 const categoryInfo = async (req, res, next) => {
   try {
@@ -47,7 +47,7 @@ const addCategory = async (req, res, next) => {
       name: { $regex: `^${name}$`, $options: "i" },
     });
     if (existingCategory) {
-      return res.status(400).json({ error: "Category already exists" });
+      return res.status(STATUS_CODE.CONFLICT).json({ error: "Category already exists" });
     }
 
     const newCategory = new Category({
@@ -73,21 +73,21 @@ const addCategoryOffer = async (req, res, next) => {
     const MAX_OFFER = 90;
 
     if (!categoryId) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: "Category ID is required",
       });
     }
 
     if (isNaN(percentage)) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: "Invalid offer percentage",
       });
     }
 
     if (percentage < MIN_OFFER || percentage > MAX_OFFER) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         status: false,
         message: `Offer percentage must be between ${MIN_OFFER}% and ${MAX_OFFER}%`,
       });
@@ -96,7 +96,7 @@ const addCategoryOffer = async (req, res, next) => {
     const category = await Category.findById(categoryId);
     if (!category) {
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ status: false, message: "Category not found" });
     }
 
@@ -108,7 +108,7 @@ const addCategoryOffer = async (req, res, next) => {
     );
     if (hasProductOffer) {
       return res
-        .status(409)
+        .status(STATUS_CODE.CONFLICT)
         .json({
           status: false,
           message:
@@ -136,7 +136,7 @@ const removeCategoryOffer = async (req, res, next) => {
     const category = await Category.findById(categoryId);
     if (!category) {
       return res
-        .status(404)
+        .status(STATUS_CODE.NOT_FOUND)
         .json({ status: false, message: "Category Not Found" });
     }
     const percentage = category.categoryOffer;
@@ -191,7 +191,7 @@ const geteditCategory = async (req, res, next) => {
     const category = await Category.findOne({ _id: id });
     if (!category) {
       const error = new Error("category not found");
-      error.statusCode = 404;
+      error.statusCode = STATUS_CODE.NOT_FOUND;
       return next(error);
     }
     res.render("edit-category", { category: category, activePage: "category" });
@@ -213,7 +213,7 @@ const editCategory = async (req, res, next) => {
     });
 
     if (existingCategory) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.CONFLICT).json({
         error: "Category already exists, please choose another name"
       });
     }
@@ -231,7 +231,7 @@ const editCategory = async (req, res, next) => {
     );
 
     if (!updateCategory) {
-      return res.status(404).json({
+      return res.status(STATUS_CODE.NOT_FOUND).json({
         error: "Category not found"
       });
     }

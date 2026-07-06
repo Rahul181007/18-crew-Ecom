@@ -7,6 +7,8 @@ const {
   TransactionTypes,
 } = require("../../constants/walletConstants");
 
+const STATUS_CODE=require("../../constants/httpStatus");
+
 const loadOrderList = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, status, search } = req.query;
@@ -135,7 +137,7 @@ const loadOrderDetail = async (req, res, next) => {
 
     if (!order) {
       const error = new Error("Order not found");
-      error.statusCode = 404;
+      error.statusCode = STATUS_CODE.NOT_FOUND;
       return next(error);
     }
     res.render("orderDetail", {
@@ -157,7 +159,7 @@ const rejectReturn = async (req, res, next) => {
       "orderedItems.product"
     );
     if (!order) {
-      return res.status(404).json({
+      return res.status(STATUS_CODE.NOT_FOUND).json({
         success: false,
         message: "Order not found",
       });
@@ -167,7 +169,7 @@ const rejectReturn = async (req, res, next) => {
       order.status !== "Return Request" &&
       order.status !== "Partially Returned"
     ) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message:
           "Order must be in Return Request or Partially Returned status to reject",
@@ -176,14 +178,14 @@ const rejectReturn = async (req, res, next) => {
 
     const item = order.orderedItems.find((i) => i._id.toString() === itemId);
     if (!item) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "Item not found in order",
       });
     }
 
     if (item.returnStatus !== "Requested") {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "No return request found for this item",
       });
@@ -238,7 +240,7 @@ const approveReturn = async (req, res, next) => {
     );
     if (!order) {
       console.error(`Order ${orderId} not found`);
-      return res.status(404).json({
+      return res.status(STATUS_CODE.NOT_FOUND).json({
         success: false,
         message: "Order not found",
       });
@@ -251,7 +253,7 @@ const approveReturn = async (req, res, next) => {
       console.error(
         `Order ${orderId} cannot be returned in status ${order.status}`
       );
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message:
           "Order must be in Return Request or Partially Returned status to approve",
@@ -261,7 +263,7 @@ const approveReturn = async (req, res, next) => {
     const item = order.orderedItems.find((i) => i._id.toString() === itemId);
     if (!item) {
       console.error(`Item ${itemId} not found in order ${orderId}`);
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "Item not found in order",
       });
@@ -271,7 +273,7 @@ const approveReturn = async (req, res, next) => {
       console.error(
         `No return request found for item ${itemId} in order ${orderId}`
       );
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: "No return request found for this item",
       });
@@ -286,7 +288,7 @@ const approveReturn = async (req, res, next) => {
       console.error(
         `Product ${item.product.productName} not found for order ${orderId}`
       );
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: `Product ${item.product.productName} not found`,
       });
@@ -306,7 +308,7 @@ const approveReturn = async (req, res, next) => {
         `Available sizes:`,
         product.sizes.map((s) => s.size)
       );
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: `Size ${item.size} not found for product ${product.productName}`,
       });
@@ -338,7 +340,7 @@ const approveReturn = async (req, res, next) => {
         console.error(
           `User ${order.userId} not found for refund in order ${orderId}`
         );
-        return res.status(400).json({
+        return res.status(STATUS_CODE.BAD_REQUEST).json({
           success: false,
           message: "User not found for refund",
         });
@@ -407,7 +409,7 @@ const approveReturn = async (req, res, next) => {
     };
     
     res.setHeader("Content-Type", "application/json");
-    res.status(200).json(responseData);
+    res.status(STATUS_CODE.OK).json(responseData);
   } catch (error) {
     console.log(error);
     next(error);

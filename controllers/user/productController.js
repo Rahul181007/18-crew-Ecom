@@ -4,7 +4,7 @@ const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
 const WishList = require("../../models/wishlistSchema");
-
+const STATUS_CODE=require("../../constants/httpStatus");
 const productDetails = async (req, res, next) => {
   try {
     const userId = req.session.user;
@@ -12,7 +12,7 @@ const productDetails = async (req, res, next) => {
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       const error = new Error("Invalid product ID");
-      error.statusCode = 400;
+      error.statusCode = STATUS_CODE.BAD_REQUEST;
       return next(error);
     }
 
@@ -29,7 +29,7 @@ const productDetails = async (req, res, next) => {
 
     if (!product) {
       const error = new Error("Product not found");
-      error.statusCode = 404;
+      error.statusCode = STATUS_CODE.NOT_FOUND;
       return next(error);
     }
 

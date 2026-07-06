@@ -17,7 +17,7 @@ const wishListController = require("../controllers/user/wishListController");
 const checkoutController = require("../controllers/user/checkoutController")
 const couponController = require("../controllers/user/couponController")
 const User = require("../models/userSchema");
-
+const ROUTES=require("../constants/userRoutesCons");
 
 // ..storage area for image
 const storage = multer.diskStorage({
@@ -40,11 +40,11 @@ async function generateRefferalcode() {
 };
 
 // signup management
-user_route.get("/register", userContoller.loadRegister);
-user_route.post("/register", userContoller.insertUser);
-user_route.post("/verify-otp", userContoller.verifyOtp)
-user_route.post("/resend-otp", userContoller.resendOTP)
-user_route.get('/auth/google', (req, res, next) => {
+user_route.get(ROUTES.REGISTER, userContoller.loadRegister);
+user_route.post(ROUTES.REGISTER, userContoller.insertUser);
+user_route.post(ROUTES.VERIFY_OTP, userContoller.verifyOtp)
+user_route.post(ROUTES.RESEND_OTP, userContoller.resendOTP)
+user_route.get(ROUTES.GOOGLE_AUTH, (req, res, next) => {
 
   if (req.query.ref) {
     req.session.referralCode = req.query.ref;
@@ -53,7 +53,7 @@ user_route.get('/auth/google', (req, res, next) => {
 }, passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 user_route.get(
-  "/auth/google/callback",
+  ROUTES.GOOGLE_CALLBACK,
   passport.authenticate("google", { failureRedirect: "/register" }),
   async (req, res) => {
     try {
@@ -80,93 +80,93 @@ user_route.get(
 
 
 
-user_route.get("/referral", userContoller.referralPage);
-user_route.post("/referral/submit", userAuth, userContoller.postReferral)
-user_route.get("/referral/skip", userAuth, userContoller.skipReferral)
+user_route.get(ROUTES.REFERRAL, userContoller.referralPage);
+user_route.post(ROUTES.REFERRAL_SUBMIT, userAuth, userContoller.postReferral)
+user_route.get(ROUTES.REFERRAL_SKIP, userAuth, userContoller.skipReferral)
 // sign in Management
-user_route.get("/signin", userContoller.loadLogin)
-user_route.post("/signin", userContoller.login)
+user_route.get(ROUTES.SIGNIN, userContoller.loadLogin)
+user_route.post(ROUTES.SIGNIN, userContoller.login)
 
 //homepage  and shopping page
-user_route.get("/", userContoller.loadhomepage);
-user_route.get("/logout", userAuth, userContoller.logout);
-user_route.get("/check-user-block", userContoller.checkUserBlock)
-user_route.get("/shop", userContoller.loadShoppingPage);
-user_route.get("/filter", userContoller.filterProduct)
-user_route.get("/filterPrice", userContoller.filterPrice);
-user_route.post("/search", userContoller.searchProduct);
-user_route.get("/search", userContoller.searchProduct);
-user_route.get("/search/suggestions", userContoller.getSearchSuggestions);
-user_route.get("/about", userContoller.loadAboutPage);
-user_route.get("/contact", userContoller.loadContactpage);
-user_route.post("/sendMessage", userAuth, userContoller.recieveMessage);
+user_route.get(ROUTES.HOME, userContoller.loadhomepage);
+user_route.get(ROUTES.LOGOUT, userAuth, userContoller.logout);
+user_route.get(ROUTES.CHECK_USER_BLOCK, userContoller.checkUserBlock)
+user_route.get(ROUTES.SHOP, userContoller.loadShoppingPage);
+user_route.get(ROUTES.FILTER, userContoller.filterProduct)
+user_route.get(ROUTES.FILTER_PRICE, userContoller.filterPrice);
+user_route.post(ROUTES.SEARCH, userContoller.searchProduct);
+user_route.get(ROUTES.SEARCH, userContoller.searchProduct);
+user_route.get(ROUTES.SEARCH_SUGGESTIONS, userContoller.getSearchSuggestions);
+user_route.get(ROUTES.ABOUT, userContoller.loadAboutPage);
+user_route.get(ROUTES.CONTACT, userContoller.loadContactpage);
+user_route.post(ROUTES.SEND_MESSAGE, userAuth, userContoller.recieveMessage);
 // profileMangement
-user_route.get("/forgot-password", profileController.getForgotPassPage)
-user_route.post("/forgotEmailValid", profileController.forgotEmailValid);
-user_route.post("/verifyPassForgot-otp", profileController.verifyForgotPassOtp);
-user_route.get("/reset-password", profileController.getresetPassword);
-user_route.post("/resend-forgot-otp", profileController.resendOTP);
-user_route.post("/reset-password", profileController.postResetPassword);
-user_route.get("/userProfile", userAuth, profileController.userProfile);
-user_route.get("/copy-referral-code", userAuth, profileController.copyReferralCode);
-user_route.get("/change-email", userAuth, profileController.changeEmail);
-user_route.post("/change-email", userAuth, profileController.changeEmailValid)
-user_route.post("/verifyChangeEmail-otp", userAuth, profileController.verifyChangeEmailOtp);
-user_route.get("/reset-email", userAuth, profileController.getResetEmailPage);
-user_route.post("/update-email", userAuth, profileController.updateEmail);
-user_route.get("/change-password", userAuth, profileController.changePassword);
-user_route.post("/change-password", userAuth, profileController.changePassValid);
-user_route.post("/update-profile", userAuth, upload.single("image"), profileController.updateProfile);
-user_route.post("/delete-account", userAuth, profileController.deleteAccn);
+user_route.get(ROUTES.FORGOT_PASSWORD, profileController.getForgotPassPage)
+user_route.post(ROUTES.FORGOT_EMAIL, profileController.forgotEmailValid);
+user_route.post(ROUTES.VERIFY_FORGOT_OTP, profileController.verifyForgotPassOtp);
+user_route.get(ROUTES.RESET_PASSWORD, profileController.getresetPassword);
+user_route.post(ROUTES.RESEND_FORGOT_OTP, profileController.resendOTP);
+user_route.post(ROUTES.RESET_PASSWORD, profileController.postResetPassword);
+user_route.get(ROUTES.USER_PROFILE, userAuth, profileController.userProfile);
+user_route.get(ROUTES.COPY_REFERRAL_CODE, userAuth, profileController.copyReferralCode);
+user_route.get(ROUTES.CHANGE_EMAIL, userAuth, profileController.changeEmail);
+user_route.post(ROUTES.CHANGE_EMAIL, userAuth, profileController.changeEmailValid)
+user_route.post(ROUTES.VERIFY_CHANGE_EMAIL_OTP, userAuth, profileController.verifyChangeEmailOtp);
+user_route.get(ROUTES.RESET_EMAIL, userAuth, profileController.getResetEmailPage);
+user_route.post(ROUTES.UPDATE_EMAIL, userAuth, profileController.updateEmail);
+user_route.get(ROUTES.CHANGE_PASSWORD, userAuth, profileController.changePassword);
+user_route.post(ROUTES.CHANGE_PASSWORD, userAuth, profileController.changePassValid);
+user_route.post(ROUTES.UPDATE_PROFILE, userAuth, upload.single("image"), profileController.updateProfile);
+user_route.post(ROUTES.DELETE_ACCOUNT, userAuth, profileController.deleteAccn);
 // address management
-user_route.get("/addAddress", userAuth, profileController.addAddress);
-user_route.post("/addAddress", userAuth, profileController.postAddAddress);
-user_route.get("/editAddress", userAuth, profileController.editAddress);
-user_route.post("/editAddress", userAuth, profileController.postEditAddress)
-user_route.get("/deleteAddress/:addressId/:index", userAuth, profileController.deleteAddress)
+user_route.get(ROUTES.ADD_ADDRESS, userAuth, profileController.addAddress);
+user_route.post(ROUTES.ADD_ADDRESS, userAuth, profileController.postAddAddress);
+user_route.get(ROUTES.EDIT_ADDRESS, userAuth, profileController.editAddress);
+user_route.post(ROUTES.EDIT_ADDRESS, userAuth, profileController.postEditAddress)
+user_route.get(ROUTES.DELETE_ADDRESS, userAuth, profileController.deleteAddress)
 
 
 // product details
-user_route.get("/productDetails", productController.productDetails);
+user_route.get(ROUTES.PRODUCT_DETAILS, productController.productDetails);
 // cart
-user_route.get("/getCartPage", userAuth, cartController.getCartPage);
-user_route.post("/addToCart", userAuth, cartController.addToCart);
-user_route.post("/changeQuantity", userAuth, cartController.changeQuantity);
-user_route.delete("/deleteItem/:cartItemId", userAuth, cartController.deleteProduct);
+user_route.get(ROUTES.CART, userAuth, cartController.getCartPage);
+user_route.post(ROUTES.ADD_TO_CART, userAuth, cartController.addToCart);
+user_route.post(ROUTES.CHANGE_QUANTITY, userAuth, cartController.changeQuantity);
+user_route.delete(ROUTES.DELETE_CART_ITEM, userAuth, cartController.deleteProduct);
 // wishlist management
-user_route.get("/wishList", userAuth, wishListController.loadWishlist);
-user_route.post("/addToWishlist", userAuth, wishListController.addToWishlist)
-user_route.post("/deleteitemwish", userAuth, wishListController.removeFromWishlist)
+user_route.get(ROUTES.WISHLIST, userAuth, wishListController.loadWishlist);
+user_route.post(ROUTES.ADD_TO_WISHLIST, userAuth, wishListController.addToWishlist)
+user_route.post(ROUTES.REMOVE_WISHLIST, userAuth, wishListController.removeFromWishlist)
 // checkout management
-user_route.get("/checkout", userAuth, checkoutController.loadCheckout);
-user_route.post("/retry-checkout", userAuth, checkoutController.retryCheckout)
-user_route.get("/checkStockBeforeCheckout", userAuth, checkoutController.checkStockBeforeCheckout);
-user_route.post("/deleteItem", userAuth, checkoutController.deleteProduct);
-user_route.post("/orderPlaced", userAuth, checkoutController.placeOrder);
-user_route.get("/checkStock", userAuth, checkoutController.checkStock)
-user_route.get("/successPage", userAuth, checkoutController.successPage);
-user_route.get("/orders/:orderId", userAuth, checkoutController.orderDetails);
-user_route.post("/orders/cancel/:orderId", userAuth, checkoutController.cancelOrder);
-user_route.post('/orders/cancel-item/:orderId/:itemId', userAuth, checkoutController.cancelOrderItem);
+user_route.get(ROUTES.CHECKOUT, userAuth, checkoutController.loadCheckout);
+user_route.post(ROUTES.RETRY_CHECKOUT, userAuth, checkoutController.retryCheckout)
+user_route.get(ROUTES.CHECK_STOCK_BEFORE, userAuth, checkoutController.checkStockBeforeCheckout);
+user_route.post(ROUTES.DELETE_CHECKOUT_ITEM, userAuth, checkoutController.deleteProduct);
+user_route.post(ROUTES.PLACE_ORDER, userAuth, checkoutController.placeOrder);
+user_route.get(ROUTES.CHECK_STOCK, userAuth, checkoutController.checkStock)
+user_route.get(ROUTES.SUCCESS_PAGE, userAuth, checkoutController.successPage);
+user_route.get(ROUTES.ORDER_DETAILS, userAuth, checkoutController.orderDetails);
+user_route.post(ROUTES.CANCEL_ORDER, userAuth, checkoutController.cancelOrder);
+user_route.post(ROUTES.CANCEL_ORDER_ITEM, userAuth, checkoutController.cancelOrderItem);
 
-user_route.post("/orders/return/:orderId", userAuth, checkoutController.returnOrder);
-user_route.post('/verify-payment', userAuth, checkoutController.verifyPayment)
-user_route.get("/failedPage", userAuth, checkoutController.failedPage);
-user_route.get('/orders/invoice/:orderId', userAuth, checkoutController.downloadInvoice)
+user_route.post(ROUTES.RETURN_ORDER, userAuth, checkoutController.returnOrder);
+user_route.post(ROUTES.VERIFY_PAYMENT, userAuth, checkoutController.verifyPayment)
+user_route.get(ROUTES.FAILED_PAGE, userAuth, checkoutController.failedPage);
+user_route.get(ROUTES.DOWNLOAD_INVOICE, userAuth, checkoutController.downloadInvoice)
 // coupon management 
 
-user_route.post("/applyCoupon", userAuth, couponController.applyCoupon)
-user_route.post("/removeCoupon", userAuth, couponController.removeCoupon);
+user_route.post(ROUTES.APPLY_COUPON, userAuth, couponController.applyCoupon)
+user_route.post(ROUTES.REMOVE_COUPON, userAuth, couponController.removeCoupon);
 
 
 // Faq
-user_route.get("/faq", userContoller.loadFaqpage);
-user_route.get("/returns", userContoller.loadReturnPage);
-user_route.get("/shipping", userContoller.loadShippingPage)
-user_route.get("/privacy", userContoller.loadPrivacyPage)
+user_route.get(ROUTES.FAQ, userContoller.loadFaqpage);
+user_route.get(ROUTES.RETURNS, userContoller.loadReturnPage);
+user_route.get(ROUTES.SHIPPING, userContoller.loadShippingPage)
+user_route.get(ROUTES.PRIVACY, userContoller.loadPrivacyPage)
 
 // .........pagenot found.........
-user_route.get("/pageNotFound", userContoller.pageNotFound);
+user_route.get(ROUTES.PAGE_NOT_FOUND, userContoller.pageNotFound);
 
 
 module.exports = user_route;

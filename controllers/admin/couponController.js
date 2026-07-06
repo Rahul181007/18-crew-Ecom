@@ -1,6 +1,6 @@
 const Coupon = require("../../models/couponSchema");
 const { body, validationResult } = require("express-validator");
-
+const STATUS_CODE=require("../../constants/httpStatus");
 const loadCouponPage = async (req, res, next) => {
   try {
     res.render("coupon", {
@@ -75,7 +75,7 @@ const addCoupon = async (req, res) => {
     );
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ errors: errors.array() });
     }
 
     const {
@@ -112,17 +112,17 @@ const addCoupon = async (req, res) => {
 
     if (error.code === 11000) {
       return res
-        .status(400)
+        .status(STATUS_CODE.BAD_REQUEST)
         .json({ errors: [{ msg: "Coupon code already exists" }] });
     }
     if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err) => ({
         msg: err.message,
       }));
-      return res.status(400).json({ errors });
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ errors });
     }
     res
-      .status(500)
+      .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
       .json({ errors: [{ msg: "Server error. Please try again." }] });
   }
 };
@@ -146,7 +146,7 @@ const deleteCoupon = async (req, res, next) => {
     const { name } = req.params;
     const coupon = await Coupon.findOneAndDelete({ name: name.toUpperCase() });
     if (!coupon) {
-      res.status(404).json({ error: [{ msg: "Coupon not Found" }] });
+      return res.status(STATUS_CODE.NOT_FOUND).json({ error: [{ msg: "Coupon not Found" }] });
     }
     res.status(200).json({ message: "Coupon successfully deleted" });
   } catch (error) {
@@ -210,7 +210,7 @@ const updateCoupon = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       console.log("Validation errors:", errors.array());
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ errors: errors.array() });
     }
 
     const { name } = req.params;
@@ -247,21 +247,21 @@ const updateCoupon = async (req, res) => {
 
     if (!coupon) {
 
-      return res.status(404).json({ errors: [{ msg: "Coupon not found" }] });
+      return res.status(STATUS_CODE.NOT_FOUND).json({ errors: [{ msg: "Coupon not found" }] });
     }
 
 
-    res.status(200).json({ message: "Coupon updated successfully", coupon });
+    res.status(STATUS_CODE.OK).json({ message: "Coupon updated successfully", coupon });
   } catch (error) {
     console.error("Error updating coupon:", error.stack);
     if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err) => ({
         msg: err.message,
       }));
-      return res.status(400).json({ errors });
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ errors });
     }
     res
-      .status(500)
+      .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
       .json({ errors: [{ msg: "Server error. Please try again." }] });
   }
 };
@@ -281,7 +281,7 @@ const getCouponsUsers = async (req, res, next) => {
 
     if (!coupon) {
 
-      return res.status(404).json({ errors: [{ msg: "Coupon not found" }] });
+      return res.status(STATUS_CODE.NOT_FOUND).json({ errors: [{ msg: "Coupon not found" }] });
     }
 
     const users = coupon.usedBy
