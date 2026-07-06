@@ -206,25 +206,38 @@ const editCategory = async (req, res, next) => {
   try {
     const id = req.params.id;
     const { categoryName, description } = req.body;
+
     const existingCategory = await Category.findOne({
       name: { $regex: `^${categoryName}$`, $options: "i" },
+      _id: { $ne: id }
     });
+
     if (existingCategory) {
-      return res
-        .status(400)
-        .json({ error: "Category already exist,please choose another name" });
+      return res.status(400).json({
+        error: "Category already exists, please choose another name"
+      });
     }
+
     const updateCategory = await Category.findByIdAndUpdate(
       id,
-      { name: categoryName, description: description },
-      { new: true }
+      {
+        name: categoryName,
+        description
+      },
+      {
+        new: true,
+        runValidators: true
+      }
     );
-    console.log(updateCategory);
-    if (updateCategory) {
-      res.redirect("/admin/category");
-    } else {
-      res.status(404).json({ error: "Category not found" });
+
+    if (!updateCategory) {
+      return res.status(404).json({
+        error: "Category not found"
+      });
     }
+
+    return res.redirect("/admin/category");
+
   } catch (error) {
     next(error);
   }
