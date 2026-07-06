@@ -776,15 +776,28 @@
         const prefix = isEdit ? "edit" : "";
         const type = $(event.target).val();
 
-        console.log("Toggle called for:", event.target.id, "with value:", type);
+
 
         const $offerPriceGroup = $(`#${prefix}offerPriceGroup`);
         const $offerPercentageGroup = $(`#${prefix}offerPercentageGroup`);
-        const $offerPrice = $(`#${prefix}offerPrice`);
-        const $offerPercentage = $(`#${prefix}offerPercentage`);
+        const $offerPrice = isEdit
+          ? $("#editOfferPrice")
+          : $("#offerPrice");
 
+        const $offerPercentage = isEdit
+          ? $("#editOfferPercentage")
+          : $("#offerPercentage");
+
+        const $maxDiscount = isEdit
+          ? $("#editMaxDiscount")
+          : $("#maxDiscount");
         const $maxDiscountGroup = $(`#${prefix}maxDiscountGroup`);
-        const $maxDiscount = $(`#${prefix}maxDiscount`);
+
+        console.log(
+  "offerPrice:", $offerPrice.length,
+  "offerPercentage:", $offerPercentage.length,
+  "maxDiscount:", $maxDiscount.length
+);
 
         if (!$offerPriceGroup.length || !$offerPercentageGroup.length) {
           console.error(
@@ -1033,15 +1046,15 @@
         console.log("Form valid:", form.checkValidity());
 
         Array.from(form.elements).forEach(el => {
-    if (el.name) {
-        console.log(
-            el.id,
-            "value:", el.value,
-            "required:", el.required,
-            "valid:", el.checkValidity()
-        );
-    }
-});
+          if (el.name) {
+            console.log(
+              el.id,
+              "value:", el.value,
+              "required:", el.required,
+              "valid:", el.checkValidity()
+            );
+          }
+        });
         if (!form.checkValidity()) {
           console.log("FORM INVALID");
           form.classList.add("was-validated");

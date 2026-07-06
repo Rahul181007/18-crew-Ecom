@@ -230,10 +230,11 @@ const updateCoupon = async (req, res) => {
       offerPrice: discountType === "price" ? parseFloat(offerPrice) : null,
       offerPercentage:
         discountType === "percentage" ? parseFloat(offerPercentage) : null,
+      maxDiscount: discountType === "percentage" ? parseFloat(maxDiscount) : null,
       minimumPrice: parseFloat(minimumPrice),
       maxUsage: parseInt(maxUsage),
       expireOn: new Date(expireOn),
-      maxDiscount: discountType === "percentage" ? parseFloat(maxDiscount) : null,
+
     };
 
 
