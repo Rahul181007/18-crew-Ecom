@@ -570,7 +570,7 @@
             </div>
 
             <div class="col-md-12 d-none" id="editmaxDiscountGroup">
-              <label for="editmaxDiscount" class="form-label">
+              <label for="editMaxDiscount" class="form-label">
                 Maximum Discount
               </label>
 
@@ -1032,6 +1032,16 @@
 
         console.log("Form valid:", form.checkValidity());
 
+        Array.from(form.elements).forEach(el => {
+    if (el.name) {
+        console.log(
+            el.id,
+            "value:", el.value,
+            "required:", el.required,
+            "valid:", el.checkValidity()
+        );
+    }
+});
         if (!form.checkValidity()) {
           console.log("FORM INVALID");
           form.classList.add("was-validated");
