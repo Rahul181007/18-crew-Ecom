@@ -11,7 +11,7 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const WishList = require("../../models/wishlistSchema")
 const { logWalletTransaction } = require("../../utils/wallet");
-const STATUS_CODE=require("../../constants/httpStatus");
+const STATUS_CODE = require("../../constants/httpStatus");
 const {
   WalletSources,
   TransactionTypes,
@@ -1214,54 +1214,142 @@ const downloadInvoice = async (req, res, next) => {
     // Table Header
     const tableTop = doc.y;
     doc.fontSize(10).font("Helvetica-Bold");
-    doc.text("Product", 50, tableTop, { width: 200 });
-    doc.text("Size", 250, tableTop, { width: 50 });
-    doc.text("Quantity", 300, tableTop, { width: 50 });
-    doc.text("Unit Price", 350, tableTop, { width: 50 });
-    doc.text("Total", 400, tableTop, { width: 50 });
+    doc.text("Product", 50, tableTop, { width: 150 });
+    doc.text("Size", 200, tableTop, { width: 40 });
+    doc.text("Qty", 240, tableTop, { width: 35 });
+    doc.text("Price", 280, tableTop, { width: 55 });
+    doc.text("Total", 340, tableTop, { width: 55 });
+    doc.text("Status", 400, tableTop, { width: 70 });
+    doc.text("Refund", 480, tableTop, { width: 60 });
     doc.moveDown(0.5);
     doc
       .lineWidth(1)
-      .rect(50, tableTop - 5, 450, 20)
+      .rect(50, tableTop - 5, 500, 20)
       .stroke();
 
     // Table Rows
     doc.font("Helvetica");
     let currentY = tableTop + 20;
-    order.orderedItems.forEach((item) => {
-      doc.text(item.product?.productName || "N/A", 50, currentY, {
-        width: 200,
-      });
-      doc.text(item.size || "N/A", 250, currentY, { width: 50 });
-      doc.text(item.quantity || 1, 300, currentY, { width: 50 });
-      doc.text(
-        `₹${item.price ? item.price.toFixed(2) : "0.00"}`,
-        350,
-        currentY,
-        { width: 50 }
-      );
-      doc.text(
-        `₹${item.quantity && item.price
-          ? (item.quantity * item.price).toFixed(2)
-          : "0.00"
-        }`,
-        400,
-        currentY,
-        { width: 50 }
-      );
-      currentY += 20;
-    });
+order.orderedItems.forEach((item) => {
 
-    // Total Amount
-    doc.moveDown();
-    doc
-      .font("Helvetica-Bold")
-      .text(
-        `Total Amount: ₹${order.finalAmount ? order.finalAmount.toFixed(2) : "0.00"
-        }`,
-        { align: "right" }
-      );
+  const total = item.quantity * item.price;
 
+  doc.text(item.product?.productName || "N/A", 50, currentY, {
+    width: 150,
+  });
+
+  doc.text(item.size || "N/A", 200, currentY, {
+    width: 40,
+  });
+
+  doc.text(String(item.quantity || 1), 240, currentY, {
+    width: 35,
+  });
+
+  doc.text(`₹${item.price.toFixed(2)}`, 280, currentY, {
+    width: 55,
+  });
+
+  doc.text(`₹${total.toFixed(2)}`, 340, currentY, {
+    width: 55,
+  });
+
+if (item.status === "Cancelled") {
+  doc.fillColor("red");
+} else if (item.status === "Returned") {
+  doc.fillColor("orange");
+} else {
+  doc.fillColor("green");
+}
+
+doc.text(item.status, 400, currentY, {
+  width: 70,
+});
+
+doc.fillColor("black");
+
+  doc.text(
+    `₹${(item.refundedAmount || 0).toFixed(2)}`,
+    480,
+    currentY,
+    {
+      width: 60,
+    }
+  );
+
+  currentY += 20;
+});
+
+// Order Summary
+doc.moveDown(2);
+
+doc
+  .fontSize(14)
+  .font("Helvetica-Bold")
+  .text("Order Summary", { underline: true });
+
+doc.moveDown(0.5);
+
+doc.fontSize(11).font("Helvetica");
+
+doc.text(
+  `Subtotal : ₹${order.totalPrice.toFixed(2)}`
+);
+
+doc.text(
+  `Discount : ₹${order.discount.toFixed(2)}`
+);
+
+doc.text(
+  `Final Amount : ₹${order.finalAmount.toFixed(2)}`
+);
+
+doc.text(
+  `Refunded Amount : ₹${order.refundedAmount.toFixed(2)}`
+);
+
+const netPaid = order.finalAmount - order.refundedAmount;
+
+doc.font("Helvetica-Bold");
+
+doc.text(
+  `Net Amount Paid : ₹${netPaid.toFixed(2)}`
+);
+
+doc.moveDown();
+
+
+    // Refund Summary
+const refundedItems = order.orderedItems.filter(
+  (item) =>
+    item.status === "Cancelled" ||
+    item.status === "Returned"
+);
+
+if (refundedItems.length > 0) {
+  doc.moveDown();
+
+  doc.fontSize(14)
+    .font("Helvetica-Bold")
+    .text("Refund Summary", { underline: true });
+
+  doc.moveDown(0.5);
+  doc.fontSize(11).font("Helvetica");
+
+  refundedItems.forEach((item) => {
+    doc.text(
+      `${item.product?.productName} (${item.size}) - ${item.status} - Refund: ₹${item.refundedAmount.toFixed(2)}`
+    );
+  });
+
+  doc.moveDown(0.5);
+
+  doc.font("Helvetica-Bold").text(
+    `Total Refunded: ₹${order.refundedAmount.toFixed(2)}`
+  );
+
+  doc.moveDown();
+}
     // Payment Details
     doc.moveDown();
     doc.fontSize(14).text("Payment Details", { underline: true });
