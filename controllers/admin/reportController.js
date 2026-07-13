@@ -189,6 +189,22 @@ const getSalesData = async (req, res, next) => {
   }
 };
 
+// NOTE: this assumes your file already has these requires at the top
+// (same as your original file):
+//   const PDFDocument = require("pdfkit");
+//   const exceljs = require("exceljs");
+
+const BRAND = {
+  name: "18-CREW",
+  accent: "#c9302c",
+  dark: "#1a1a1a",
+  muted: "#666666",
+  border: "#cccccc",
+  headerBg: "#f2f2f2",
+};
+
+const formatCurrency = (amount) => `Rs. ${Number(amount || 0).toFixed(2)}`;
+
 const downloadReport = async (req, res, next) => {
   try {
     const {
@@ -238,6 +254,7 @@ const downloadReport = async (req, res, next) => {
     }
 
     const { summary, dailyData, data } = dataResponse;
+    const reportMeta = { period, specificDate, startDate, endDate };
 
     // Generate report based on format
     if (format === "pdf") {
@@ -248,6 +265,7 @@ const downloadReport = async (req, res, next) => {
         includeDetails,
         includeSummary,
         includeCharts,
+        reportMeta,
       });
     } else if (format === "excel") {
       await generateExcelReport(res, {
@@ -257,6 +275,7 @@ const downloadReport = async (req, res, next) => {
         includeDetails,
         includeSummary,
         includeCharts,
+        reportMeta,
       });
     } else if (format === "csv") {
       await generateCSVReport(res, {
@@ -266,6 +285,7 @@ const downloadReport = async (req, res, next) => {
         includeDetails,
         includeSummary,
         includeCharts,
+        reportMeta,
       });
     }
   } catch (error) {
@@ -401,27 +421,44 @@ const getSalesDataInternal = async (params) => {
       })),
     };
   } catch (error) {
-    next(error);
+    // FIX: this function only receives `params`, not `next` — calling
+    // next(error) here would throw a ReferenceError instead of failing
+    // gracefully. Return a { success: false } result instead, matching
+    // how the caller (downloadReport) already expects to handle failure.
+    console.error("Error fetching sales data:", error);
+    return { success: false, message: error.message };
   }
 };
 
-// PDF Report Generator
+// Builds a human-readable label for the report period, used in the header
+// of every format.
+function describePeriod({ period, specificDate, startDate, endDate }) {
+  if (period === "custom") {
+    return `${new Date(startDate).toLocaleDateString("en-IN")} - ${new Date(
+      endDate
+    ).toLocaleDateString("en-IN")}`;
+  }
+  const label = period.charAt(0).toUpperCase() + period.slice(1);
+  return `${label} - ${new Date(specificDate).toLocaleDateString("en-IN")}`;
+}
+
+// ---------- PDF Report Generator ----------
 async function generatePDFReport(
   res,
-  { summary, dailyData, data, includeDetails, includeSummary, includeCharts }
+  { summary, dailyData, data, includeDetails, includeSummary, includeCharts, reportMeta }
 ) {
   try {
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ size: "A4", margin: 50 });
+    const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+    const marginX = doc.page.margins.left;
 
     const filename = `sales-report-${
       new Date().toISOString().split("T")[0]
     }.pdf`;
 
-    // Set response headers
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
-    // Attach error handler for PDF stream
     doc.on("error", (err) => {
       console.error("PDF generation error:", err);
       if (!res.headersSent) {
@@ -429,109 +466,193 @@ async function generatePDFReport(
       }
     });
 
-    // Pipe PDF stream to response
     doc.pipe(res);
 
-    // Title
-    doc.fontSize(20).text("Sales Report", { align: "center" });
-    doc.moveDown();
-
-    // Report generated date
+    // ---- Header ----
     doc
-      .fontSize(12)
-      .text(`Report generated on: ${new Date().toLocaleDateString()}`, {
-        align: "left",
+      .fontSize(22)
+      .font("Helvetica-Bold")
+      .fillColor(BRAND.dark)
+      .text(BRAND.name, marginX, 50);
+
+    doc
+      .fontSize(16)
+      .font("Helvetica-Bold")
+      .fillColor(BRAND.accent)
+      .text("SALES REPORT", marginX, 50, { width: pageWidth, align: "right" });
+
+    doc
+      .fontSize(9)
+      .font("Helvetica")
+      .fillColor(BRAND.dark)
+      .text(`Period: ${describePeriod(reportMeta)}`, marginX, 76, {
+        width: pageWidth,
+        align: "right",
+      })
+      .text(`Generated On: ${new Date().toLocaleString("en-IN")}`, marginX, 89, {
+        width: pageWidth,
+        align: "right",
       });
-    doc.moveDown();
 
-    // Summary section
+    doc
+      .moveTo(marginX, 112)
+      .lineTo(marginX + pageWidth, 112)
+      .lineWidth(0.75)
+      .strokeColor(BRAND.border)
+      .stroke();
+
+    let y = 128;
+
+    // ---- Summary cards ----
     if (includeSummary) {
-      doc.fontSize(16).text("Summary", { underline: true });
-      doc.moveDown(0.5);
+      const cards = [
+        ["Total Sales", formatCurrency(summary.totalSales)],
+        ["Total Orders", String(summary.totalOrders)],
+        ["Total Discounts", formatCurrency(summary.totalDiscounts)],
+        ["Avg Order Value", formatCurrency(summary.avgOrderValue)],
+      ];
+      const cardGap = 10;
+      const cardWidth = (pageWidth - cardGap * (cards.length - 1)) / cards.length;
+      const cardHeight = 50;
 
-      doc.fontSize(12).text(`Total Sales: ₹${summary.totalSales.toFixed(2)}`);
-      doc.text(`Total Orders: ${summary.totalOrders}`);
-      doc.text(`Total Discounts: ₹${summary.totalDiscounts.toFixed(2)}`);
-      doc.text(`Average Order Value: ₹${summary.avgOrderValue.toFixed(2)}`);
-      doc.moveDown();
+      cards.forEach(([label, value], i) => {
+        const cardX = marginX + i * (cardWidth + cardGap);
+        doc.rect(cardX, y, cardWidth, cardHeight).fill(BRAND.headerBg);
+        doc
+          .fontSize(8.5)
+          .font("Helvetica")
+          .fillColor(BRAND.muted)
+          .text(label, cardX + 10, y + 10, { width: cardWidth - 20 });
+        doc
+          .fontSize(13)
+          .font("Helvetica-Bold")
+          .fillColor(BRAND.dark)
+          .text(value, cardX + 10, y + 26, { width: cardWidth - 20 });
+      });
+
+      y += cardHeight + 24;
     }
 
-    // Chart notice
+    // ---- Chart notice ----
     if (includeCharts) {
+      doc.rect(marginX, y, pageWidth, 28).fill(BRAND.headerBg);
       doc
-        .fontSize(12)
-        .text("Note: Charts are available in the web interface only.", {
+        .fontSize(9)
+        .font("Helvetica-Oblique")
+        .fillColor(BRAND.muted)
+        .text("Charts are available in the web dashboard only.", marginX, y + 9, {
+          width: pageWidth,
           align: "center",
         });
-      doc.moveDown();
+      y += 28 + 20;
     }
 
-    // Order Details section
+    // ---- Order Details table ----
     if (includeDetails) {
-      doc.fontSize(16).text("Order Details", { underline: true });
-      doc.moveDown(0.5);
+      doc.fontSize(13).font("Helvetica-Bold").fillColor(BRAND.dark).text("Order Details", marginX, y);
+      y += 20;
 
-      const headers = [
-        "Date",
-        "Order ID",
-        "Customer",
-        "Amount",
-        "Discount",
-        "Net Amount",
-        "Status",
+      const cols = [
+        { key: "date", label: "Date", width: 65, align: "left" },
+        { key: "orderId", label: "Order ID", width: 100, align: "left" },
+        { key: "customer", label: "Customer", width: 85, align: "left" },
+        { key: "amount", label: "Amount", width: 65, align: "right" },
+        { key: "discount", label: "Discount", width: 65, align: "right" },
+        { key: "netAmount", label: "Net Amount", width: 65, align: "right" },
+        { key: "status", label: "Status", width: 50, align: "left" },
       ];
-      const columnWidths = [80, 100, 100, 60, 60, 80, 80];
+      // Assign x offsets left-to-right within pageWidth
+      let cx = marginX;
+      cols.forEach((c) => {
+        c.x = cx;
+        cx += c.width;
+      });
+
       const rowHeight = 20;
-      let startX = 50;
-      let startY = doc.y;
 
-      // Draw header row
-      let x = startX;
-      headers.forEach((header, i) => {
-        doc
-          .font("Helvetica-Bold")
-          .fontSize(10)
-          .text(header, x, startY, { width: columnWidths[i], align: "left" });
-        x += columnWidths[i];
-      });
-
-      // Draw line under headers
-      doc
-        .moveTo(startX, startY + rowHeight - 8)
-        .lineTo(
-          startX + columnWidths.reduce((a, b) => a + b, 0),
-          startY + rowHeight - 8
-        )
-        .stroke();
-
-      // Draw data rows
-      startY += rowHeight;
-      data.forEach((order) => {
-        let x = startX;
-        const row = [
-          new Date(order.date).toLocaleDateString(),
-          order.orderId,
-          order.customer,
-          `₹${order.amount.toFixed(2)}`,
-          `₹${order.discount.toFixed(2)}`,
-          `₹${order.netAmount.toFixed(2)}`,
-          order.status,
-        ];
-
-        row.forEach((cell, i) => {
-          doc
-            .font("Helvetica")
-            .fontSize(10)
-            .text(cell, x, startY, { width: columnWidths[i], align: "left" });
-          x += columnWidths[i];
+      const drawTableHeader = (yPos) => {
+        doc.rect(marginX, yPos, pageWidth, rowHeight).fill(BRAND.headerBg);
+        doc.font("Helvetica-Bold").fontSize(8.5).fillColor(BRAND.dark);
+        cols.forEach((c) => {
+          doc.text(c.label, c.x + 4, yPos + 6, { width: c.width - 8, align: c.align });
         });
+        doc
+          .rect(marginX, yPos, pageWidth, rowHeight)
+          .lineWidth(0.75)
+          .strokeColor(BRAND.border)
+          .stroke();
+        return yPos + rowHeight;
+      };
 
-        // Move Y down to next row
-        startY += rowHeight;
+      y = drawTableHeader(y);
+      const tableStartY = y;
+
+      data.forEach((order, idx) => {
+        const pageBottom = doc.page.height - doc.page.margins.bottom;
+        if (y + rowHeight > pageBottom - 30) {
+          doc.addPage();
+          y = doc.page.margins.top;
+          y = drawTableHeader(y);
+        }
+
+        if (idx % 2 === 1) {
+          doc.rect(marginX, y, pageWidth, rowHeight).fill("#fafafa");
+        }
+
+        doc.font("Helvetica").fontSize(8.5).fillColor(BRAND.dark);
+        doc.text(new Date(order.date).toLocaleDateString("en-IN"), cols[0].x + 4, y + 6, {
+          width: cols[0].width - 8,
+        });
+        doc.text(order.orderId, cols[1].x + 4, y + 6, { width: cols[1].width - 8 });
+        doc.text(order.customer, cols[2].x + 4, y + 6, { width: cols[2].width - 8 });
+        doc.text(formatCurrency(order.amount), cols[3].x + 4, y + 6, {
+          width: cols[3].width - 8,
+          align: "right",
+        });
+        doc.text(formatCurrency(order.discount), cols[4].x + 4, y + 6, {
+          width: cols[4].width - 8,
+          align: "right",
+        });
+        doc.text(formatCurrency(order.netAmount), cols[5].x + 4, y + 6, {
+          width: cols[5].width - 8,
+          align: "right",
+        });
+        doc.text(order.status, cols[6].x + 4, y + 6, { width: cols[6].width - 8 });
+
+        y += rowHeight;
       });
+
+      // Outer border around the whole table body on the last page section
+      doc
+        .rect(marginX, tableStartY, pageWidth, y - tableStartY)
+        .lineWidth(0.75)
+        .strokeColor(BRAND.border)
+        .stroke();
     }
 
-    // Finalize and close the PDF stream
+    // ---- Footer on every page ----
+    const range = doc.bufferedPageRange
+      ? doc.bufferedPageRange()
+      : { start: 0, count: 1 };
+    for (let i = 0; i < range.count; i++) {
+      doc.switchToPage(range.start + i);
+      const footerY = doc.page.height - doc.page.margins.bottom - 20;
+      doc
+        .moveTo(marginX, footerY)
+        .lineTo(marginX + pageWidth, footerY)
+        .lineWidth(0.75)
+        .strokeColor(BRAND.border)
+        .stroke();
+      doc
+        .fontSize(8)
+        .font("Helvetica")
+        .fillColor(BRAND.muted)
+        .text(`${BRAND.name} - Sales Report - Page ${i + 1} of ${range.count}`, marginX, footerY + 6, {
+          width: pageWidth,
+          align: "center",
+        });
+    }
+
     doc.end();
   } catch (error) {
     console.error("Error while generating PDF report:", error);
@@ -541,64 +662,176 @@ async function generatePDFReport(
   }
 }
 
-// Excel Report Generator
+// ---------- Excel Report Generator ----------
 async function generateExcelReport(
   res,
-  { summary, dailyData, data, includeDetails, includeSummary, includeCharts }
+  { summary, dailyData, data, includeDetails, includeSummary, includeCharts, reportMeta }
 ) {
   const workbook = new exceljs.Workbook();
-  const worksheet = workbook.addWorksheet("Sales Report");
+  workbook.creator = BRAND.name;
+  workbook.created = new Date();
+
+  const worksheet = workbook.addWorksheet("Sales Report", {
+    views: [{ showGridLines: false }],
+  });
+
   const filename = `sales-report-${
     new Date().toISOString().split("T")[0]
   }.xlsx`;
 
-  // Summary Section
+  const accentFill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC9302C" } };
+  const headerFill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF2F2F2" } };
+  const thinBorder = {
+    top: { style: "thin", color: { argb: "FFCCCCCC" } },
+    left: { style: "thin", color: { argb: "FFCCCCCC" } },
+    bottom: { style: "thin", color: { argb: "FFCCCCCC" } },
+    right: { style: "thin", color: { argb: "FFCCCCCC" } },
+  };
+  const currencyFmt = '"Rs. "#,##0.00';
+
+  let row = 1;
+
+  // ---- Title band ----
+  worksheet.mergeCells(`A${row}:H${row}`);
+  const titleCell = worksheet.getCell(`A${row}`);
+  titleCell.value = `${BRAND.name} - Sales Report`;
+  titleCell.font = { bold: true, size: 16, color: { argb: "FFFFFFFF" } };
+  titleCell.fill = accentFill;
+  titleCell.alignment = { vertical: "middle", horizontal: "left" };
+  worksheet.getRow(row).height = 26;
+  row += 1;
+
+  worksheet.mergeCells(`A${row}:H${row}`);
+  worksheet.getCell(`A${row}`).value = `Period: ${describePeriod(
+    reportMeta
+  )}   |   Generated On: ${new Date().toLocaleString("en-IN")}`;
+  worksheet.getCell(`A${row}`).font = { italic: true, size: 9, color: { argb: "FF666666" } };
+  row += 2;
+
+  // ---- Summary section ----
   if (includeSummary) {
-    worksheet.addRow(["Summary"]);
-    worksheet.addRow(["Total Sales", summary.totalSales]);
-    worksheet.addRow(["Total Orders", summary.totalOrders]);
-    worksheet.addRow(["Total Discounts", summary.totalDiscounts]);
-    worksheet.addRow(["Average Order Value", summary.avgOrderValue]);
-    worksheet.addRow([]); // empty row for spacing
+    worksheet.getCell(`A${row}`).value = "Summary";
+    worksheet.getCell(`A${row}`).font = { bold: true, size: 12 };
+    row += 1;
+
+    const summaryRows = [
+      ["Total Sales", summary.totalSales],
+      ["Total Orders", summary.totalOrders],
+      ["Total Discounts", summary.totalDiscounts],
+      ["Average Order Value", summary.avgOrderValue],
+    ];
+
+    summaryRows.forEach(([label, value]) => {
+      const labelCell = worksheet.getCell(`A${row}`);
+      const valueCell = worksheet.getCell(`B${row}`);
+      labelCell.value = label;
+      labelCell.font = { color: { argb: "FF666666" } };
+      valueCell.value = value;
+      if (label !== "Total Orders") valueCell.numFmt = currencyFmt;
+      valueCell.font = { bold: true };
+      row += 1;
+    });
+    row += 1;
   }
 
-  // Daily Data Section
+  // ---- Daily data section ----
   if (includeCharts && dailyData.length) {
-    worksheet.addRow(["Daily Data"]);
-    worksheet.addRow(["Date", "Total Amount", "Order Count"]);
+    worksheet.getCell(`A${row}`).value = "Daily Breakdown";
+    worksheet.getCell(`A${row}`).font = { bold: true, size: 12 };
+    row += 1;
+
+    const headerRow = worksheet.getRow(row);
+    ["Date", "Total Amount", "Order Count"].forEach((h, i) => {
+      const cell = headerRow.getCell(i + 1);
+      cell.value = h;
+      cell.font = { bold: true };
+      cell.fill = headerFill;
+      cell.border = thinBorder;
+    });
+    row += 1;
 
     dailyData.forEach((item) => {
-      worksheet.addRow([item.date, item.amount, item.count]);
+      const r = worksheet.getRow(row);
+      r.getCell(1).value = item.date;
+      r.getCell(2).value = item.amount;
+      r.getCell(2).numFmt = currencyFmt;
+      r.getCell(3).value = item.count;
+      [1, 2, 3].forEach((c) => (r.getCell(c).border = thinBorder));
+      row += 1;
     });
-
-    worksheet.addRow([]); // empty row for spacing
+    row += 1;
   }
 
-  // Order Details Section
+  // ---- Order details section ----
   if (includeDetails && data.length) {
-    worksheet.addRow(["Order Details"]);
-    worksheet.addRow([
+    worksheet.getCell(`A${row}`).value = "Order Details";
+    worksheet.getCell(`A${row}`).font = { bold: true, size: 12 };
+    row += 1;
+
+    const headers = [
       "Date",
       "Order ID",
       "Customer",
       "Amount",
       "Discount",
+      "Coupon Used",
       "Net Amount",
       "Status",
-    ]);
-
-    data.forEach((order) => {
-      worksheet.addRow([
-        new Date(order.date).toLocaleDateString(),
-        order.orderId,
-        order.customer,
-        order.amount,
-        order.discount,
-        order.netAmount,
-        order.status,
-      ]);
+    ];
+    const headerRow = worksheet.getRow(row);
+    headers.forEach((h, i) => {
+      const cell = headerRow.getCell(i + 1);
+      cell.value = h;
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = accentFill;
+      cell.border = thinBorder;
+      cell.alignment = { vertical: "middle" };
     });
+    headerRow.height = 18;
+    const headerRowNumber = row;
+    row += 1;
+
+    data.forEach((order, idx) => {
+      const r = worksheet.getRow(row);
+      r.getCell(1).value = new Date(order.date);
+      r.getCell(1).numFmt = "dd-mmm-yyyy";
+      r.getCell(2).value = order.orderId;
+      r.getCell(3).value = order.customer;
+      r.getCell(4).value = order.amount;
+      r.getCell(4).numFmt = currencyFmt;
+      r.getCell(5).value = order.discount;
+      r.getCell(5).numFmt = currencyFmt;
+      r.getCell(6).value = order.couponUsed;
+      r.getCell(7).value = order.netAmount;
+      r.getCell(7).numFmt = currencyFmt;
+      r.getCell(8).value = order.status;
+
+      for (let c = 1; c <= 8; c++) {
+        r.getCell(c).border = thinBorder;
+        if (idx % 2 === 1) {
+          r.getCell(c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFAFAFA" } };
+        }
+      }
+      row += 1;
+    });
+
+    worksheet.autoFilter = {
+      from: { row: headerRowNumber, column: 1 },
+      to: { row: row - 1, column: 8 },
+    };
+    worksheet.views = [{ state: "frozen", ySplit: headerRowNumber }];
   }
+
+  worksheet.columns = [
+    { width: 14 }, // Date
+    { width: 30 }, // Order ID
+    { width: 22 }, // Customer
+    { width: 14 }, // Amount
+    { width: 14 }, // Discount
+    { width: 16 }, // Coupon Used
+    { width: 14 }, // Net Amount
+    { width: 16 }, // Status
+  ];
 
   res.setHeader(
     "Content-Type",
@@ -610,10 +843,10 @@ async function generateExcelReport(
   res.end();
 }
 
-// CSV Report Generator
+// ---------- CSV Report Generator ----------
 async function generateCSVReport(
   res,
-  { summary, dailyData, data, includeDetails, includeSummary, includeCharts }
+  { summary, dailyData, data, includeDetails, includeSummary, includeCharts, reportMeta }
 ) {
   const filename = `sales-report-${new Date().toISOString().split("T")[0]}.csv`;
 
@@ -621,15 +854,16 @@ async function generateCSVReport(
   res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
   let csvContent = "";
+  csvContent += `${BRAND.name} Sales Report\n`;
+  csvContent += `Period,${describePeriod(reportMeta)}\n`;
+  csvContent += `Generated On,${new Date().toLocaleString("en-IN")}\n\n`;
 
   if (includeSummary) {
-    csvContent += "Sales Report Summary\n\n";
-    csvContent += `Total Sales,$${summary.totalSales.toFixed(2)}\n`;
+    csvContent += "Summary\n";
+    csvContent += `Total Sales,${formatCurrency(summary.totalSales)}\n`;
     csvContent += `Total Orders,${summary.totalOrders}\n`;
-    csvContent += `Total Discounts,$${summary.totalDiscounts.toFixed(2)}\n`;
-    csvContent += `Average Order Value,$${summary.avgOrderValue.toFixed(
-      2
-    )}\n\n`;
+    csvContent += `Total Discounts,${formatCurrency(summary.totalDiscounts)}\n`;
+    csvContent += `Average Order Value,${formatCurrency(summary.avgOrderValue)}\n\n`;
   }
 
   if (includeDetails) {
@@ -638,13 +872,13 @@ async function generateCSVReport(
     data.forEach((order) => {
       csvContent +=
         [
-          `"${new Date(order.date).toLocaleDateString()}"`,
+          `"${new Date(order.date).toLocaleDateString("en-IN")}"`,
           `"${order.orderId}"`,
           `"${order.customer}"`,
-          order.amount.toFixed(2),
-          order.discount.toFixed(2),
+          `"${formatCurrency(order.amount)}"`,
+          `"${formatCurrency(order.discount)}"`,
           `"${order.couponUsed}"`,
-          order.netAmount.toFixed(2),
+          `"${formatCurrency(order.netAmount)}"`,
           `"${order.status}"`,
         ].join(",") + "\n";
     });
@@ -652,7 +886,6 @@ async function generateCSVReport(
 
   res.send(csvContent);
 }
-
 const getBestSellingProducts = async (req, res, next) => {
   try {
     const { limit = 10 } = req.query;
