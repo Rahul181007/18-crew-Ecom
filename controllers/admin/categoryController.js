@@ -1,7 +1,7 @@
 const { error } = require("console");
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
-const STATUS_CODE=require("../../constants/httpStatus");
+const STATUS_CODE = require("../../constants/httpStatus");
 // categoryinfo
 const categoryInfo = async (req, res, next) => {
   try {
@@ -236,7 +236,9 @@ const editCategory = async (req, res, next) => {
       });
     }
 
-    return res.redirect("/admin/category");
+    return res.status(200).json({
+      message: "Category updated successfully"
+    });
 
   } catch (error) {
     next(error);

@@ -37,17 +37,44 @@ const form = document.getElementById("editCategoryForm");
 form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
-const response = await fetch(form.action, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        categoryName: document.getElementById("categoryName").value,
-        description: document.getElementById("description").value
-    })
-});
+    try {
+        const response = await fetch(form.action, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                categoryName: document.getElementById("categoryName").value,
+                description: document.getElementById("description").value
+            })
+        });
 
+        const data = await response.json();
+
+        if (!response.ok) {
+            Swal.fire({
+                icon: "error",
+                title: "Oops!",
+                text: data.error
+            });
+            return;
+        }
+
+        Swal.fire({
+            icon: "success",
+            title: "Success",
+            text: data.message
+        }).then(() => {
+            window.location.href = "/admin/category";
+        });
+
+    } catch (error) {
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Something went wrong."
+        });
+    }
 });
 </script>
 <%- include("../layouts/admin/footer.ejs") %>
