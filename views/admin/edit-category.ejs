@@ -37,20 +37,16 @@ const form = document.getElementById("editCategoryForm");
 form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    const formData = new FormData(form);
-
-    try {
-
-        const response = await fetch(form.action, {
-            method: "POST",
-            body: formData
-        });
-
-        console.log(response);
-
-    } catch (error) {
-        console.log(error);
-    }
+const response = await fetch(form.action, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        categoryName: document.getElementById("categoryName").value,
+        description: document.getElementById("description").value
+    })
+});
 
 });
 </script>
