@@ -488,6 +488,7 @@ const placeOrder = async (req, res, next) => {
       orderedItems,
       totalPrice,
       discount: generalDiscount + couponDiscount,
+      couponDiscount, // NEW: persist the coupon's portion separately
       finalAmount,
       selectedAddress: address.address[addressIndex],
       paymentMethod: payment,
@@ -1176,6 +1177,15 @@ const downloadInvoice = async (req, res, next) => {
     const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const invoiceNo = order.invoiceNo || `INV-${order.orderId}`;
 
+    // `returnStatus` is set by the return-request/approval flow and is more
+    // current than `status` for items that have been returned or have a
+    // pending return request, so prefer it when present.
+    const getItemDisplayStatus = (item) => {
+      if (item.returnStatus === "Returned") return "Returned";
+      if (item.returnStatus === "Requested") return "Return Requested";
+      return item.status || "N/A";
+    };
+
     // ---------- Header ----------
     doc
       .fontSize(22)
@@ -1307,15 +1317,19 @@ const downloadInvoice = async (req, res, next) => {
         align: "right",
       });
 
-      if (item.status === "Cancelled") {
+      const displayStatus = getItemDisplayStatus(item);
+
+      if (displayStatus === "Cancelled") {
         doc.fillColor("#c9302c");
-      } else if (item.status === "Returned") {
+      } else if (displayStatus === "Returned") {
         doc.fillColor("#d17a00");
+      } else if (displayStatus === "Return Requested") {
+        doc.fillColor("#0275d8");
       } else {
         doc.fillColor("#1e7e34");
       }
 
-      doc.text(item.status, 400, currentY + 5, {
+      doc.text(displayStatus, 400, currentY + 5, {
         width: 70,
       });
 
@@ -1343,8 +1357,9 @@ const downloadInvoice = async (req, res, next) => {
     const bottomTop = currentY + 20;
     const leftColX = 50;
     const leftColWidth = 250;
-    const summaryBoxWidth = 220;
+    const summaryBoxWidth = 230;
     const summaryX = 50 + pageWidth - summaryBoxWidth;
+    const summaryLabelWidth = 130;
 
     // ---- Right column: Order Summary ----
     doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Order Summary", summaryX, bottomTop, {
@@ -1354,17 +1369,37 @@ const downloadInvoice = async (req, res, next) => {
     doc.fontSize(10).font("Helvetica");
 
     const netPaid = order.finalAmount - order.refundedAmount;
-    const summaryRows = [
-      ["Subtotal", `Rs. ${order.totalPrice.toFixed(2)}`],
-      ["Discount", `- Rs. ${order.discount.toFixed(2)}`],
+
+    // Coupon's share of `discount` is only known for orders placed after the
+    // couponDiscount field was added; older orders will just fall back to
+    // showing the combined amount under "Discount".
+    const couponDiscount = order.couponDiscount || 0;
+    const generalDiscount = (order.discount || 0) - couponDiscount;
+    const activeCouponCode = order.couponCode || order.tempCouponCode;
+
+    const summaryRows = [["Subtotal", `Rs. ${order.totalPrice.toFixed(2)}`]];
+
+    if (order.couponApplied && couponDiscount > 0) {
+      summaryRows.push([
+        activeCouponCode ? `Coupon (${activeCouponCode})` : "Coupon Discount",
+        `- Rs. ${couponDiscount.toFixed(2)}`,
+      ]);
+      if (generalDiscount > 0) {
+        summaryRows.push(["Discount", `- Rs. ${generalDiscount.toFixed(2)}`]);
+      }
+    } else {
+      summaryRows.push(["Discount", `- Rs. ${(order.discount || 0).toFixed(2)}`]);
+    }
+
+    summaryRows.push(
       ["Amount Paid", `Rs. ${order.finalAmount.toFixed(2)}`],
-      ["Refunded", `- Rs. ${order.refundedAmount.toFixed(2)}`],
-    ];
+      ["Refunded", `- Rs. ${order.refundedAmount.toFixed(2)}`]
+    );
 
     summaryRows.forEach(([label, value]) => {
-      doc.fillColor("#666666").text(label, summaryX, summaryY, { width: 110 });
-      doc.fillColor("#1a1a1a").text(value, summaryX + 110, summaryY, {
-        width: summaryBoxWidth - 110,
+      doc.fillColor("#666666").text(label, summaryX, summaryY, { width: summaryLabelWidth });
+      doc.fillColor("#1a1a1a").text(value, summaryX + summaryLabelWidth, summaryY, {
+        width: summaryBoxWidth - summaryLabelWidth,
         align: "right",
       });
       summaryY += 16;
@@ -1379,9 +1414,9 @@ const downloadInvoice = async (req, res, next) => {
     summaryY += 8;
 
     doc.font("Helvetica-Bold").fontSize(11);
-    doc.fillColor("#1a1a1a").text("Net Paid", summaryX, summaryY, { width: 110 });
-    doc.text(`Rs. ${netPaid.toFixed(2)}`, summaryX + 110, summaryY, {
-      width: summaryBoxWidth - 110,
+    doc.fillColor("#1a1a1a").text("Net Paid", summaryX, summaryY, { width: summaryLabelWidth });
+    doc.text(`Rs. ${netPaid.toFixed(2)}`, summaryX + summaryLabelWidth, summaryY, {
+      width: summaryBoxWidth - summaryLabelWidth,
       align: "right",
     });
     summaryY += 24;
@@ -1426,9 +1461,10 @@ const downloadInvoice = async (req, res, next) => {
     leftY += 12;
 
     // ---- Left column: Refund Summary ----
-    const refundedItems = order.orderedItems.filter(
-      (item) => item.status === "Cancelled" || item.status === "Returned"
-    );
+    const refundedItems = order.orderedItems.filter((item) => {
+      const s = getItemDisplayStatus(item);
+      return s === "Cancelled" || s === "Returned";
+    });
 
     if (refundedItems.length > 0) {
       doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Refund Summary", leftColX, leftY, {
@@ -1436,8 +1472,8 @@ const downloadInvoice = async (req, res, next) => {
       });
       leftY += 20;
 
-      const returnedItems = refundedItems.filter((i) => i.status === "Returned");
-      const cancelledItems = refundedItems.filter((i) => i.status === "Cancelled");
+      const returnedItems = refundedItems.filter((i) => getItemDisplayStatus(i) === "Returned");
+      const cancelledItems = refundedItems.filter((i) => getItemDisplayStatus(i) === "Cancelled");
 
       const renderRefundGroup = (title, items) => {
         if (items.length === 0) return;

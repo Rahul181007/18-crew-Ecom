@@ -73,6 +73,13 @@ const orderSchema = new Schema(
       type: Number,
       default: 0,
     },
+    // NEW: stores just the coupon's portion of `discount`, so the invoice
+    // (and anything else) can show it as its own line instead of only
+    // the combined total.
+    couponDiscount: {
+      type: Number,
+      default: 0,
+    },
     finalAmount: {
       type: Number,
       required: true,
