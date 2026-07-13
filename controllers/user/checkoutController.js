@@ -1335,20 +1335,25 @@ const downloadInvoice = async (req, res, next) => {
       .strokeColor("#cccccc")
       .stroke();
 
-    doc.y = currentY + 20;
-
-    // Order Summary
-    doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Order Summary");
-    doc.moveDown(0.5);
-
+    // ---------- Bottom section: two aligned columns ----------
+    // Left column  -> Payment Details + Refund Summary
+    // Right column -> Order Summary box
+    // Keeping both columns side by side (instead of stacked) avoids the
+    // large empty gap that shows up when one section is short.
+    const bottomTop = currentY + 20;
+    const leftColX = 50;
+    const leftColWidth = 250;
     const summaryBoxWidth = 220;
     const summaryX = 50 + pageWidth - summaryBoxWidth;
-    let summaryY = doc.y;
 
+    // ---- Right column: Order Summary ----
+    doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Order Summary", summaryX, bottomTop, {
+      width: summaryBoxWidth,
+    });
+    let summaryY = bottomTop + 20;
     doc.fontSize(10).font("Helvetica");
 
     const netPaid = order.finalAmount - order.refundedAmount;
-
     const summaryRows = [
       ["Subtotal", `Rs. ${order.totalPrice.toFixed(2)}`],
       ["Discount", `- Rs. ${order.discount.toFixed(2)}`],
@@ -1379,59 +1384,19 @@ const downloadInvoice = async (req, res, next) => {
       width: summaryBoxWidth - 110,
       align: "right",
     });
+    summaryY += 24;
 
-    doc.y = summaryY + 30;
-
-    // Refund Summary
-    const refundedItems = order.orderedItems.filter(
-      (item) => item.status === "Cancelled" || item.status === "Returned"
-    );
-
-    if (refundedItems.length > 0) {
-      doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Refund Summary");
-      doc.moveDown(0.5);
-
-      const returnedItems = refundedItems.filter((i) => i.status === "Returned");
-      const cancelledItems = refundedItems.filter((i) => i.status === "Cancelled");
-
-      const renderRefundGroup = (title, items) => {
-        if (items.length === 0) return;
-        doc.font("Helvetica-Bold").fontSize(10).fillColor("#1a1a1a").text(title);
-        doc.moveDown(0.2);
-        doc.font("Helvetica").fontSize(9.5);
-        items.forEach((item) => {
-          const y = doc.y;
-          doc.fillColor("#1a1a1a").text(
-            `\u2022 ${item.product?.productName || "N/A"} (${item.size || "N/A"})`,
-            50,
-            y,
-            { width: 320 }
-          );
-          doc
-            .fillColor(item.status === "Cancelled" ? "#c9302c" : "#d17a00")
-            .text(`Rs. ${item.refundedAmount.toFixed(2)}`, 390, y, {
-              width: pageWidth - 340,
-              align: "right",
-            });
-          doc.fillColor("#1a1a1a");
-        });
-        doc.moveDown(0.5);
-      };
-
-      renderRefundGroup("Returned Items", returnedItems);
-      renderRefundGroup("Cancelled Items", cancelledItems);
-
-      doc.font("Helvetica-Bold").fontSize(10).text(`Total Refunded: Rs. ${order.refundedAmount.toFixed(2)}`);
-      doc.moveDown();
-    }
-
-    // Payment Details
-    doc.moveDown(0.5);
-    doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Payment Details");
-    doc.moveDown(0.3);
-    doc.fontSize(10).font("Helvetica");
-    doc.text(`Method: ${order.paymentMethod || "N/A"}`);
-    doc.text(`Status: ${order.isPaid ? "Paid" : "Not Paid"}`);
+    // ---- Left column: Payment Details ----
+    let leftY = bottomTop;
+    doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Payment Details", leftColX, leftY, {
+      width: leftColWidth,
+    });
+    leftY += 20;
+    doc.fontSize(10).font("Helvetica").fillColor("#1a1a1a");
+    doc.text(`Method: ${order.paymentMethod || "N/A"}`, leftColX, leftY, { width: leftColWidth });
+    leftY += 14;
+    doc.text(`Status: ${order.isPaid ? "Paid" : "Not Paid"}`, leftColX, leftY, { width: leftColWidth });
+    leftY += 14;
     if (order.isPaid && order.paidAt) {
       doc.text(
         `Paid On: ${new Date(order.paidAt).toLocaleDateString("en-US", {
@@ -1440,17 +1405,81 @@ const downloadInvoice = async (req, res, next) => {
           day: "numeric",
           hour: "numeric",
           minute: "numeric",
-        })}`
+        })}`,
+        leftColX,
+        leftY,
+        { width: leftColWidth }
       );
+      leftY += 14;
     }
     if (order.isFullyRefunded) {
-      doc.text(`Refund Status: Fully Refunded (Rs. ${order.refundedAmount.toFixed(2)})`);
+      doc.text(`Refund Status: Fully Refunded (Rs. ${order.refundedAmount.toFixed(2)})`, leftColX, leftY, {
+        width: leftColWidth,
+      });
+      leftY += 14;
     } else if (order.refundedAmount > 0) {
-      doc.text(`Refund Status: Partial Refund (Rs. ${order.refundedAmount.toFixed(2)})`);
+      doc.text(`Refund Status: Partial Refund (Rs. ${order.refundedAmount.toFixed(2)})`, leftColX, leftY, {
+        width: leftColWidth,
+      });
+      leftY += 14;
+    }
+    leftY += 12;
+
+    // ---- Left column: Refund Summary ----
+    const refundedItems = order.orderedItems.filter(
+      (item) => item.status === "Cancelled" || item.status === "Returned"
+    );
+
+    if (refundedItems.length > 0) {
+      doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Refund Summary", leftColX, leftY, {
+        width: leftColWidth,
+      });
+      leftY += 20;
+
+      const returnedItems = refundedItems.filter((i) => i.status === "Returned");
+      const cancelledItems = refundedItems.filter((i) => i.status === "Cancelled");
+
+      const renderRefundGroup = (title, items) => {
+        if (items.length === 0) return;
+        doc.font("Helvetica-Bold").fontSize(10).fillColor("#1a1a1a").text(title, leftColX, leftY, {
+          width: leftColWidth,
+        });
+        leftY += 14;
+        doc.font("Helvetica").fontSize(9.5);
+        items.forEach((item) => {
+          doc.fillColor("#1a1a1a").text(
+            `\u2022 ${item.product?.productName || "N/A"} (${item.size || "N/A"})`,
+            leftColX,
+            leftY,
+            { width: 175 }
+          );
+          doc
+            .fillColor(item.status === "Cancelled" ? "#c9302c" : "#d17a00")
+            .text(`Rs. ${item.refundedAmount.toFixed(2)}`, leftColX + 175, leftY, {
+              width: leftColWidth - 175,
+              align: "right",
+            });
+          doc.fillColor("#1a1a1a");
+          leftY += 14;
+        });
+        leftY += 4;
+      };
+
+      renderRefundGroup("Returned Items", returnedItems);
+      renderRefundGroup("Cancelled Items", cancelledItems);
+
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(10)
+        .text(`Total Refunded: Rs. ${order.refundedAmount.toFixed(2)}`, leftColX, leftY, {
+          width: leftColWidth,
+        });
+      leftY += 18;
     }
 
-    // Footer
-    const footerY = doc.page.height - doc.page.margins.bottom - 30;
+    // ---- Footer: placed right after whichever column ran longer ----
+    const contentEndY = Math.max(leftY, summaryY) + 20;
+    const footerY = Math.min(contentEndY, doc.page.height - doc.page.margins.bottom - 30);
     doc
       .moveTo(50, footerY)
       .lineTo(50 + pageWidth, footerY)

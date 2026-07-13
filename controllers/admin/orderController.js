@@ -282,6 +282,10 @@ const approveReturn = async (req, res, next) => {
     // Update item status to Returned
     item.returnStatus = "Returned";
     item.returnProcessedAt = new Date();
+    // Keep the legacy `status` field in sync with `returnStatus` so anything
+    // that still reads `item.status` directly (invoices, admin lists, etc.)
+    // reflects the return instead of showing the stale pre-return status.
+    item.status = "Returned";
 
     const product = await Product.findById(item.product._id);
     if (!product) {
@@ -361,6 +365,9 @@ const approveReturn = async (req, res, next) => {
         );
 
         order.refundedAmount = (order.refundedAmount || 0) + refundAmount;
+        // This was missing before: the item-level refunded amount was never
+        // set, so it stayed at 0 even though isRefunded was true.
+        item.refundedAmount = (item.refundedAmount || 0) + refundAmount;
         item.isRefunded = true;
         item.refundedAt = new Date();
 
@@ -407,7 +414,7 @@ const approveReturn = async (req, res, next) => {
         orderStatus: order.status,
       },
     };
-    
+
     res.setHeader("Content-Type", "application/json");
     res.status(STATUS_CODE.OK).json(responseData);
   } catch (error) {
