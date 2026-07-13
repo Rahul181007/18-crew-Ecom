@@ -1173,192 +1173,268 @@ const downloadInvoice = async (req, res, next) => {
     // Pipe the PDF to the response
     doc.pipe(res);
 
-    // Add content to the PDF
-    // Header
-    doc.fontSize(20).text("Invoice", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(12).text(`Order ID: ${order.orderId}`, { align: "left" });
-    doc.text(
-      `Order Date: ${new Date(order.createdOn).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })}`,
-      { align: "left" }
-    );
-    doc.moveDown();
+    const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+    const invoiceNo = order.invoiceNo || `INV-${order.orderId}`;
+
+    // ---------- Header ----------
+    doc
+      .fontSize(22)
+      .font("Helvetica-Bold")
+      .fillColor("#1a1a1a")
+      .text("18-CREW", 50, 50, { align: "left" });
+
+    doc
+      .fontSize(16)
+      .font("Helvetica-Bold")
+      .fillColor("#c9302c")
+      .text("TAX INVOICE", 50, 50, { width: pageWidth, align: "right" });
+
+    doc
+      .fontSize(9)
+      .font("Helvetica")
+      .fillColor("#1a1a1a")
+      .text(`Invoice No: ${invoiceNo}`, 50, 76, { width: pageWidth, align: "right" })
+      .text(`Order ID: ${order.orderId}`, 50, 89, { width: pageWidth, align: "right" })
+      .text(
+        `Order Date: ${new Date(order.createdOn).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })}`,
+        50,
+        102,
+        { width: pageWidth, align: "right" }
+      )
+      .text(`Order Status: ${order.status || order.orderStatus || "N/A"}`, 50, 115, {
+        width: pageWidth,
+        align: "right",
+      });
+
+    doc
+      .moveTo(50, 135)
+      .lineTo(50 + pageWidth, 135)
+      .lineWidth(0.75)
+      .strokeColor("#cccccc")
+      .stroke();
+
+    doc.y = 149;
 
     // Customer Information
-    doc.fontSize(14).text("Customer Information", { underline: true });
-    doc.fontSize(12);
+    doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Bill To", { underline: false });
+    doc.moveDown(0.3);
+    doc.fontSize(10).font("Helvetica");
     if (order.selectedAddress) {
-      doc.text(`Name: ${order.selectedAddress.name || "N/A"}`);
-      doc.text(
-        `Address: ${order.selectedAddress.landMark
-          ? order.selectedAddress.landMark + ", "
-          : ""
-        }${order.selectedAddress.city || ""}, ${order.selectedAddress.state || ""
-        } ${order.selectedAddress.pincode || ""}`
-      );
-      doc.text(`Mobile: ${order.selectedAddress.mobile || "N/A"}`);
-      doc.text(`Alternate Mobile: ${order.selectedAddress.altMobile || "N/A"}`);
+      doc.text(`${order.selectedAddress.name || "N/A"}`);
+      if (order.selectedAddress.landMark) doc.text(`${order.selectedAddress.landMark}`);
+      doc.text(`${order.selectedAddress.city || ""}`);
+      doc.text(`${order.selectedAddress.state || ""} - ${order.selectedAddress.pincode || ""}`);
+      doc.text(`Phone: ${order.selectedAddress.mobile || "N/A"}`);
     } else {
       doc.text("Address: Not available");
     }
     doc.moveDown();
 
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(50 + pageWidth, doc.y)
+      .lineWidth(0.75)
+      .strokeColor("#cccccc")
+      .stroke();
+    doc.moveDown(0.7);
+
     // Ordered Items
-    doc.fontSize(14).text("Ordered Items", { underline: true });
+    doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Items");
     doc.moveDown(0.5);
 
     // Table Header
     const tableTop = doc.y;
-    doc.fontSize(10).font("Helvetica-Bold");
-    doc.text("Product", 50, tableTop, { width: 150 });
-    doc.text("Size", 200, tableTop, { width: 40 });
-    doc.text("Qty", 240, tableTop, { width: 35 });
-    doc.text("Price", 280, tableTop, { width: 55 });
-    doc.text("Total", 340, tableTop, { width: 55 });
-    doc.text("Status", 400, tableTop, { width: 70 });
-    doc.text("Refund", 480, tableTop, { width: 60 });
-    doc.moveDown(0.5);
+    doc.rect(50, tableTop, pageWidth, 22).fill("#f2f2f2");
+    doc.fillColor("#1a1a1a").fontSize(9).font("Helvetica-Bold");
+    doc.text("Product", 55, tableTop + 6, { width: 145 });
+    doc.text("Size", 200, tableTop + 6, { width: 40, align: "center" });
+    doc.text("Qty", 240, tableTop + 6, { width: 35, align: "center" });
+    doc.text("Price", 280, tableTop + 6, { width: 55, align: "right" });
+    doc.text("Total", 340, tableTop + 6, { width: 55, align: "right" });
+    doc.text("Status", 400, tableTop + 6, { width: 70 });
+    doc.text("Refund", 470, tableTop + 6, { width: 75, align: "right" });
     doc
-      .lineWidth(1)
-      .rect(50, tableTop - 5, 500, 20)
+      .lineWidth(0.75)
+      .rect(50, tableTop, pageWidth, 22)
+      .strokeColor("#cccccc")
       .stroke();
 
     // Table Rows
     doc.font("Helvetica");
-    let currentY = tableTop + 20;
-order.orderedItems.forEach((item) => {
+    let currentY = tableTop + 22;
+    const rowHeight = 20;
 
-  const total = item.quantity * item.price;
+    order.orderedItems.forEach((item, idx) => {
+      // page-break safety
+      if (currentY + rowHeight > doc.page.height - doc.page.margins.bottom - 40) {
+        doc.addPage();
+        currentY = 50;
+      }
 
-  doc.text(item.product?.productName || "N/A", 50, currentY, {
-    width: 150,
-  });
+      if (idx % 2 === 1) {
+        doc.rect(50, currentY, pageWidth, rowHeight).fill("#fafafa");
+      }
 
-  doc.text(item.size || "N/A", 200, currentY, {
-    width: 40,
-  });
+      const total = item.quantity * item.price;
 
-  doc.text(String(item.quantity || 1), 240, currentY, {
-    width: 35,
-  });
+      doc.fillColor("#1a1a1a").fontSize(9);
 
-  doc.text(`₹${item.price.toFixed(2)}`, 280, currentY, {
-    width: 55,
-  });
+      doc.text(item.product?.productName || "N/A", 55, currentY + 5, {
+        width: 145,
+      });
 
-  doc.text(`₹${total.toFixed(2)}`, 340, currentY, {
-    width: 55,
-  });
+      doc.text(item.size || "N/A", 200, currentY + 5, {
+        width: 40,
+        align: "center",
+      });
 
-if (item.status === "Cancelled") {
-  doc.fillColor("red");
-} else if (item.status === "Returned") {
-  doc.fillColor("orange");
-} else {
-  doc.fillColor("green");
-}
+      doc.text(String(item.quantity || 1), 240, currentY + 5, {
+        width: 35,
+        align: "center",
+      });
 
-doc.text(item.status, 400, currentY, {
-  width: 70,
-});
+      doc.text(`Rs. ${item.price.toFixed(2)}`, 280, currentY + 5, {
+        width: 55,
+        align: "right",
+      });
 
-doc.fillColor("black");
+      doc.text(`Rs. ${total.toFixed(2)}`, 340, currentY + 5, {
+        width: 55,
+        align: "right",
+      });
 
-  doc.text(
-    `₹${(item.refundedAmount || 0).toFixed(2)}`,
-    480,
-    currentY,
-    {
-      width: 60,
-    }
-  );
+      if (item.status === "Cancelled") {
+        doc.fillColor("#c9302c");
+      } else if (item.status === "Returned") {
+        doc.fillColor("#d17a00");
+      } else {
+        doc.fillColor("#1e7e34");
+      }
 
-  currentY += 20;
-});
+      doc.text(item.status, 400, currentY + 5, {
+        width: 70,
+      });
 
-// Order Summary
-doc.moveDown(2);
+      doc.fillColor("#1a1a1a");
 
-doc
-  .fontSize(14)
-  .font("Helvetica-Bold")
-  .text("Order Summary", { underline: true });
+      doc.text(`Rs. ${(item.refundedAmount || 0).toFixed(2)}`, 470, currentY + 5, {
+        width: 75,
+        align: "right",
+      });
 
-doc.moveDown(0.5);
+      currentY += rowHeight;
+    });
 
-doc.fontSize(11).font("Helvetica");
+    doc
+      .rect(50, tableTop + 22, pageWidth, currentY - (tableTop + 22))
+      .lineWidth(0.75)
+      .strokeColor("#cccccc")
+      .stroke();
 
-doc.text(
-  `Subtotal : ₹${order.totalPrice.toFixed(2)}`
-);
+    doc.y = currentY + 20;
 
-doc.text(
-  `Discount : ₹${order.discount.toFixed(2)}`
-);
+    // Order Summary
+    doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Order Summary");
+    doc.moveDown(0.5);
 
-doc.text(
-  `Final Amount : ₹${order.finalAmount.toFixed(2)}`
-);
+    const summaryBoxWidth = 220;
+    const summaryX = 50 + pageWidth - summaryBoxWidth;
+    let summaryY = doc.y;
 
-doc.text(
-  `Refunded Amount : ₹${order.refundedAmount.toFixed(2)}`
-);
+    doc.fontSize(10).font("Helvetica");
 
-const netPaid = order.finalAmount - order.refundedAmount;
+    const netPaid = order.finalAmount - order.refundedAmount;
 
-doc.font("Helvetica-Bold");
+    const summaryRows = [
+      ["Subtotal", `Rs. ${order.totalPrice.toFixed(2)}`],
+      ["Discount", `- Rs. ${order.discount.toFixed(2)}`],
+      ["Amount Paid", `Rs. ${order.finalAmount.toFixed(2)}`],
+      ["Refunded", `- Rs. ${order.refundedAmount.toFixed(2)}`],
+    ];
 
-doc.text(
-  `Net Amount Paid : ₹${netPaid.toFixed(2)}`
-);
+    summaryRows.forEach(([label, value]) => {
+      doc.fillColor("#666666").text(label, summaryX, summaryY, { width: 110 });
+      doc.fillColor("#1a1a1a").text(value, summaryX + 110, summaryY, {
+        width: summaryBoxWidth - 110,
+        align: "right",
+      });
+      summaryY += 16;
+    });
 
-doc.moveDown();
+    doc
+      .moveTo(summaryX, summaryY)
+      .lineTo(summaryX + summaryBoxWidth, summaryY)
+      .lineWidth(0.75)
+      .strokeColor("#cccccc")
+      .stroke();
+    summaryY += 8;
 
+    doc.font("Helvetica-Bold").fontSize(11);
+    doc.fillColor("#1a1a1a").text("Net Paid", summaryX, summaryY, { width: 110 });
+    doc.text(`Rs. ${netPaid.toFixed(2)}`, summaryX + 110, summaryY, {
+      width: summaryBoxWidth - 110,
+      align: "right",
+    });
+
+    doc.y = summaryY + 30;
 
     // Refund Summary
-const refundedItems = order.orderedItems.filter(
-  (item) =>
-    item.status === "Cancelled" ||
-    item.status === "Returned"
-);
-
-if (refundedItems.length > 0) {
-  doc.moveDown();
-
-  doc.fontSize(14)
-    .font("Helvetica-Bold")
-    .text("Refund Summary", { underline: true });
-
-  doc.moveDown(0.5);
-  doc.fontSize(11).font("Helvetica");
-
-  refundedItems.forEach((item) => {
-    doc.text(
-      `${item.product?.productName} (${item.size}) - ${item.status} - Refund: ₹${item.refundedAmount.toFixed(2)}`
+    const refundedItems = order.orderedItems.filter(
+      (item) => item.status === "Cancelled" || item.status === "Returned"
     );
-  });
 
-  doc.moveDown(0.5);
+    if (refundedItems.length > 0) {
+      doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Refund Summary");
+      doc.moveDown(0.5);
 
-  doc.font("Helvetica-Bold").text(
-    `Total Refunded: ₹${order.refundedAmount.toFixed(2)}`
-  );
+      const returnedItems = refundedItems.filter((i) => i.status === "Returned");
+      const cancelledItems = refundedItems.filter((i) => i.status === "Cancelled");
 
-  doc.moveDown();
-}
+      const renderRefundGroup = (title, items) => {
+        if (items.length === 0) return;
+        doc.font("Helvetica-Bold").fontSize(10).fillColor("#1a1a1a").text(title);
+        doc.moveDown(0.2);
+        doc.font("Helvetica").fontSize(9.5);
+        items.forEach((item) => {
+          const y = doc.y;
+          doc.fillColor("#1a1a1a").text(
+            `\u2022 ${item.product?.productName || "N/A"} (${item.size || "N/A"})`,
+            50,
+            y,
+            { width: 320 }
+          );
+          doc
+            .fillColor(item.status === "Cancelled" ? "#c9302c" : "#d17a00")
+            .text(`Rs. ${item.refundedAmount.toFixed(2)}`, 390, y, {
+              width: pageWidth - 340,
+              align: "right",
+            });
+          doc.fillColor("#1a1a1a");
+        });
+        doc.moveDown(0.5);
+      };
+
+      renderRefundGroup("Returned Items", returnedItems);
+      renderRefundGroup("Cancelled Items", cancelledItems);
+
+      doc.font("Helvetica-Bold").fontSize(10).text(`Total Refunded: Rs. ${order.refundedAmount.toFixed(2)}`);
+      doc.moveDown();
+    }
+
     // Payment Details
-    doc.moveDown();
-    doc.fontSize(14).text("Payment Details", { underline: true });
-    doc.fontSize(12).font("Helvetica");
-    doc.text(`Payment Method: ${order.paymentMethod || "N/A"}`);
+    doc.moveDown(0.5);
+    doc.fontSize(13).font("Helvetica-Bold").fillColor("#1a1a1a").text("Payment Details");
+    doc.moveDown(0.3);
+    doc.fontSize(10).font("Helvetica");
+    doc.text(`Method: ${order.paymentMethod || "N/A"}`);
     doc.text(`Status: ${order.isPaid ? "Paid" : "Not Paid"}`);
     if (order.isPaid && order.paidAt) {
       doc.text(
-        `Paid At: ${new Date(order.paidAt).toLocaleDateString("en-US", {
+        `Paid On: ${new Date(order.paidAt).toLocaleDateString("en-US", {
           year: "numeric",
           month: "short",
           day: "numeric",
@@ -1368,16 +1444,27 @@ if (refundedItems.length > 0) {
       );
     }
     if (order.isFullyRefunded) {
-      doc.text(`Refunded: ₹${order.refundedAmount.toFixed(2)}`);
-      doc.text("Refund Status: Fully Refunded");
+      doc.text(`Refund Status: Fully Refunded (Rs. ${order.refundedAmount.toFixed(2)})`);
     } else if (order.refundedAmount > 0) {
-      doc.text(`Partially Refunded: ₹${order.refundedAmount.toFixed(2)}`);
-      doc.text("Refund Status: Partial Refund");
+      doc.text(`Refund Status: Partial Refund (Rs. ${order.refundedAmount.toFixed(2)})`);
     }
 
     // Footer
-    doc.moveDown(2);
-    doc.fontSize(10).text("Thank you for your purchase!", { align: "center" });
+    const footerY = doc.page.height - doc.page.margins.bottom - 30;
+    doc
+      .moveTo(50, footerY)
+      .lineTo(50 + pageWidth, footerY)
+      .lineWidth(0.75)
+      .strokeColor("#cccccc")
+      .stroke();
+    doc
+      .fontSize(9)
+      .font("Helvetica")
+      .fillColor("#666666")
+      .text("Thank you for shopping with 18-CREW", 50, footerY + 8, {
+        width: pageWidth,
+        align: "center",
+      });
 
     // Finalize the PDF
     doc.end();
