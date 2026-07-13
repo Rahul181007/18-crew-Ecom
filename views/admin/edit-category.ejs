@@ -34,9 +34,24 @@
 <script>
 const form = document.getElementById("editCategoryForm");
 
-form.addEventListener("submit", function (e) {
+form.addEventListener("submit", async function (e) {
     e.preventDefault();
-    console.log("Form submission intercepted");
+
+    const formData = new FormData(form);
+
+    try {
+
+        const response = await fetch(form.action, {
+            method: "POST",
+            body: formData
+        });
+
+        console.log(response);
+
+    } catch (error) {
+        console.log(error);
+    }
+
 });
 </script>
 <%- include("../layouts/admin/footer.ejs") %>
