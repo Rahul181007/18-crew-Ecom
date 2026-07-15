@@ -189,6 +189,8 @@ const getSalesData = async (req, res, next) => {
   }
 };
 
+
+
 // NOTE: this assumes your file already has these requires at the top
 // (same as your original file):
 //   const PDFDocument = require("pdfkit");
@@ -364,12 +366,14 @@ const getSalesDataInternal = async (params) => {
       totalSales: 0,
       totalOrders: orders.length,
       totalDiscounts: 0,
+      totalCouponDiscount: 0,
       totalNetAmount: 0,
     };
 
     orders.forEach((order) => {
       summary.totalSales += order.finalAmount || 0;
       summary.totalDiscounts += order.discount || 0;
+      summary.totalCouponDiscount += order.couponDiscount || 0;
       summary.totalNetAmount += order.finalAmount || 0;
     });
 
@@ -403,6 +407,7 @@ const getSalesDataInternal = async (params) => {
         totalSales: summary.totalNetAmount,
         totalOrders: summary.totalOrders,
         totalDiscounts: summary.totalDiscounts,
+        totalCouponDiscount: summary.totalCouponDiscount,
         avgOrderValue:
           summary.totalOrders > 0
             ? summary.totalNetAmount / summary.totalOrders
@@ -451,36 +456,36 @@ async function generatePDFReport(
     const doc = new PDFDocument({ size: "A4", margin: 50 });
     const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const marginX = doc.page.margins.left;
- 
+
     const filename = `sales-report-${
       new Date().toISOString().split("T")[0]
     }.pdf`;
- 
+
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
- 
+
     doc.on("error", (err) => {
       console.error("PDF generation error:", err);
       if (!res.headersSent) {
         res.status(500).send("Error generating PDF");
       }
     });
- 
+
     doc.pipe(res);
- 
+
     // ---- Header ----
     doc
       .fontSize(22)
       .font("Helvetica-Bold")
       .fillColor(BRAND.dark)
       .text(BRAND.name, marginX, 50);
- 
+
     doc
       .fontSize(16)
       .font("Helvetica-Bold")
       .fillColor(BRAND.accent)
       .text("SALES REPORT", marginX, 50, { width: pageWidth, align: "right" });
- 
+
     doc
       .fontSize(9)
       .font("Helvetica")
@@ -493,16 +498,16 @@ async function generatePDFReport(
         width: pageWidth,
         align: "right",
       });
- 
+
     doc
       .moveTo(marginX, 112)
       .lineTo(marginX + pageWidth, 112)
       .lineWidth(0.75)
       .strokeColor(BRAND.border)
       .stroke();
- 
+
     let y = 128;
- 
+
     // ---- Summary cards ----
     if (includeSummary) {
       const cards = [
@@ -515,25 +520,38 @@ async function generatePDFReport(
       const cardGap = 8;
       const cardWidth = (pageWidth - cardGap * (cards.length - 1)) / cards.length;
       const cardHeight = 50;
- 
+
       cards.forEach(([label, value], i) => {
         const cardX = marginX + i * (cardWidth + cardGap);
         doc.rect(cardX, y, cardWidth, cardHeight).fill(BRAND.headerBg);
-        doc
-          .fontSize(7.5)
-          .font("Helvetica")
-          .fillColor(BRAND.muted)
-          .text(label, cardX + 8, y + 10, { width: cardWidth - 16, lineBreak: false, ellipsis: true });
-        doc
-          .fontSize(11.5)
-          .font("Helvetica-Bold")
-          .fillColor(BRAND.dark)
-          .text(value, cardX + 8, y + 26, { width: cardWidth - 16, lineBreak: false, ellipsis: true });
+
+        doc.fontSize(7.5).font("Helvetica").fillColor(BRAND.muted);
+        doc.text(label, cardX + 8, y + 10, { width: cardWidth - 16, lineBreak: false });
+
+        doc.fontSize(11.5).font("Helvetica-Bold").fillColor(BRAND.dark);
+        const maxValueWidth = cardWidth - 16;
+        let valueText = value;
+        if (doc.widthOfString(valueText) > maxValueWidth) {
+          const ellipsis = "\u2026";
+          let low = 0;
+          let high = valueText.length;
+          while (low < high) {
+            const mid = Math.ceil((low + high) / 2);
+            const candidate = valueText.slice(0, mid) + ellipsis;
+            if (doc.widthOfString(candidate) <= maxValueWidth) {
+              low = mid;
+            } else {
+              high = mid - 1;
+            }
+          }
+          valueText = valueText.slice(0, low) + ellipsis;
+        }
+        doc.text(valueText, cardX + 8, y + 26, { width: cardWidth - 16, lineBreak: false });
       });
- 
+
       y += cardHeight + 24;
     }
- 
+
     // ---- Chart notice ----
     if (includeCharts) {
       doc.rect(marginX, y, pageWidth, 28).fill(BRAND.headerBg);
@@ -547,12 +565,12 @@ async function generatePDFReport(
         });
       y += 28 + 20;
     }
- 
+
     // ---- Order Details table ----
     if (includeDetails) {
       doc.fontSize(13).font("Helvetica-Bold").fillColor(BRAND.dark).text("Order Details", marginX, y);
       y += 20;
- 
+
       const cols = [
         { key: "date", label: "Date", width: 60, align: "left" },
         { key: "orderId", label: "Order ID", width: 75, align: "left" },
@@ -568,23 +586,40 @@ async function generatePDFReport(
         c.x = cx;
         cx += c.width;
       });
- 
+
       const rowHeight = 22;
-      // Every cell uses ellipsis + lineBreak:false so long values (full
-      // UUID order IDs, long statuses like "Partially Returned") truncate
-      // to one line instead of wrapping and overlapping the row below.
+      // PDFKit's built-in `ellipsis` + `lineBreak: false` combo doesn't
+      // reliably stop text from wrapping in every environment, so we
+      // manually measure and truncate strings before drawing them —
+      // this guarantees a single line and no overlap with the row below.
+      const truncateToWidth = (text, maxWidth) => {
+        const str = String(text ?? "");
+        if (doc.widthOfString(str) <= maxWidth) return str;
+        const ellipsis = "\u2026";
+        let low = 0;
+        let high = str.length;
+        while (low < high) {
+          const mid = Math.ceil((low + high) / 2);
+          const candidate = str.slice(0, mid) + ellipsis;
+          if (doc.widthOfString(candidate) <= maxWidth) {
+            low = mid;
+          } else {
+            high = mid - 1;
+          }
+        }
+        return str.slice(0, low) + ellipsis;
+      };
       const cellOpts = (width, align) => ({
         width: width - 8,
         align,
         lineBreak: false,
-        ellipsis: true,
       });
- 
+
       const drawTableHeader = (yPos) => {
         doc.rect(marginX, yPos, pageWidth, rowHeight).fill(BRAND.headerBg);
         doc.font("Helvetica-Bold").fontSize(8.5).fillColor(BRAND.dark);
         cols.forEach((c) => {
-          doc.text(c.label, c.x + 4, yPos + 7, cellOpts(c.width, c.align));
+          doc.text(truncateToWidth(c.label, c.width - 8), c.x + 4, yPos + 7, cellOpts(c.width, c.align));
         });
         doc
           .rect(marginX, yPos, pageWidth, rowHeight)
@@ -593,10 +628,10 @@ async function generatePDFReport(
           .stroke();
         return yPos + rowHeight;
       };
- 
+
       y = drawTableHeader(y);
       const tableStartY = y;
- 
+
       data.forEach((order, idx) => {
         const pageBottom = doc.page.height - doc.page.margins.bottom;
         if (y + rowHeight > pageBottom - 30) {
@@ -604,47 +639,35 @@ async function generatePDFReport(
           y = doc.page.margins.top;
           y = drawTableHeader(y);
         }
- 
+
         if (idx % 2 === 1) {
           doc.rect(marginX, y, pageWidth, rowHeight).fill("#fafafa");
         }
- 
+
         // Shorten the order ID for the table; the full ID is still on
         // the underlying order/invoice, this is just a compact display.
         const shortOrderId = order.orderId ? `#${String(order.orderId).slice(0, 8)}` : "N/A";
- 
+
         doc.font("Helvetica").fontSize(8.5).fillColor(BRAND.dark);
-        doc.text(
+
+        const rowValues = [
           new Date(order.date).toLocaleDateString("en-IN"),
-          cols[0].x + 4,
-          y + 7,
-          cellOpts(cols[0].width, cols[0].align)
-        );
-        doc.text(shortOrderId, cols[1].x + 4, y + 7, cellOpts(cols[1].width, cols[1].align));
-        doc.text(order.customer, cols[2].x + 4, y + 7, cellOpts(cols[2].width, cols[2].align));
-        doc.text(
+          shortOrderId,
+          order.customer,
           formatCurrency(order.amount),
-          cols[3].x + 4,
-          y + 7,
-          cellOpts(cols[3].width, cols[3].align)
-        );
-        doc.text(
           formatCurrency(order.discount),
-          cols[4].x + 4,
-          y + 7,
-          cellOpts(cols[4].width, cols[4].align)
-        );
-        doc.text(
           formatCurrency(order.netAmount),
-          cols[5].x + 4,
-          y + 7,
-          cellOpts(cols[5].width, cols[5].align)
-        );
-        doc.text(order.status, cols[6].x + 4, y + 7, cellOpts(cols[6].width, cols[6].align));
- 
+          order.status,
+        ];
+
+        rowValues.forEach((value, i) => {
+          const c = cols[i];
+          doc.text(truncateToWidth(value, c.width - 8), c.x + 4, y + 7, cellOpts(c.width, c.align));
+        });
+
         y += rowHeight;
       });
- 
+
       // Outer border around the whole table body on the last page section
       doc
         .rect(marginX, tableStartY, pageWidth, y - tableStartY)
@@ -652,7 +675,7 @@ async function generatePDFReport(
         .strokeColor(BRAND.border)
         .stroke();
     }
- 
+
     // ---- Footer on every page ----
     const range = doc.bufferedPageRange
       ? doc.bufferedPageRange()
@@ -675,7 +698,7 @@ async function generatePDFReport(
           align: "center",
         });
     }
- 
+
     doc.end();
   } catch (error) {
     console.error("Error while generating PDF report:", error);
