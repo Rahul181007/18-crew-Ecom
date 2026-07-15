@@ -764,6 +764,7 @@ async function generateExcelReport(
       ["Total Sales", summary.totalSales],
       ["Total Orders", summary.totalOrders],
       ["Total Discounts", summary.totalDiscounts],
+      ["Coupon Discount", summary.totalCouponDiscount],
       ["Average Order Value", summary.avgOrderValue],
     ];
 
@@ -909,6 +910,7 @@ async function generateCSVReport(
     csvContent += `Total Sales,${formatCurrency(summary.totalSales)}\n`;
     csvContent += `Total Orders,${summary.totalOrders}\n`;
     csvContent += `Total Discounts,${formatCurrency(summary.totalDiscounts)}\n`;
+    csvContent += `Coupon Discount,${formatCurrency(summary.totalCouponDiscount)}\n`;
     csvContent += `Average Order Value,${formatCurrency(summary.avgOrderValue)}\n\n`;
   }
 
